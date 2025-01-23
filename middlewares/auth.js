@@ -6,7 +6,7 @@ const userAuth = (req,res,next)=>{
         User.findById(req.session.user)
         .then(data=>{
             if(data && !data.isBlocked){
-                console.log("User authenticated");
+                
                 next();
             }else{
                 console.log("User blocked or not found");

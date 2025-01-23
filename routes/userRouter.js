@@ -2,12 +2,20 @@ const express = require('express');
 const router = express.Router();
 const passport = require("passport");
 const userController = require('../controllers/user/userController');
+const productController = require("../controllers/user/productController");
 const {userAuth,adminAuth} = require("../middlewares/auth");
 //const google = require('google');
 
 
 router.get('/pageNotFound',userController.pageNotFound);
 router.get('/',userController.loadHomepage);
+
+router.get("/shop",userController.loadShoppingPage);
+router.get('/filter',userController.filterProduct);
+router.get('/filterPrice',userController.filterByPrice);
+router.post('/search',userController.searchProducts);
+router.get("/productDetails",productController.productDetails);
+
 router.get('/signup',userController.loadSignUp);
 router.get('/login',userController.loadLogin);
 router.post('/login',userController.login);
@@ -19,7 +27,7 @@ router.get('/auth/google/callback',passport.authenticate('google',{failureRedire
     res.redirect('/')
 });
 
-router.get("/shop",userAuth,userController.loadShoppingPage);
+
 router.get('/logout',userController.logout);
 
 

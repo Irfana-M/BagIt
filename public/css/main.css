@@ -3147,11 +3147,82 @@ label {
       right: 18px; }
     .sorting .nice-select .list {
       border-radius: 0px; }
+      .pagination {
+        margin-left: auto; /* Pushes the pagination to the right */
+        display: flex;
+        align-items: center; /* Vertically centers the items */
+        margin-top: 10px;
+    }
+    
+    .common-filter {
+      margin-bottom: 30px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background: #fff;
+  }
+  
+  .common-filter .head {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 10px;
+  }
+  
+  .price-range-area {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+  }
+  
+  .price-range-item {
+      margin-bottom: 10px;
+  }
+  
+  .price-range-item a {
+      display: block;
+      font-size: 14px;
+      color: #666;
+      text-decoration: none;
+      padding: 8px 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+      align-items: center;
+  }
+  
+  .price-range-item a:hover {
+      color: #ffc107;;
+      /* background-color: #007bff; */
+      /* border-color: #007bff; */
+  }
+/* zoom image */
+.zoom-container {
+  overflow: hidden; /* Hides the overflow content when zoomed */
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-.pagination {
+.zoom-img {
+  transition: transform 0.3s ease-in-out;
+  transform-origin: center center; /* Ensures the image zooms from the center */
+}
+
+.zoom-container:hover .zoom-img {
+  transform: scale(1.5); /* Adjust the zoom level as needed */
+}
+
+
+
+
+
+
+/* .pagination {
   margin-top: 10px;
   border-left: 1px solid #eee;
-  border-radius: 0px; }
+  border-radius: 0px; } */
   .pagination a {
     width: 40px;
     line-height: 40px;
