@@ -3213,13 +3213,44 @@ label {
 .zoom-container:hover .zoom-img {
   transform: scale(1.5); /* Adjust the zoom level as needed */
 }
+.card:hover {
+  transform: translateY(-5px);
+  transition: all 0.3s ease;
+}
+
+.card-title a:hover {
+  color: #007bff;
+}
+
+.advertisement img {
+  transition: all 0.3s ease;
+}
+
+.advertisement img:hover {
+  transform: scale(1.05);
+}
+.card {
+  height: 300px; /* Set a fixed height for the card */
+  width: 100%;   /* Full width */
+  overflow: hidden; /* Ensures content does not overflow the card */
+  border-radius: 8px; /* Optional: Rounded corners */
+  border: 1px solid #eaeaea; /* Optional: Subtle border */
+}
+
+.card-img-top {
+  width: 100%;          /* Full width of the card */
+  height: 100%;         /* Full height of the card */
+  object-fit: cover;    /* Ensures the image scales proportionally without distortion */
+  border-radius: 8px;   /* Matches the card's rounded corners */
+}
 
 
 
 
 
 
-/* .pagination {
+
+/* .pagination did {
   margin-top: 10px;
   border-left: 1px solid #eee;
   border-radius: 0px; } */

@@ -22,6 +22,12 @@ app.use(session({
     maxAge:72*60*60*1000
   } 
 }))
+
+app.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
+
 app.use(passport.initialize());
 app.use(passport.session());
 app.set('view engine','ejs');

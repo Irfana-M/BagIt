@@ -3,22 +3,31 @@ const Category = require("../../models/categorySchema");
 const User = require("../../models/userSchema");
 
 const productDetails = async (req,res)=>{
+    
     try {
         const userId = req.session.user
-        console.log('Product ID:', productId);
+        
         const userData = await User.findById(userId);
         const productId = req.query.id;
+        
         const product = await Product.findById(productId).populate('category');
         const findCategory = product.category;
         const categoryOffer = findCategory ?.categoryOffer || 0;
         const productOffer = product.productOffer || 0;
         const totalOffer = categoryOffer + productOffer;
+
+        const relatedProducts = await Product.find({
+            category: findCategory._id,
+            _id: { $ne: productId } // Exclude the current product
+        }).limit(3);
+
         res.render("product-details",{
             user:userData,
             product:product,
             quantity:product.quantity,
             totalOffer:totalOffer,
-            category:findCategory
+            category:findCategory,
+            relatedProducts: relatedProducts
         });
         
     } catch (error) {

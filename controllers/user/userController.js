@@ -216,7 +216,7 @@ const loadHomepage = async (req, res) => {
             const userData = await User.findOne({ _id: userId });
             res.render('home', { user: userData, products: productData });
         } else {
-            res.render('home', { user: { name: req.session.name }, products: productData });
+            res.render('home', { user: null, products: productData });
         }
     } catch (error) {
         console.error('Home page not found', error);
@@ -438,14 +438,14 @@ const logout = async (req,res)=>{
     try {
         req.session.destroy((err)=>{
             if(err){
-                console.log("Session destruction error");
-                return res.redirect("/pageNotFound");
+                console.log("Session destruction error",err);
+                return res.redirect("/");
             }
             return res.redirect("/login");
         })
     } catch (error) {
-        console.log("Logout error",error);
-        res.redirect("/pageNotFound");
+        res.clearCookie('connect.sid'); // Clear the session cookie
+        res.redirect('/login'); // Redirect to the login page after logout
     }
 }
 
