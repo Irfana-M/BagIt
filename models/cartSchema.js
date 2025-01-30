@@ -4,7 +4,7 @@ const {Schema} = mongoose;
 const cartSchema = new Schema({
     userId:{
         type:Schema.Types.ObjectId,
-        ref:"USer",
+        ref:"User",
         required:true
     },
     items:[{
@@ -19,7 +19,8 @@ const cartSchema = new Schema({
         },
         price:{
             type:Number,
-            required:true
+            required:true,
+            
         },
         totalPrice:{
             type:Number,
@@ -27,11 +28,13 @@ const cartSchema = new Schema({
         },
         status:{
             type:String,
-            default:"Order Placed"
+            default:"In cart"
         },
 
-    }]
-})
+    },],
+},
+{ timestamps: true }
+)
 
 const Cart = mongoose.model("Cart",cartSchema);
 module.exports = Cart;

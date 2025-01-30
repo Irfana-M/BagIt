@@ -3,31 +3,39 @@ const Product = require('../../models/productSchema');
 
 
 
-const categoryInfo = async(req,res)=>{
-   
+const categoryInfo = async (req, res) => {
     try {
-       const page = parseInt(req.query.page)||1;
-       const limit = 4;
-       const skip = (page-1)*limit;
+        const page = parseInt(req.query.page) || 1;
+        const limit = 4;
+        const skip = (page - 1) * limit;
+        const searchTerm = req.query.search || '';
+        const searchQuery = searchTerm ? { name: { $regex: ".*" + searchTerm + ".*", $options: 'i'  } } : {};
 
-       const categoryData = await Category.find()
-       .sort({createdAt:1})
-       .skip(skip)
-       .limit(limit)
+        const categoryData = await Category.find(searchQuery)
+            .sort({ createdAt: 1 })
+            .skip(skip)
+            .limit(limit);
 
-       const totalCategories = await Category.countDocuments()
-       const totalPages = Math.ceil(totalCategories/limit);
-       res.render("category",{
-        cat:categoryData,
-        currentPage:page,
-        totalPages:totalPages,
-        totalCategories:totalCategories
-    });
+        const totalCategories = await Category.countDocuments(searchQuery);
+        const totalPages = Math.ceil(totalCategories / limit);
+
+        res.render("category", {
+            cat: categoryData,
+            currentPage: page,
+            totalPages: totalPages,
+            totalCategories: totalCategories,
+            searchTerm: searchTerm,
+            currentPage: 'category', 
+            activePage: 'category'
+        });
     } catch (error) {
-            console.error(error);
-            res.redirect("/pageerror")
-        }
+        console.error(error);
+        res.redirect("/pageerror");
     }
+}
+
+
+
 
     const addCategory = async (req,res)=>{
         const {name,description} = req.body;
@@ -134,7 +142,7 @@ const categoryInfo = async(req,res)=>{
         try {
             
             let id = req.query.id;
-            console.log(id);
+            // console.log(id);
             const category = await Category.findOne({_id:id});
             console.log(category);
             res.render("edit-category",{category:category});
@@ -148,14 +156,13 @@ const categoryInfo = async(req,res)=>{
         try {
             
             const id = req.params.id;
-            console.log(id);
+            // console.log(id);
             const {categoryName,description} = req.body;
-            console.log(req.body);
-            const existingCategory = await Category.findOne({name:categoryName});
+            //const existingCategory = await Category.findOne({name:categoryName});
 
-            if(existingCategory){
-                return res.status(400).json({error:"Category exists ,Please choose another one"});
-            }
+            // if(existingCategory){
+            //     return res.status(400).json({error:"Category exists ,Please choose another one"});
+            // }
             const updateCategory = await Category.findByIdAndUpdate(id,{
                 name:categoryName,
                 description:description},{new:true});
@@ -170,5 +177,27 @@ const categoryInfo = async(req,res)=>{
         }
     }
 
+    const deleteCategory = async (req, res) => {
+        try {
+          const { categoryId } = req.body; // Get categoryId from the request body
+          console.log(categoryId);
+          if (!categoryId) {
+            return res.status(400).json({ status: false, message: "Category ID is required." });
+          }
+      
+          const deletedCategory = await Category.findByIdAndDelete(categoryId); // Delete the category
+      
+          if (!deletedCategory) {
+            return res.status(404).json({ status: false, message: "Category not found." });
+          }
+      
+          res.json({ status: true, message: "Category deleted successfully." });
+        } catch (error) {
+          console.error("Error deleting category:", error);
+          res.status(500).json({ status: false, message: "Internal server error." });
+        }
+      };
+      
     module.exports = {categoryInfo,addCategory,addCategoryOffer,removeCategoryOffer,getListCategory,
-        getUnlistCategory,getEditCategory,editCategory}
+        getUnlistCategory,getEditCategory,editCategory,deleteCategory
+    }

@@ -28,6 +28,8 @@
 	<link rel="stylesheet" href="css/nouislider.min.css">
 	<link rel="stylesheet" href="css/bootstrap.css">
 	<link rel="stylesheet" href="css/main.css">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
 </head>
 
 <body id="category">
@@ -152,7 +154,7 @@
 											<h6 class="l-through"><%= products[i].regularPrice.toLocaleString('en-IN') %></h6>
 										</div>
 										<div class="prd-bottom">
-											<a href="#" class="social-info">
+											<a href="/add-To-cart?id=<%=products[i]._id%>&quantity=<%=products[i].quantity%>" class="social-info">
 												<span class="ti-bag"></span>
 												<p class="hover-text">add to bag</p>
 											</a>
@@ -537,6 +539,89 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCjCGmQ0Uq4exrzdcL6rvxywDDOvfAu6eE"></script>
 	<script src="js/gmaps.min.js"></script>
 	<script src="js/main.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+	
+
+<script>
+	document.querySelectorAll('.add-to-cart').forEach(button => {
+		button.addEventListener('click', async (e) => {
+			e.preventDefault();
+			const productId = button.dataset.productId;
+			const quantity = button.dataset.quantity;
+	
+			try {
+				const response = await fetch(`/add-To-cart?id=${productId}&quantity=${quantity}`, { method: 'POST' });
+				const result = await response.json();
+	
+				if (result.status === 'success') {
+					Swal.fire({
+						title: 'Success!',
+						text: result.message,
+						icon: 'success',
+						showCancelButton: true,
+						confirmButtonText: 'Okay',
+						cancelButtonText: 'Go to Cart',
+						reverseButtons: true,
+					}).then((result) => {
+						if (result.isDismissed) {
+							window.location.href = '/view-cart';
+						}
+					});
+				} else {
+					Swal.fire({
+						title: 'Error!',
+						text: result.message,
+						icon: 'error',
+						confirmButtonText: 'Okay'
+					});
+				}
+			} catch (error) {
+				Swal.fire({
+					title: 'Error!',
+					text: 'An error occurred while adding the product to the cart.',
+					icon: 'error',
+					confirmButtonText: 'Okay'
+				});
+			}
+		});
+	});
+		  
+	</script>	
+		
+		<% if (message && message.status) { %>
+			<script>
+				window.onload = function() {
+					const status = '<%= message.status %>';
+					const messageText = '<%= message.message %>';
+					
+					if (status === 'success') {
+						Swal.fire({
+							title: 'Success!',
+							text: messageText,
+							icon: 'success',
+							showCancelButton: true, // Show the "Go to Cart" button
+							confirmButtonText: 'Okay',
+							cancelButtonText: 'Go to Cart',
+							reverseButtons: true, // Reverse the order of the buttons
+						}).then((result) => {
+							if (result.isDismissed) {
+								// Redirect to cart page when "Go to Cart" is clicked
+								window.location.href = '/view-cart';
+							}
+						});
+					} else if (status === 'failure') {
+						Swal.fire({
+							title: 'Error!',
+							text: messageText,
+							icon: 'error',
+							confirmButtonText: 'Okay'
+						});
+					}
+				};
+			</script>
+		<% } %>
+		
 </body>
 
 </html>

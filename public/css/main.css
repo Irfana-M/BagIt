@@ -3197,52 +3197,99 @@ label {
       /* border-color: #007bff; */
   }
 /* zoom image */
+/* Basic styles for the zoomed-in image */
 .zoom-container {
-  overflow: hidden; /* Hides the overflow content when zoomed */
+  overflow: hidden; /* Ensure no overflow when zooming */
   position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 .zoom-img {
-  transition: transform 0.3s ease-in-out;
-  transform-origin: center center; /* Ensures the image zooms from the center */
+  transition: transform 0.5s ease; /* Smooth zoom effect */
+  width: 100%; /* Ensure the image fits the container */
+  height: auto; /* Maintain aspect ratio */
 }
 
 .zoom-container:hover .zoom-img {
-  transform: scale(1.5); /* Adjust the zoom level as needed */
+  transform: scale(1.2); /* Scale up the image on hover */
 }
-.card:hover {
-  transform: translateY(-5px);
-  transition: all 0.3s ease;
+.zoom-container {
+  cursor: zoom-in;
+}
+/* cart image */
+.cartImg{
+  height:100px;
+  width:100px;
+}
+/* button delete cart */
+
+.remove-btn {
+  position: absolute;
+  transform: translateY(-50%);
+  background-color: #ff3b30;
+  color: white;
+  border: none;
+  padding: 5px 15px;
+  border-radius: 5px;
+}
+/* dropdown shop sort by */
+/* Style for the dropdown label */
+
+/* Style for the dropdown container */
+#sort-options {
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #f7f7f7;
+  color: #333;
+  cursor: pointer;
+  width: 200px; /* Adjust width to match design */
 }
 
-.card-title a:hover {
-  color: #007bff;
+/* Style for the options inside the dropdown */
+#sort-options option {
+  padding: 10px;
+  background-color: #fff;
+  color: #333;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  transition: background-color 0.3s ease;
 }
 
-.advertisement img {
-  transition: all 0.3s ease;
+/* Hover effect for the dropdown options */
+#sort-options option:hover {
+  background-color: #ddd;
+  color: #000;
 }
 
-.advertisement img:hover {
-  transform: scale(1.05);
-}
-.card {
-  height: 300px; /* Set a fixed height for the card */
-  width: 100%;   /* Full width */
-  overflow: hidden; /* Ensures content does not overflow the card */
-  border-radius: 8px; /* Optional: Rounded corners */
-  border: 1px solid #eaeaea; /* Optional: Subtle border */
+/* Style for the product list */
+#product-list {
+  margin-top: 20px;
 }
 
-.card-img-top {
-  width: 100%;          /* Full width of the card */
-  height: 100%;         /* Full height of the card */
-  object-fit: cover;    /* Ensures the image scales proportionally without distortion */
-  border-radius: 8px;   /* Matches the card's rounded corners */
+.product {
+  border: 1px solid #ddd;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
+
+.product h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.product p {
+  margin: 10px 0 0;
+  color: #555;
+  font-size: 16px;
+}
+
+
+
 
 
 

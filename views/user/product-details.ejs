@@ -15,7 +15,7 @@
 	<!-- meta character set -->
 	<meta charset="UTF-8">
 	<!-- Site Title -->
-	<title>Karma Shop</title>
+	<title>BAG IT Shopping</title>
 	<!--
 			CSS
 			============================================= -->
@@ -29,6 +29,10 @@
 	<link rel="stylesheet" href="css/ion.rangeSlider.css" />
 	<link rel="stylesheet" href="css/ion.rangeSlider.skinFlat.css" />
 	<link rel="stylesheet" href="css/main.css">
+
+	<link rel="stylesheet" href="https://unpkg.com/panzoom/dist/panzoom.min.css">
+
+	  
 </head>
 
 <body>
@@ -125,21 +129,25 @@
 			<div class="row s_product_inner">
                
 				<div class="col-lg-6">
-                    <div class="s_Product_carousel">
-                        <div class="single-prd-item zoom-container">
-                            <img class="img-fluid zoom-img" src="/uploads/product-images/<%=product.productImage[0]%>" alt="product image">
-                        </div>
-                        <div class="single-prd-item zoom-container">
-                            <img class="img-fluid zoom-img" src="/uploads/product-images/<%=product.productImage[1]%>" alt="product image">
-                        </div>
-                        <div class="single-prd-item zoom-container">
-                            <img class="img-fluid zoom-img" src="/uploads/product-images/<%=product.productImage[2]%>" alt="product image">
-                        </div>
-                        <div class="single-prd-item zoom-container">
-                            <img class="img-fluid zoom-img" src="/uploads/product-images/<%=product.productImage[3]%>" alt="product image">
-                        </div>
-                    </div>
-                </div>
+					<div class="s_Product_carousel">
+					  <div class="single-prd-item zoom-container">
+						<img class="img-fluid zoom-img" src="/uploads/product-images/<%=product.productImage[0]%>" alt="product image">
+					  </div>
+					  <div class="single-prd-item zoom-container">
+						<img class="img-fluid zoom-img" src="/uploads/product-images/<%=product.productImage[1]%>" alt="product image">
+					  </div>
+					  <div class="single-prd-item zoom-container">
+						<img class="img-fluid zoom-img" src="/uploads/product-images/<%=product.productImage[2]%>" alt="product image">
+					  </div>
+					  <div class="single-prd-item zoom-container">
+						<img class="img-fluid zoom-img" src="/uploads/product-images/<%=product.productImage[3]%>" alt="product image">
+					  </div>
+					</div>
+				  </div>
+				  
+				
+				
+				
                 
                 
                 
@@ -158,16 +166,16 @@
 							<li><a href="#"><span>Availibility</span> : <%=quantity%> Items in Stock</a></li>
 						</ul>
 						<p><%=product.description%></p>
-						<div class="product_count">
+						<!-- <div class="product_count">
 							<label for="qty">Quantity:</label>
 							<input type="text" name="qty" id="sst" maxlength="12" value="1" title="Quantity:" class="input-text qty">
 							<button onclick="var result = document.getElementById('sst'); var sst = result.value; if( !isNaN( sst )) result.value++;return false;"
 							 class="increase items-count" type="button"><i class="lnr lnr-chevron-up"></i></button>
 							<button onclick="var result = document.getElementById('sst'); var sst = result.value; if( !isNaN( sst ) &amp;&amp; sst > 0 ) result.value--;return false;"
 							 class="reduced items-count" type="button"><i class="lnr lnr-chevron-down"></i></button>
-						</div>
+						</div> -->
 						<div class="card_area d-flex align-items-center">
-							<a class="primary-btn" href="#">Add to Cart</a>
+							<a class="primary-btn" href="/add-To-cart?id=<%=product._id%>&quantity=<%=product.quantity%>">Add to Cart</a>
 							<a class="icon_btn" href="#"><i class="lnr lnr lnr-diamond"></i></a>
 							<a class="icon_btn" href="#"><i class="lnr lnr lnr-heart"></i></a>
 						</div>
@@ -527,12 +535,10 @@
 						<a href="/product-details?id=<%= relatedProducts[i]._id %>">
 							
 							<img src="/uploads/product-images/<%= relatedProducts[i].productImage[0] %>" 
-    alt="<%= relatedProducts[i].name %>" class="card-img-top" 
-    style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+    						alt="<%= relatedProducts[i].name %>" class="card-img-top" 
+    						style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
 
 						</a>
-						
-
 						<div class="card-body d-flex flex-column">
 						  <h5 class="card-title mb-2">
 							<a href="/product-details?id=<%= product._id %>" class="text-dark text-decoration-none"><%= relatedProducts[i].productName %></a>
@@ -664,8 +670,9 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	<script src="js/gmaps.min.js"></script>
 	<script src="js/main.js"></script>
 
-
+	
     <script>
+
       // Select all product images
 const productItems = document.querySelectorAll('.single-prd-item');
 const prevBtn = document.getElementById('prev');
@@ -695,27 +702,110 @@ prevBtn.addEventListener('click', () => {
     showImage(currentIndex);
 });
 
-// Add zoom functionality to active images
-productItems.forEach((item) => {
-    const img = item.querySelector('.zoom-img');
+//new zoom
+// document.addEventListener('DOMContentLoaded', function() {
+//     const mainImage = document.querySelector('.product-image-slider img');
+//     const thumbnails = document.querySelectorAll('.slider-nav-thumbnails img');
+//     const imageContainer = document.querySelector('.product-image-container');
 
-    item.addEventListener('click', (e) => {
-        if (!img.style.transform || img.style.transform === 'scale(1)') {
-            const rect = img.getBoundingClientRect();
-            const xPercent = ((e.clientX - rect.left) / rect.width) * 100;
-            const yPercent = ((e.clientY - rect.top) / rect.height) * 100;
+//     if (thumbnails.length > 0) {
+//         thumbnails[0].classList.add('active');
+//     }
 
-            img.style.transformOrigin = `${xPercent}% ${yPercent}%`;
-            img.style.transform = 'scale(2)';
-        } else {
-            img.style.transform = 'scale(1)';
-            img.style.transformOrigin = 'center center';
+//     thumbnails.forEach(thumbnail => {
+//         thumbnail.addEventListener('click', function() {
+//             mainImage.src = this.src;
+//             thumbnails.forEach(thumb => thumb.classList.remove('active'));
+//             this.classList.add('active');
+
+//             mainImage.style.transform = 'scale(1)';
+//             mainImage.style.transformOrigin = 'center center';
+//         });
+//     });
+
+//     if (imageContainer) {
+//         let isZoomed = false;
+
+//         imageContainer.addEventListener('mousemove', function(e) {
+//             if (!isZoomed) return;
+
+//             const { left, top, width, height } = this.getBoundingClientRect();
+//             const x = (e.clientX - left) / width;
+//             const y = (e.clientY - top) / height;
+
+//             mainImage.style.transformOrigin = `${x * 100}% ${y * 100}%`;
+//         });
+
+//         imageContainer.addEventListener('mouseenter', function() {
+//             isZoomed = true;
+//             mainImage.style.transform = 'scale(2)'; /* More zoom */
+//         });
+
+//         imageContainer.addEventListener('mouseleave', function() {
+//             isZoomed = false;
+//             mainImage.style.transform = 'scale(1)';
+//             mainImage.style.transformOrigin = 'center center';
+//         });
+
+//         let touchTimeout;
+//         imageContainer.addEventListener('touchstart', function() {
+//             touchTimeout = setTimeout(() => {
+//                 isZoomed = !isZoomed;
+//                 mainImage.style.transform = isZoomed ? 'scale(2)' : 'scale(1)';
+//             }, 200);
+//         });
+
+//         imageContainer.addEventListener('touchend', function() {
+//             clearTimeout(touchTimeout);
+//         });
+
+//         imageContainer.addEventListener('touchmove', function(e) {
+//             if (!isZoomed) return;
+            
+//             const touch = e.touches[0];
+//             const { left, top, width, height } = this.getBoundingClientRect();
+//             const x = (touch.clientX - left) / width;
+//             const y = (touch.clientY - top) / height;
+
+//             mainImage.style.transformOrigin = `${x * 100}% ${y * 100}%`;
+//             e.preventDefault();
+//         });
+//     }
+
+//     document.querySelector('.qty-up').addEventListener('click', function(e) {
+//         e.preventDefault();
+//         let val = parseInt(document.querySelector('.qty-val').textContent);
+//         document.querySelector('.qty-val').textContent = val + 1;
+//     });
+
+//     document.querySelector('.qty-down').addEventListener('click', function(e) {
+//         e.preventDefault();
+//         let val = parseInt(document.querySelector('.qty-val').textContent);
+//         if (val > 1) {
+//             document.querySelector('.qty-val').textContent = val - 1;
+//         }
+//     });
+
+    function showStock(radio, stock) {
+        document.querySelectorAll('.stock-info').forEach(span => {
+            span.style.display = 'none';
+        });
+        
+        const stockInfo = document.querySelector(`#stock-${radio.value}`);
+        if (stockInfo) {
+            stockInfo.style.display = 'inline';
         }
-    });
+        
+        const selectedStockInfo = document.getElementById('selectedStockInfo');
+        selectedStockInfo.style.display = 'block';
+        selectedStockInfo.innerHTML = `
+            <i class="fas fa-check-circle"></i> 
+            Selected size ${radio.value}: ${stock} items available
+        `;
+    }
 });
 
-// Show the first image on page load
-showImage(currentIndex);
+
 
     </script>
 

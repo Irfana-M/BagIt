@@ -29,7 +29,7 @@ const login = async(req,res)=>{
                 req.session.admin = true;
                 return res.redirect("/admin");
             }else{
-                return res.redirect("/login")
+                return res.redirect("/admin")
             }
         }else{
             return res.redirect("/");
@@ -45,7 +45,7 @@ const loadDashboard = async (req,res) =>{
    
         if(req.session.admin){
             try {
-            res.render("dashboard");
+            res.render("dashboard",{ activePage: 'dashboard' });
         }catch (error) {
             res.redirect('/pageerror');
         }

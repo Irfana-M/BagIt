@@ -28,14 +28,15 @@
                 <th scope="col"><b>Quantity</b></th>
                 <th scope="col"><b>Action</b></th>
                 <th scope="col"><b>Edit</b></th>
+                <th scope="col"><b>Delete</b></th>
             </tr>
         </thead>
         <tbody>
             <%for(let i=data.length-1;i>=0;i--){%>
             <tr>
-                <td><%=data[i].productName%></td>
-                <td><%=data[i].category.name%></td>
-                <td><%=data[i].salePrice%></td>
+                <td><%= data[i].productName %></td>
+                <td><%= data[i].category ? data[i].category.name : 'No Category' %></td>
+                <td><%= data[i].salePrice %></td>
                 <!-- <td></td> -->
                 <td>
                     <%if(locals.data[i].productOffer){%>
@@ -70,6 +71,11 @@
                 <td>
                     <button class="btn btn-info" style="width: 80px;">
                         <a href="/admin/editProduct?id=<%=data[i]._id%>" class="text-white" style="text-decoration: none;">Edit</a>
+                    </button>
+                </td>
+                <td>
+                    <button class="btn btn-danger" onclick="deleteProduct('<%=data[i]._id%>')" style="width: 100px;">
+                        <a href="#" class="text-white">Delete</a>
                     </button>
                 </td>
             </tr>
@@ -164,6 +170,53 @@
             console.error(error);
         }
     }
+
+    async function deleteProduct(productId) {
+  try {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "Do you really want to delete this product? This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+    });
+
+    if (result.isConfirmed) {
+      const response = await fetch("/admin/deleteProduct", {
+        method: "DELETE", // Use DELETE method
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ productId }), // Send productId in the body
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.status === true) {
+        Swal.fire(
+          "Deleted!",
+          data.message || "The product has been deleted successfully.",
+          "success"
+        ).then(() => {
+          location.reload(); // Reload the page to reflect changes
+        });
+      } else {
+        Swal.fire("Failed", data.message || "Failed to delete product.", "error");
+      }
+    }
+  } catch (error) {
+    Swal.fire(
+      "Error",
+      "An error occurred while deleting the product.",
+      "error"
+    );
+    console.error("Error deleting product:", error);
+  }
+}
+
 </script>
 
 <%- include("../../views/partials/admin/footer") %>

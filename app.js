@@ -7,6 +7,7 @@ const passport = require("./config/passport");
 const db = require('./config/db');
 const userRouter = require('./routes/userRouter');
 const adminRouter = require('./routes/adminRouter');
+const User = require('./models/userSchema');
 db()
 
 app.use(express.json());
@@ -45,5 +46,3 @@ app.use('/admin',adminRouter);
 app.listen(process.env.PORT, ()=>{
     console.log('Server Running');
     })
-
-    module.exports = app;

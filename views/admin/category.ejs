@@ -77,7 +77,7 @@
     <header class="card-header text-center mb-20">
       <form action="/admin/category/" method="get" class="d-inline">
         <div class="input-group input-group-sm border border-1 border-grey rounded-pill" style="width: 500px; margin-left: 230px">
-          <input type="text" class="form-control border-0 rounded-pill mt-3" placeholder="Search categories" name="search"/>
+          <input type="text" class="form-control border-0 rounded-pill mt-3" placeholder="Search categories" name="search" />
           <button class="btn" type="submit">Search</button>
         </div>
       </form>
@@ -117,6 +117,7 @@
                     <th>Status</th>
                     <th>List/Unlist</th>
                     <th class="text-start">Edit</th>
+                    <th class="text-start">Delete</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -133,7 +134,7 @@
                             <%}%>
                     </td>
                     <td class="text-start">
-                        <%if(category.categoryOffer===0){%>
+                      <%if(category.categoryOffer===0){%>
                       <button class="btn btn-info" style="width: 100px">
                         <a href="#" class="text-white"  onclick="addOffer('<%=category._id%>')">Add Offer</a>
                       </button>
@@ -164,6 +165,10 @@
                     <td class="text-start">
                       <a href="/admin/editCategory?id=<%=category._id%>" class="btn btn-info text-white">Edit</a>
                     </td>
+                    <td class="text-start">
+                        <a href="#" class="text-white btn btn-danger"  onclick="deleteCategory('<%=category._id%>')">Delete</a>
+                        </button>
+                    </td>
                   </tr>
                   <%})%>
                 </tbody>
@@ -173,7 +178,7 @@
         </div>
       </div>
     </div>
-    <div class ="pagination-container">
+     <div class ="pagination-container">
         <% if(currentPage>1){%>
             <a href="?page=<%= currentPage-1%>">&laquo;Previous</a>
             <% } %> <% for(let i=1;i<=totalPages;i++){%><% if(i===currentPage){%>
@@ -183,7 +188,10 @@
                 <% } %><%}%> <%if(currentPage<totalPages){%>
                     <a href="?page=<%=currentPage+1%>">NExt &raquo;</a>
         <%}%>
-    </div>
+    </div> 
+
+    
+  
   </section>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
@@ -344,6 +352,52 @@ async function removeOffer(categoryId){
         );
         console.error("Error removing offer");
     }
+}
+
+async function deleteCategory(categoryId) {
+  try {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "Do you really want to delete this category? This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+    });
+
+    if (result.isConfirmed) {
+      const response = await fetch("/admin/deleteCategory", {
+        method: "DELETE", // Use DELETE method
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ categoryId }), // Send categoryId in the body
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.status === true) {
+        Swal.fire(
+          "Deleted!",
+          data.message || "The category has been deleted successfully.",
+          "success"
+        ).then(() => {
+          location.reload(); // Reload the page to reflect changes
+        });
+      } else {
+        Swal.fire("Failed", data.message || "Failed to delete category.", "error");
+      }
+    }
+  } catch (error) {
+    Swal.fire(
+      "Error",
+      "An error occurred while deleting the category.",
+      "error"
+    );
+    console.error("Error deleting category:", error);
+  }
 }
 
 </script>

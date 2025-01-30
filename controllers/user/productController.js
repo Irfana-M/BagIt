@@ -6,6 +6,8 @@ const productDetails = async (req,res)=>{
     
     try {
         const userId = req.session.user
+        const message = req.session.message || null;
+        req.session.message = null;
         
         const userData = await User.findById(userId);
         const productId = req.query.id;
@@ -27,7 +29,8 @@ const productDetails = async (req,res)=>{
             quantity:product.quantity,
             totalOffer:totalOffer,
             category:findCategory,
-            relatedProducts: relatedProducts
+            relatedProducts: relatedProducts,
+            message: message 
         });
         
     } catch (error) {
