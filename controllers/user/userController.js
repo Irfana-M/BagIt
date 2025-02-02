@@ -15,7 +15,7 @@ const  pageNotFound = async (req,res)=>{
 
 const loadLogin = async (req,res)=>{
     try{
-            return res.render('login');
+        return res.render('login');
        
     }catch(error){
         console.log('login page not loading:',error);
@@ -200,7 +200,8 @@ const resendOtp = async(req,res)=>{
 
 const loadHomepage = async (req, res) => {
     try {
-        const userId = req.session.user;
+        const userId = req.session.user;  // Normal login
+        const googleId = req.session.googleId;  // Google login
 
         const categories = await Category.find({ isListed: true });
         let productData = await Product.find({
@@ -212,12 +213,15 @@ const loadHomepage = async (req, res) => {
         productData.sort((a, b) => new Date(b.createdOn) - new Date(a.createdOn));
         productData = productData.slice(0, 8);
 
+        let userData = null;
+
         if (userId) {
-            const userData = await User.findOne({ _id: userId });
-            res.render('home', { user: userData, products: productData });
-        } else {
-            res.render('home', { user: null, products: productData });
+            userData = await User.findOne({ _id: userId });
+        } else if (googleId) {
+            userData = await User.findOne({ googleId: googleId });
         }
+
+        res.render('home', { user: userData, products: productData,googleId });
     } catch (error) {
         console.error('Home page not found', error);
         res.status(500).send('Server error');
@@ -448,48 +452,6 @@ const searchProducts = async (req, res) => {
 
 
 
-// const getSortProduct = async (req, res) => {
-//     try {
-//         const category = req.query.category || null;
-//         const gtPrice = parseFloat(req.query.gt) || 0;
-//         const ltPrice = parseFloat(req.query.lt) || Infinity;
-//         const sort = req.query.sort || 'price-asc';
-//         const page = parseInt(req.query.page) || 1;
-
-//         // Build filter query
-//         const filterQuery = {
-//             isBlocked: false,
-//             quantity: { $gt: 0 }, // Ensure the product is in stock
-//             salePrice: { $gt: gtPrice, $lt: ltPrice }
-//         };
-
-//         if (category) filterQuery.category = category;
-
-//         // Sorting logic based on 'sort'
-//         let sortOptions = {};
-//         if (sort === 'price-asc') sortOptions = { salePrice: 1 };
-//         if (sort === 'price-desc') sortOptions = { salePrice: -1 };
-//         if (sort === 'name-asc') sortOptions = { productName: 1 };
-//         if (sort === 'name-desc') sortOptions = { productName: -1 };
-
-//         // Get the products
-//         const products = await Product.find(filterQuery).sort(sortOptions).lean();
-
-//         // Handle pagination
-//         const itemsPerPage = 6;
-//         const totalPages = Math.ceil(products.length / itemsPerPage);
-//         const currentPage = Math.min(page, totalPages);
-//         const startIndex = (currentPage - 1) * itemsPerPage;
-//         const currentProducts = products.slice(startIndex, startIndex + itemsPerPage);
-
-//         res.render('shop', { products: currentProducts, category, totalPages, currentPage });
-//     } catch (error) {
-//         console.error(error);
-//         res.redirect('/pageNotFound');
-//     }
-// };
-
-
 
 const getSortProduct = async (req, res) => {
     try {
@@ -541,6 +503,60 @@ const getSortProduct = async (req, res) => {
 };
 
 
+const SortProduct = async (req, res) => {
+    try {
+        let sortQuery = {};
+        const { sort, page } = req.query;
+        console.log(sort,page);
+        const message = req.session.message || null;
+        req.session.message = null;
+
+
+        // Apply sorting based on query parameter
+        if (sort === "price_asc") {
+            sortQuery = { salePrice: 1 };  // Sort price from low to high
+        } else if (sort === "price_desc") {
+            sortQuery = { salePrice: -1 }; // Sort price from high to low
+        } else if (sort === "name_asc") {
+            sortQuery = { productName: 1 };  // Sort alphabetically A-Z
+        } else if (sort === "name_desc") {
+            sortQuery = { productName: -1 }; // Sort alphabetically Z-A
+        }
+
+        // Fetch categories for the sidebar
+        const categories = await Category.find({ isListed: true }).lean();
+
+        // Fetch all products with sorting applied
+        const products = await Product.find().sort(sortQuery).lean();
+        console.log(products);
+
+        // Pagination logic
+        const itemsPerPage = 6;  // Number of products per page
+        const currentPage = Math.max(parseInt(page) || 1, 1);  // Get the current page from query, default to 1
+        const totalPages = Math.ceil(products.length / itemsPerPage);  // Calculate total pages
+        const validPage = Math.min(currentPage, totalPages);  // Ensure the current page is not out of bounds
+        const startIndex = (validPage - 1) * itemsPerPage;  // Calculate start index for products on current page
+        const endIndex = startIndex + itemsPerPage;  // Calculate end index for products on current page
+        const currentProducts = products.slice(startIndex, endIndex);  // Get the products for the current page
+
+        // Render the shop page with products, categories, and pagination details
+        res.render("shop", {
+            products: currentProducts,
+            totalPages,
+            currentPage: validPage,
+            sort,  // Pass the sort parameter to maintain sorting on page reload
+            category: categories,
+            message  // Pass the categories to the view
+        });
+    } catch (error) {
+        console.error("Error fetching products:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+
+
+
 
 
 const logout = async (req,res)=>{
@@ -567,5 +583,5 @@ const logout = async (req,res)=>{
 
 
 module.exports = {loadHomepage,pageNotFound,loadLogin,loadSignUp,signUp,verifyOtp,resendOtp,login,logout,
-    loadShoppingPage,filterProduct,filterByPrice,searchProducts,getSortProduct
+    loadShoppingPage,filterProduct,filterByPrice,searchProducts,getSortProduct,SortProduct
 };

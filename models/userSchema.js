@@ -83,6 +83,10 @@ const userSchema = new Schema({
             type: Date,
             default:Date.now
         }
+    }],
+    addresses: [{
+        type: Schema.Types.ObjectId,
+        ref: "Address"  // Assuming "Address" is the name of your Address model
     }]
     
     

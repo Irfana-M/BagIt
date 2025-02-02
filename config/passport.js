@@ -4,43 +4,50 @@ const User = require("../models/userSchema");
 const env = require('dotenv').config();
 
 
-passport.use(new GoogleStrategy({
-    clientID:process.env.GOOGLE_CLIENT_ID,
-    clientSecret:process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL:'/auth/google/callback'
-},
 
-async (accessToken,refreshToken,profile,done)=>{
+passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: '/auth/google/callback'
+},
+async (accessToken, refreshToken, profile, done) => {
     try {
-        let user = await User.findOne({googleId:profile.id});
-        if(user){
-            return done(null,user);
-        }else{
+        let user = await User.findOne({ googleId: profile.id });
+
+        if (user) {
+            return done(null, user);
+        } else {
             user = new User({
-                name:profile.displayName,
-                email:profile.emails[0].value,
-                googleId:profile.id,
+                name: profile.displayName,
+                email: profile.emails[0].value,
+                googleId: profile.id,
             });
+
             await user.save();
-            return done(null,user)
+            return done(null, user);
         }
     } catch (error) {
-        return done(error,null)
+        return done(error, null);
     }
-}
+}));
 
-));
-
-passport.serializeUser((user,done)=>{
-    done(null,user.id)
+// ✅ Store googleId in the session
+passport.serializeUser((user, done) => {
+    done(null, { id: user.id, googleId: user.googleId });  // Store both id and googleId
 });
-passport.deserializeUser((id,done)=>{
-    User.findById(id)
-    .then(user=>{
-        done(null,user)
-    })
-    .catch(err =>{
-        done(err,null)
-    })
-})
-module.exports=passport;
+
+// ✅ Retrieve user using googleId
+passport.deserializeUser(async (obj, done) => {
+    try {
+        const user = await User.findById(obj.id);
+        if (user) {
+            done(null, user);
+        } else {
+            done(null, false);
+        }
+    } catch (error) {
+        done(error, null);
+    }
+});
+
+module.exports = passport;

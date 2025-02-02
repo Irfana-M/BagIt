@@ -8,6 +8,8 @@ const adminController = require('../controllers/admin/adminController');
 const customerController = require("../controllers/admin/customerController");
 const categoryController = require("../controllers/admin/categoryController");
 const productController = require("../controllers/admin/productController");
+const orderController = require("../controllers/admin/orderController");
+
 const {userAuth,adminAuth} = require("../middlewares/auth");
 const uploads = require('../middlewares/upload');
 
@@ -47,6 +49,9 @@ router.post("/editProduct/:id",adminAuth,uploads.array("images",4),productContro
 router.post("/deleteImage",adminAuth,productController.deleteSingleImage);
 router.delete('/deleteProduct', adminAuth, productController.deleteProduct);
 
-
+//Order Management
+router.get('/orders',adminAuth,orderController.placeOrder);
+router.post('/update-order-status',adminAuth,orderController.updateOrderStatus);
+router.get('/delete-order',adminAuth,orderController.deleteOrder);
 
 module.exports = router;

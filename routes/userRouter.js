@@ -5,6 +5,7 @@ const userController = require('../controllers/user/userController');
 const productController = require("../controllers/user/productController");
 const profileController = require("../controllers/user/profileController");
 const cartController = require("../controllers/user/cartController");
+const orderController = require("../controllers/user/orderController");
 const {userAuth,adminAuth} = require("../middlewares/auth");
 //const google = require('google');
 
@@ -18,6 +19,7 @@ router.get('/filterPrice',userController.filterByPrice);
 router.post('/search',userController.searchProducts);
 router.get("/productDetails",productController.productDetails);
 router.get("/sortProduct",userController.getSortProduct);
+router.get("/sortProducts",userController.SortProduct);
 //user management
 router.get('/signup',userController.loadSignUp);
 router.get('/login',userController.loadLogin);
@@ -55,6 +57,11 @@ router.get("/deleteAddress",userAuth,profileController.deleteAddress);
 router.get("/add-To-cart",userAuth,cartController.addToCart);
 router.get("/view-cart",userAuth,cartController.viewCart);
 router.get("/deleteCart",userAuth,cartController.deleteCart);
+router.get("/checkout",userAuth,cartController.getCheckout);
+router.get("/confirmation",userAuth,cartController.getConfirmation);
+//order management
+router.get("/orders",userAuth,orderController.getOrder);
+router.post("/cancelOrder/:orderId",userAuth,orderController.cancelOrder);
 
 //logout
 router.get('/logout',userController.logout);

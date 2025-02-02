@@ -1206,7 +1206,7 @@ h1, h2, h3, h4, h5, h6 {
 /* banner area css
 ============================================================================================ */
 .banner-area {
-  background: url(../img/banner/banner-bg.jpg) center no-repeat;
+  background: url(../img/banner/banner-img5.jpeg) center no-repeat;
   background-size: cover;
   position: relative; }
   @media (max-width: 768px) {
@@ -3287,6 +3287,199 @@ label {
   color: #555;
   font-size: 16px;
 }
+/* checkout */
+/* Custom CSS to manage layout */
+.checkout_area {
+  margin-top: 50px;
+}
+
+.select_address {
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.order_box {
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.select_address label {
+  display: inline-block;
+  margin-left: 10px;
+}
+
+.select_address input[type="radio"] {
+  margin-top: 5px;
+  margin-left: 0;
+}
+
+.order_box .payment_item {
+  margin-bottom: 20px;
+}
+
+/* Adjust layout for small screens */
+@media (max-width: 767px) {
+  .checkout_area .container {
+      flex-direction: column;
+  }
+
+  .select_address, .order_box {
+      margin-bottom: 20px;
+      
+  }
+}
+.banner-content-new{
+  margin-top: 30%;
+}
+.banner-content-new h1{
+ 
+  font-size: 5rem;
+  color:#6A0707 ;
+  
+}
+.bagit_logo{
+  height: 10px;
+  width: 10px;
+}
+/* Container for the product list */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  /* justify-content: space-between;
+  gap: 30px; */
+  margin-top: 30px;
+}
+
+/* Single product card */
+.single-product {
+  position: relative;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* On hover, elevate the product card */
+.single-product:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Product image */
+.single-product img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+/* Product image zoom on hover */
+.single-product:hover img {
+  transform: scale(1.05);
+}
+
+/* Product details container */
+.product-details {
+  padding: 20px;
+  text-align: center;
+}
+
+.product-details h6 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 15px;
+  transition: color 0.3s ease;
+}
+
+.product-details h6:hover {
+  color: #007bff;
+}
+
+/* Price styling */
+.price h6 {
+  font-size: 18px;
+  color: #e74c3c;
+  font-weight: 600;
+}
+
+.l-through {
+  text-decoration: line-through;
+  color: #aaa;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+/* Product bottom section for actions (add to bag, wishlist, etc.) */
+/* Product bottom section for actions (add to bag, wishlist, etc.) */
+.prd-bottom {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-top: 20px;
+}
+
+/* Icon buttons container */
+.social-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  color: #333;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+/* Spacing between text and icon */
+.social-info span {
+  font-size: 24px;
+  margin-top: 20bpx; /* Add a small margin for top space */
+}
+
+/* Text styling */
+.social-info .hover-text {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 10px; /* Add space between text and icon */
+  text-align: center; /* Align text to center */
+  transition: color 0.3s ease;
+}
+
+/* Icon hover effect */
+.social-info:hover {
+  color: #007bff;
+}
+
+.social-info:hover .hover-text {
+  color: #007bff;
+}
+
+/* Responsive styles for different screen sizes */
+@media (max-width: 1200px) {
+  .col-lg-3 {
+      flex: 1 1 45%;
+  }
+}
+
+@media (max-width: 768px) {
+  .col-lg-3 {
+      flex: 1 1 100%;
+  }
+
+  .prd-bottom {
+      flex-direction: column;
+      align-items: center;
+  }
+}
+
+
 
 
 
