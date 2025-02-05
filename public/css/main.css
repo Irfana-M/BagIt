@@ -1282,7 +1282,7 @@ h1, h2, h3, h4, h5, h6 {
     color: #222222; }
 
 .organic-breadcrumb {
-  background: url(../img/banner/common-banner.jpg) center no-repeat;
+  background: url(../img/banner/banner3.jpg) center no-repeat;
   background-size: cover;
   padding-top: 130px; }
   @media (max-width: 991px) {
@@ -3341,10 +3341,7 @@ label {
   color:#6A0707 ;
   
 }
-.bagit_logo{
-  height: 10px;
-  width: 10px;
-}
+
 /* Container for the product list */
 .row {
   display: flex;

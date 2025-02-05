@@ -6,128 +6,156 @@ const Order = require('../../models/orderSchema');
 
 const getOrder = async (req, res) => {
     try {
-        const userId = req.session.user; // Get the user ID from the session
-//console.log(userId)
-        // Fetch the most recent order for the user (or you can use a different logic to find the order)
-        const orders = await Order.find({ userId: userId }) // Assuming user is authenticated
-            .populate('orderItems.product'); // Populate the product details
+        const userId = req.session.user;
+        const page = parseInt(req.query.page) || 1; // Get current page, default is 1
+        const limit = 5; // Orders per page
+        const skip = (page - 1) * limit; // Calculate items to skip
 
-        //console.log("Fetched Orders:", orders);
+        // Fetch total order count for pagination
+        const totalOrders = await Order.countDocuments({ userId });
 
-        if (!orders || orders.length === 0) {
-            return res.render('user/order', { orders: [], error: 'No orders found' });
-        }
+        // Fetch paginated orders and populate product details
+        const orders = await Order.find({ userId })
+            .populate('userId')
+            .populate('productId') // Ensure 'product' is populated
+            .sort({ createdOn: -1 }) // Sort orders by latest
+            .skip(skip)
+            .limit(limit);
+           
 
-        // res.render('user/order', { orders, error: null });
-//console.log(orders.map(i=> console.log(i) ));
-        const arr = []
-        for (const item of orders) {
-           if( item.orderItems.length > 0){
-                for(const i of item.orderItems){
-                    arr.push({...i._doc,orderId:item.orderId,status:item.status})
-                }
-           }
-        }
+        // if (!orders.length) {
+        //     return res.render('order', { 
+        //         orders: [], 
+        //         products: [], 
+        //         currentPage: page, 
+        //         totalPages: Math.ceil(totalOrders / limit),
+        //         error: 'No orders found' 
+        //     });
+        // }
+
         
+        // const arr = [];
+        // for (const order of orders) {
+        //     for (const item of order.orderItems) {
+        //         arr.push({ 
+        //             orderItemId: item.orderItemId, // Extracting orderItemId
+        //             productName: item.product.name, 
+        //             price: item.price, 
+        //             quantity: item.quantity, 
+        //             orderId: order.orderId,
+        //             status: order.status
+        //         });
+        //     }
+        // }
 
         res.render('order', {
-            orders: orders, 
-            products:arr
+            orders,
+            currentPage: page,
+            totalPages: Math.ceil(totalOrders / limit)
         });
 
     } catch (error) {
         console.error("Error fetching order details:", error);
-        res.redirect("/pageNotFound"); // Redirect to a 404 page in case of an error
+        res.redirect("/pageNotFound");
     }
 };
 
 
-// const cancelOrder = async (req,res)=>{
-//     try{
-//         const { orderId } = req.params;
-//         const { reason } = req.body;
 
-        
-//         const order = await Order.findById(orderId).populate('orderItems.product'); 
-// console.log(order);
-//         if (!order) {
-//             return res.status(404).json({ success: false, message: "Order not found" });
-//         }
 
-        
-//         if (order.status === 'Shipped' || order.status === 'Delivered') {
-//             return res.status(400).json({ success: false, message: "Order cannot be cancelled after shipment" });
-//         }
-
-//         // Restore stock for each product in the order
-//         for (let item of order.orderItems) {
-//             let product = item.product; // Get the product object
-//             if (product) {
-//                 product.stock += item.quantity; // Increment stock by the quantity ordered
-//                 await product.save(); // Save the updated product stock
-//             }
-//         }
-
-//         // Update order status and add cancellation reason
-//         order.status = "Cancelled";
-//         order.cancellationReason = reason;
-//         await order.save();
-
-//         res.json({ success: true, message: "Order cancelled and stock updated successfully" });
-//     } catch (error) {
-//         console.error("Error cancelling order:", error);
-//         res.status(500).json({ success: false, message: "Internal Server Error" });
-//     }
-// };
-
-const cancelOrder = async (req, res) => {
+const cancelOrderItem = async (req, res) => {
     try {
-        const { orderId } = req.params;
+        const { orderId } = req.params; 
         const { reason } = req.body;
-        console.log("orderId",orderId)
-        // Ensure reason is provided for cancellation
+
         if (!reason) {
             return res.status(400).json({ success: false, message: "Cancellation reason is required" });
         }
 
-        // Find the order with populated orderItems.product
-        const order = await Order.findOne({ orderId: orderId })  // Find by orderId field
-        .populate('orderItems.product');  // Populate product details
-
-        console.log("order", order);  // Log to verify the order structure
+        
+        const order = await Order.findOne({ "order.orderId": orderItemId }).populate("order.productId");
 
         if (!order) {
             return res.status(404).json({ success: false, message: "Order not found" });
         }
 
-        // Check if the order can be cancelled based on its status
-        if (order.status === 'Shipped' || order.status === 'Delivered') {
+        
+        const orderItem = order.orderItems.find(item => item.orderItemId === orderId);
+
+        if (!orderItem) {
+            return res.status(404).json({ success: false, message: "Order item not found" });
+        }
+
+        
+        if (order.status === "Shipped" || order.status === "Delivered") {
             return res.status(400).json({ success: false, message: "Order cannot be cancelled after shipment" });
         }
 
-        // Restore stock for each product in the order
-        for (let item of order.orderItems) {
-            let product = item.product;  // Ensure that the product is populated
-            if (product) {
-                product.stock += item.quantity;  // Increment stock by the quantity ordered
-                console.log(`Restoring ${item.quantity} stock for product: ${product.productName}`);  // Debug log
-                await product.save();  // Save the updated product stock
-            } else {
-                console.error('Product not found in orderItem:', item);
-            }
+        
+        if (orderItem.product) {
+            const product = orderItem.product; 
+            product.stock += orderItem.quantity; 
+            await product.save(); 
+            console.log(`Stock updated: ${product.productName} now has ${product.stock} items.`);
         }
 
-        // Update order status and add cancellation reason
-        order.status = "Cancelled";
-        order.cancellationReason = reason;
-        await order.save();  // Save the order with updated status and reason
+        orderItem.status = "Cancelled";
+        orderItem.cancellationReason = reason;
 
-        // Respond with success
-        res.json({ success: true, message: "Order cancelled and stock updated successfully" });
+        
+        const allCancelled = order.orderItems.every(item => item.status === "Cancelled");
+        if (allCancelled) {
+            order.status = "Cancelled";
+        }
+
+        await order.save();
+
+        res.json({ success: true, message: "Order item cancelled and stock updated successfully" });
     } catch (error) {
-        console.error("Error cancelling order:", error);
+        console.error("Error cancelling order item:", error);
         res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 };
 
-module.exports = {getOrder,cancelOrder}
+
+const orderDetails = async (req, res) => {
+    try {
+        const userId = req.session.user;
+        const { orderId } = req.params; 
+        console.log("User ID:", userId, "Order ID:", orderId);
+
+        const order = await Order.findOne({ orderId: orderId })
+            .populate("userId") 
+            .populate({
+                path: 'productId',
+                populate: { path: 'category', select: 'name' }
+            })
+            .populate({
+                path: "address",
+                select: "address", 
+            })
+            .exec();
+
+        console.log(order);
+
+        if (!order) {
+            return res.redirect("/pageNotFound");
+        }
+
+        // Example of adding a mock tracking history to the order
+        order.trackingHistory = order.trackingHistory || ['Order Received', 'Shipped', 'Out for Delivery'];
+
+        res.render("order-details", { order });
+
+    } catch (error) {
+        console.error("Error fetching order details:", error);
+        res.redirect("/pageNotFound");
+    }
+};
+
+
+
+
+
+
+module.exports = {getOrder,cancelOrderItem,orderDetails}

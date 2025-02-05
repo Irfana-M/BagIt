@@ -341,8 +341,10 @@ const getMyAddress = async(req,res)=>{
 
 const addAddress = async (req,res)=>{
     try {
+        const redirectTo = req.query.redirectTo || "userProfile";
+        console.log(redirectTo)
         const user = req.session.user;
-        res.render('add-address',{user:user});
+        res.render('add-address',{user: user, redirectTo: redirectTo });
     } catch (error) {
         res.redirect('/pageNotFound');
     }
@@ -350,6 +352,8 @@ const addAddress = async (req,res)=>{
 
 const postAddAddress = async (req,res)=>{
     try {
+        const { redirectTo } = req.body;
+        console.log(redirectTo);
         const userId = req.session.user;
         const userData = await User.findOne({_id:userId});
         const {addressType,name,city,landMark,state,pincode,phone,altPhone} = req.body;
@@ -365,7 +369,11 @@ const postAddAddress = async (req,res)=>{
             userAddress.address.push({addressType,name,city,landMark,state,pincode,phone,altPhone});
             await userAddress.save();
         }
-        res.redirect("/userProfile");
+        if (redirectTo === "checkout") {
+            res.redirect("/checkout");
+        } else {
+            res.redirect("/userProfile");
+        }
     } catch (error) {
         console.error("Error adding address",error);
         res.redirect("/pageNotFound");

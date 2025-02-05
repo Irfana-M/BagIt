@@ -29,6 +29,222 @@
     <link rel="stylesheet" href="css/bootstrap.css">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" integrity="sha384-tViUnnbYAV00FLIhhi3v/dWt3Jxw4gZQcNoSCxCIFNJVCx7/D55/wXsrNIRANwdD" crossorigin="anonymous">
+    /* General Reset */
+    <style>
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    line-height: 1.6;
+    color: #333;
+}
+
+/* Header Styling */
+.header_area {
+    background-color: #222;
+    color: #fff;
+    padding: 15px 0;
+}
+
+.navbar-nav .nav-item .nav-link {
+    color: #fff;
+    font-size: 16px;
+}
+
+.navbar-nav .nav-item .nav-link:hover {
+    color: #00bcd4;
+}
+
+.navbar .navbar-toggler {
+    border: none;
+}
+
+.logo_h img {
+    width: 150px;
+}
+
+/* Checkout Page Styling */
+.checkout_area {
+    background-color: #f8f9fa;
+    padding: 50px 0;
+}
+
+.select_address h3 {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Colorful Address Section */
+.select_address .form-group {
+    margin-bottom: 15px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #ff4081, #00bcd4);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.select_address .form-group:hover {
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.select_address input[type="radio"] {
+    margin-right: 10px;
+    position: relative;
+    top: 2px;
+}
+
+.select_address label {
+    font-size: 16px;
+    line-height: 1.5;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    display: block;
+    padding: 12px;
+    text-align: center;
+    border-radius: 5px;
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.select_address input[type="radio"]:checked + label {
+    background-color: #00bcd4;
+    color: #fff;
+    border: 2px solid #fff;
+}
+
+.select_address label:hover {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Additional Styling for Address Links */
+.select_address a {
+    font-size: 16px;
+    color: #00bcd4;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+.select_address a:hover {
+    color: #ff4081;
+}
+
+/* Order Summary Styling */
+.order_box {
+    background-color: #fff;
+    padding: 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.order_box h2 {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.order_box .list {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 20px;
+}
+
+.order_box .list li {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.order_box .list .last {
+    font-weight: bold;
+    color: #00bcd4;
+}
+
+.order_box .list_2 {
+    list-style: none;
+    padding: 0;
+}
+
+.order_box .list_2 li {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.order_box .payment_item {
+    margin-bottom: 20px;
+}
+
+.order_box .payment_item .radion_btn input {
+    margin-right: 15px;
+}
+
+.order_box .payment_item label {
+    font-size: 16px;
+    color: #333;
+}
+
+.order_box .payment_item label i {
+    margin-right: 10px;
+}
+
+.order_box .primary-btn {
+    background-color: #00bcd4;
+    color: #fff;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 5px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.order_box .primary-btn:hover {
+    background-color: #0097a7;
+}
+
+.payment_item.active label {
+    font-weight: bold;
+}
+
+/* Footer Styling */
+.footer-area {
+    background-color: #222;
+    color: #fff;
+    padding: 30px 0;
+}
+
+.single-footer-widget h6 {
+    font-size: 20px;
+    font-weight: bold;
+    color: #00bcd4;
+    margin-bottom: 20px;
+}
+
+.single-footer-widget p {
+    font-size: 16px;
+    color: #bbb;
+}
+
+.single-footer-widget a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.single-footer-widget a:hover {
+    text-decoration: underline;
+}
+
+</style>
 </head>
 
 <body>
@@ -139,8 +355,9 @@
                                     </label>
                                 </div>
                             <% }); %>
+                            <div><a href="/add-address?redirectTo=checkout">Add New Address</a></div>
                         <% } else { %>
-                            <p><a href="/add-address">No saved addresses. Please add one.</a></p>
+                            <p><a href="/add-address?redirectTo=checkout">No saved addresses. Please add one.</a></p>
                         <% } %>
                     </div>
                 </div>
@@ -150,37 +367,39 @@
                     <div class="order_box">
                         <h2>Your Order</h2>
                         <% if (cart) { %>
-                        <ul class="list">
-                           
-                            <li><a href="#">Product <span>Total</span></a></li>
-                            <% cart.items.forEach(item => { %>
-                            <li><a href="#"> <%= item.productId.productName %> x <%= item.quantity %> <span class="last">₹<%= (item.productId.salePrice * item.quantity).toFixed(2) %></span></a></li>
-                            <% }); %>
-                        </ul>
-                        
-                        <ul class="list list_2">
-                            <li><a href="#">Subtotal <span>₹<%=totalOriginalPrice%></span></a></li>
-                            <li><a href="#">Shipping <span>₹<%=shippingCharge%></span></a></li>
-                            <li><a href="#">Discount <span>₹<%=totalDiscount%></span></a></li>
-                            <li><a href="#">Total <span>₹<%=subTotal%></span></a></li>
-                        </ul>
+                            <ul class="list">
+                                <li><a href="#">Product <span>Total</span></a></li>
+                                <% cart.items.forEach(item => { %>
+                                <li><a href="#"> <%= item.productId.productName %> x <%= item.quantity %> <span class="last">₹<%= (item.productId.salePrice * item.quantity).toFixed(2) %></span></a></li>
+                                <% }); %>
+                            </ul>
+    
+                            <ul class="list list_2">
+                                <li><a href="#">Subtotal <span>₹<%=totalOriginalPrice%></span></a></li>
+                                <li><a href="#">Shipping <span>₹<%=shippingCharge%></span></a></li>
+                                <li><a href="#">Discount <span>₹<%=totalDiscount%></span></a></li>
+                                <%if(subTotal){%>
+                                <li><a href="#">Total <span>₹<%=subTotal%></span></a></li>
+                                <%}%>
+                            </ul>
                         <% } else { %>
                             <p>Your cart is empty</p>
                         <% } %>
-                       <h3><u>Payments</u></h3>
-                       <div class="payment_item active">
-                        <div class="radion_btn">
-                            <input type="radio" id="f-option6" name="selector">
-                            <label for="f-option6">
-                                <i class="bi bi-cash"></i>Cash on Delivery
-                            </label>
-                            <div class="check"></div>
-                        </div>
-                    </div>
+    
+                        <h3><u>Payments</u></h3>
                         <div class="payment_item active">
                             <div class="radion_btn">
                                 <input type="radio" id="f-option6" name="selector">
                                 <label for="f-option6">
+                                    <i class="bi bi-cash"></i>Cash on Delivery
+                                </label>
+                                <div class="check"></div>
+                            </div>
+                        </div>
+                        <div class="payment_item active">
+                            <div class="radion_btn">
+                                <input type="radio" id="f-option7" name="selector">
+                                <label for="f-option7">
                                     <i class="bi bi-credit-card"></i>Credit/Debit/ATM Card
                                 </label>
                                 <div class="check"></div>
@@ -188,8 +407,8 @@
                         </div>
                         <div class="payment_item active">
                             <div class="radion_btn">
-                                <input type="radio" id="f-option6" name="selector">
-                                <label for="f-option6">
+                                <input type="radio" id="f-option8" name="selector">
+                                <label for="f-option8">
                                     <i class="bi bi-bank"></i>UPI
                                 </label>
                                 <div class="check"></div>
@@ -197,17 +416,14 @@
                         </div>
                         <div class="payment_item active">
                             <div class="radion_btn">
-                                <input type="radio" id="f-option6" name="selector">
-                                <label for="f-option6">
+                                <input type="radio" id="f-option9" name="selector">
+                                <label for="f-option9">
                                     <i class="bi bi-wallet2"></i>Wallets
                                 </label>
                                 <div class="check"></div>
                             </div>
-                            
                         </div>
-                        <a id="checkout-link" class="primary-btn" onclick="updateCheckoutLink()">Proceed to Checkout</a>
-
-
+                        <a id="checkout-link" class="primary-btn" onclick="updateCheckoutLink()">Checkout</a>
                     </div>
                 </div>
             </div>
@@ -331,7 +547,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
             console.log("Address ID:", addressId); // Add this line
     
             let totalPrice = "<%= subTotal %>";
-            let cartItems = encodeURIComponent('<%= JSON.stringify(cart || []) %>');
+            let cartItems = encodeURIComponent('<%- JSON.stringify(cart.items || []) %>');
             console.log("Total Price:", totalPrice); // Add this line
             console.log("Cart Items:", cartItems); // Add this line
     

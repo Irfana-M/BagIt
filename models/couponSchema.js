@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const {Schema} = mongoose;
 
-const coupenSchema = new Schema({
+const couponSchema = new Schema({
     name:{
         type:String,
         required:true,
@@ -34,5 +34,5 @@ const coupenSchema = new Schema({
     }]
 })
 
-const Coupen = mongoose.model("Coupen",coupenSchema);
-module.exports = Coupen;
+const Coupon = mongoose.model("Coupon",couponSchema);
+module.exports = Coupon;

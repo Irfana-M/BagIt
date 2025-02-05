@@ -1,4 +1,3 @@
-
 <%- include("../../views/partials/admin/header", { activePage: activePage }) %>
 
 <!DOCTYPE html>
@@ -10,261 +9,212 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #f5e5e5;
-            color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background-color: #f3f3f3;
+            color: #333;
+            font-family: "Poppins", sans-serif;
         }
 
         .page-header {
-            background-color: #d9d1d1;
+            background-color: #7a708b;
             padding: 20px 0;
-            border-bottom: 1px solid #222;
+            text-align: center;
         }
 
         .page-title {
             color: #fff;
-            font-size: 24px;
-            font-weight: 400;
+            font-size: 26px;
+            font-weight: 600;
             margin: 0;
+        }
+
+        .search-bar {
+            margin: 20px auto;
+            max-width: 285px;
+            display: flex;
+            align-items: center;
+            background: #fff;
+            border-radius: 25px;
+            padding: 8px;
+            box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-bar input {
+            border: none;
+            outline: none;
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        .search-bar button {
+            background: #7a708b;
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 50px;
+            cursor: pointer;
+        }
+
+        .orders-container {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
 
         .table-header {
-            background-color: #e3dddd;
-            padding: 15px;
-            border-bottom: 1px solid #222;
+            background-color: #7a708b;
+            color: #fff;
         }
 
-        .table-header th {
-            color: #888;
-            font-size: 12px;
-            font-weight: 500;
-            text-transform: uppercase;
-            padding: 10px;
-        }
-
-        .table {
-            color: #ffffff;
-            margin: 0;
-        }
-
-        .table > :not(caption) > * > * {
-            padding: 15px 10px;
-            background-color: #ece3e3;
-            border-bottom: 1px solid #222;
+        .table th, .table td {
+            padding: 12px;
+            text-align: center;
         }
 
         .status-badge {
             padding: 6px 12px;
-            border-radius: 4px;
+            border-radius: 20px;
             font-size: 12px;
-            font-weight: 500;
-            text-transform: uppercase;
         }
 
-        .status-delivered {
-            background-color: #00ff44;
-            color: #d0c0c0;
-        }
+        .status-delivered { background-color: #4caf50; color: #fff; }
+        .status-cancelled { background-color: #f44336; color: #fff; }
+        .status-pending { background-color: #ff9800; color: #fff; }
 
-        .status-cancelled {
-            background-color: #ff0000;
-            color: #fff;
-        }
-
-        .status-delivery {
-            background-color: #ffa500;
-            color: #dad8d8;
-        }
-
-        .action-btn {
-            color: #888;
-            background: none;
-            border: none;
-            cursor: pointer;
-        }
-
-        .pagination {
-            margin-top: 20px;
-        }
+        .pagination { justify-content: center; margin-top: 20px; }
 
         .page-link {
-            background-color: #222;
-            border: none;
+            background-color: #7a708b;
             color: #fff;
-            margin: 0 2px;
-            border-radius: 4px;
-            font-size: 14px;
-            padding: 6px 12px;
+            border-radius: 5px;
+            margin: 0 5px;
         }
 
         .page-link:hover {
-            background-color: #333;
-            color: #fff;
-        }
-
-        .page-item.active .page-link {
-            background-color: #7952b3;
-            color: #fff;
-        }
-
-        .showing-text {
-            color: #888;
-            font-size: 12px;
-            text-transform: uppercase;
-        }
-
-        .orders-container {
-            background-color: #ccc1c1;
-            border-radius: 8px;
-            overflow: hidden;
+            background-color: #7a708b;
         }
     </style>
 </head>
 <body>
     <div class="page-header">
-        <div class="container">
-            <h1 class="page-title">Orders</h1>
-        </div>
+        <h1 class="page-title">Orders</h1>
     </div>
-    
+
     <div class="container">
-        <div class="orders-container mt-4">
+         <div class="search-bar">
+            <form method="GET" action="/admin/orders" class="search-form">
+                <input
+                  type="text"
+                  name="search"
+                  value="<%= searchQuery %>" 
+                  placeholder="Search by User or Product"
+                />
+                <button type="submit"><i class="fas fa-search"></i></button>
+              </form>
+        </div> 
+        
+          
+
+        <div class="orders-container">
             <div class="table-responsive">
-                <table class="table">
+                <table class="table table-striped">
                     <thead class="table-header">
                         <tr>
-                            <th>USER NAME</th>
-                            <th>ORDER ID</th>
-                            <th>PRODUCT CATEGORY</th>
-                            <!-- <th>ADDRESS</th> -->
-                            <th>AMOUNT</th>
-                            <th>ORDER DATE</th>
-                            <th>STATUS</th>
-                            <th>ACTION</th>
+                            <th>User Name</th>
+                            <th>Order ID</th>
+                            <th>Product Name</th>
+                            <th>Product Category</th>
+                            <th>Address</th>
+                            <th>Amount</th>
+                            <th>Order Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         <% orders.forEach(order => { %>
                             <tr>
-                                <td><%= order.userId ? order.userId.name : 'Unknown User' %></td>
-                                <td>#<%= order._id %></td>
+                                <td><%=order.userId ?order.userId.name : 'Unknown User' %></td>
+                                <td>#<%=order.orderId %></td>
+                                <td><%=order.productId.productName%></td>
+                                <td><%=order.productId.category.name%></td>
                                 <td>
-                                    <% order.orderItems.forEach(item => { %>
-                                        <%= item.product ? item.product.category : 'Unknown Category' %><br>
-                                    <% }); %>
+                                    <% if (order.addressId && order.addressId.addresses.length > 0) { 
+                                        let selectedAddress = order.addressId.addresses.find(addr => addr.isDefault) || order.addressId.addresses[0]; 
+                                    %>
+                                        <%= selectedAddress.fullName %>, 
+                                        <%= selectedAddress.street %>, 
+                                        <%= selectedAddress.city %>, 
+                                        <%= selectedAddress.state %>, 
+                                        <%= selectedAddress.postalCode %>
+                                    <% } else { %>
+                                        No Address Found
+                                    <% } %>
                                 </td>
-                                <!-- <td><%= order.address %></td> -->
-                                <td>₹<%=order.totalPrice %></td>
-
-                                <td><%= new Date(order.createdAt).toLocaleDateString() %></td>
+                                <td>₹<%=order.price %></td>
+                                <td><%=order.invoiceDate %></td>
                                 <td>
-                                    <form>
-                                        <input type="hidden" name="orderId" value="<%= order._id %>">
-                                        <select class="order-status-dropdown" data-order-id="<%= order._id %>" data-prev-status="<%= order.status %>">
-                                            <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
-                                            <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
-                                            <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
-                                            <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
-                                        </select>
-                                        
-                                    </form>
+                                    <select class="order-status-dropdown" data-order-id="<%= order._id %>">
+                                        <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
+                                        <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+                                        <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                                        <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                                    </select>
                                 </td>
-                                
-                                
-                                
                                 <td>
-                                    <button class="action-btn delete-order" data-order-id="<%= order._id %>" 
-                                        <%= (order.status === 'Delivered' || order.status === 'Cancelled') ? 'disabled' : '' %>>
+                                    <button class="btn btn-danger delete-order" data-order-id="<%= order._id %>" <%= (order.status === 'Delivered' || order.status === 'Cancelled') ? 'disabled' : '' %>>
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </td>
-                                
-                                
                             </tr>
                         <% }); %>
                     </tbody>
-                    
                 </table>
             </div>
 
-            <div class="d-flex justify-content-between align-items-center p-3">
-                <span class="showing-text">SHOWING 1 OF 10</span>
-                <nav>
-                    <ul class="pagination mb-0">
-                        <li class="page-item"><a class="page-link" href="#"><i class="fas fa-chevron-left"></i></a></li>
-                        <li class="page-item"><a class="page-link" href="#">1</a></li>
-                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                        <li class="page-item active"><a class="page-link" href="#">3</a></li>
-                        <li class="page-item"><a class="page-link" href="#">4</a></li>
-                        <li class="page-item"><span class="page-link">...</span></li>
-                        <li class="page-item"><a class="page-link" href="#">8</a></li>
-                        <li class="page-item"><a class="page-link" href="#">9</a></li>
-                        <li class="page-item"><a class="page-link" href="#"><i class="fas fa-chevron-right"></i></a></li>
-                    </ul>
-                </nav>
-            </div>
+            <nav>
+                <ul class="pagination">
+                    <%for(let i=1;i<=totalPages;i++){%>
+                        <li class="page-item <%=(i===currentPage) ? 'active' : '' %>">
+                            <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+                        </li>
+                    <%}%>
+                </ul>
+            </nav>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <script>
-document.addEventListener("DOMContentLoaded", function () {
-    document.querySelectorAll(".order-status-dropdown").forEach(dropdown => {
-        dropdown.addEventListener("change", function () {
-            const orderId = this.getAttribute("data-order-id"); // Get the orderId from the dropdown
-            const newStatus = this.value; // Get the new status value from the dropdown
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".order-status-dropdown").forEach(dropdown => {
+                dropdown.addEventListener("change", function () {
+                    const orderId = this.getAttribute("data-order-id");
+                    const newStatus = this.value;
 
-            console.log("Selected Order ID:", orderId);
-            console.log("New Status:", newStatus);
-
-            // Show confirmation alert
-            Swal.fire({
-                title: "Are you sure?",
-                text: `Do you want to change the order status to "${newStatus}"?`,
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#3085d6",
-                cancelButtonColor: "#d33",
-                confirmButtonText: "Yes, change it!"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Send the updated status to the server
-                    fetch("/admin/update-order-status", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({ orderId, status: newStatus })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Show success alert
-                            Swal.fire("Updated!", "Order status has been changed.", "success")
-                                .then(() => window.location.reload()); // Reload the page to reflect the changes
-                        } else {
-                            Swal.fire("Error!", data.message, "error");
+                    Swal.fire({
+                        title: "Are you sure?",
+                        text: `Do you want to change the order status to ${newStatus}?`,
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonText: "Yes, change it!"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            fetch("/admin/update-order-status", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ orderId, status: newStatus })
+                            }).then(response => response.json()).then(data => {
+                                if (data.success) Swal.fire("Updated!", "Order status has been changed.", "success").then(() => window.location.reload());
+                            });
                         }
-                    })
-                    .catch(error => {
-                        console.error("Error:", error);
-                        Swal.fire("Error!", "Something went wrong.", "error");
                     });
-                } else {
-                    // If canceled, reset the dropdown value to previous status
-                    this.value = this.getAttribute("data-prev-status");
-                }
+                });
             });
         });
-    });
-});
-
     </script>
-    
-    
-<%- include("../../views/partials/user/footer") %>
 </body>
 </html>

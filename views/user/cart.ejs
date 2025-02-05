@@ -30,6 +30,187 @@
     <link rel="stylesheet" href="css/main.css">
     <!-- Include SweetAlert2 library -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+    /* General Styling */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fa;
+}
+
+/* Cart Table */
+.cart_area {
+    padding: 60px 0;
+}
+
+.cart_inner {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.cart_inner .table {
+    margin-bottom: 0;
+}
+
+.cart_inner .table th {
+    background: #00bcd4;;
+    color: white;
+    text-align: center;
+    padding: 15px;
+    font-size: 16px;
+}
+
+.cart_inner .table td {
+    vertical-align: middle;
+    padding: 15px;
+    font-size: 15px;
+}
+
+/* Product Image */
+.cartImg {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    object-fit: cover;
+    transition: transform 0.3s ease-in-out;
+}
+
+.cartImg:hover {
+    transform: scale(1.1);
+}
+
+/* Product Name */
+.media-body p {
+    font-weight: 600;
+    margin-left: 10px;
+}
+
+/* Quantity Box */
+.product_count {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qty {
+    width: 50px;
+    height: 40px;
+    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin: 0 5px;
+    font-weight: 600;
+}
+
+.items-count {
+    background: #00bcd4;;
+    color: white;
+    border: none;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    border-radius: 50%;
+    font-size: 14px;
+    transition: background 0.3s;
+}
+
+.items-count:hover {
+    background: #00bcd4;;
+}
+
+/* Remove Button */
+.remove-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 4px 1px;
+    border-radius: 5px;
+    font-size: 10px;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+}
+
+.remove-btn:hover {
+    background: #00bcd4;;
+}
+
+/* Subtotal & Price Details */
+h5 {
+    font-weight: bold;
+    color: #333;
+}
+
+/* Coupon Section */
+.cupon_text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cupon_text input {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 8px 10px;
+    width: 200px;
+    margin-right: 10px;
+}
+
+.primary-btn, .gray_btn {
+    padding: 8px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 600;
+    text-transform: uppercase;
+    transition: all 0.3s ease-in-out;
+}
+
+.primary-btn {
+    background: #00bcd4;;
+    color: white;
+}
+
+.primary-btn:hover {
+    background: #00bcd4;;
+}
+
+.gray_btn {
+    background: #6c757d;
+    color: white;
+}
+
+.gray_btn:hover {
+    background: #5a6268;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .cart_inner {
+        padding: 15px;
+    }
+
+    .cartImg {
+        width: 60px;
+        height: 60px;
+    }
+
+    .qty {
+        width: 40px;
+        height: 35px;
+    }
+
+    .items-count {
+        width: 25px;
+        height: 25px;
+    }
+
+    .remove-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+}
+
+</style>
 
 </head>
 
@@ -130,6 +311,7 @@
                         <thead>
                             <tr>
                                 <th scope="col">Product</th>
+                                <th scope="col">Product Name</th>
                                 <th scope="col">Price</th>
                                 <th scope="col">Quantity</th>
                                 <th scope="col">Total</th>
@@ -146,9 +328,11 @@
                                                 <img class="cartImg" src="/uploads/product-images/<%= item.productId.productImage[0] %>" alt="<%= item.productId.name %>">
                                             </div>
                                             <div class="media-body">
-                                                <p><%= item.productId.name %></p>
                                             </div>
                                         </div>
+                                    </td>
+                                    <td>
+                                        <h5><%= item.productId.productName %></h5>
                                     </td>
                                     <td>
                                         <h5><%= item.price %>₹</h5>
@@ -175,15 +359,16 @@
                                 </td>
                                 <td></td>
                                 <td></td>
+                                <td></td>
                                 <td>
                                     <div class="cupon_text d-flex align-items-center">
                                         <input type="text" placeholder="Coupon Code">
                                         <a class="primary-btn" href="#">Apply</a>
-                                        <a class="gray_btn" href="#">Close Coupon</a>
                                     </div>
                                 </td>
                             </tr>
                             <tr>
+                                <td></td>
                                 <td></td>
                                 <td></td>
                                 <td>
@@ -194,6 +379,7 @@
                                 </td>
                             </tr>
                             <tr class="shipping_area">
+                                <td></td>
                                 <td></td>
                                 <td></td>
                                 <td>
@@ -213,6 +399,8 @@
                                 
                             </tr>
                             <tr class="out_button_area">
+                                <td></td>
+                                <td></td>
                                 <td></td>
                                 <td></td>
                                 <td></td>

@@ -1,71 +1,67 @@
 const mongoose = require('mongoose');
-const {Schema} = mongoose;
-const {v4:uuidv4} = require('uuid');
+const { Schema } = mongoose;
+const { v4: uuidv4 } = require('uuid');
 
 const orderSchema = new Schema({
-    userId:{
-        type:Schema.Types.ObjectId,
-        ref:"User",
-        required:true
+    userId: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true
     },
-    orderId:{
-        type:String,
-        default:()=>uuidv4(),
-        unique:true
+    orderId: {
+        type: String,
+        default: () => uuidv4(),
+        unique: true
     },
-    orderItems:[{
-        product:{
-            type:Schema.Types.ObjectId,
-            ref:"Product",
-            required:true
-        },
-        quantity:{
-            type:Number,
-            required:true
-        },
-        price:{
-            type:Number,
-            default:0
-        }
-    }],
-    totalPrice:{
-        type:Number,
-        required:true
+    productId: {  
+        type: Schema.Types.ObjectId,
+        ref: "Product",
+        required: true
     },
-    discount:{
-        type:Number,
-        default:0
+    quantity: {
+        type: Number,
+        required: true
     },
-    finalAmount:{
-        type:Number,
-        required:true
+    price: {
+        type: Number,
+        required: true
     },
-    address:{
-        type:Schema.Types.ObjectId,
-        ref:"Address",
-        required:true
+    status: {
+        type: String,
+        enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Return request', 'Returned'],
+        default: 'Pending'
     },
-    invoiceDate:{
-        type:Date,
-        default:Date.now,
+    totalPrice: {
+        type: Number,
+        required: true
     },
-    status:{
-        type:String,
-        required:true,
-        enum:['Pending','Processing','Shipped','Delivered','Cancelled','Return request','Returned'],
-        default:'pending'
+    discount: {
+        type: Number,
+        default: 0
     },
-    createdOn:{
-        type:Date,
-        default:Date.now,
-        required:true
+    finalAmount: {
+        type: Number,
+        required: true
     },
-    coupenApplied:{
-        type:Boolean,
-        default:false
-    }    
-    
-})
+    address: {
+        type: Schema.Types.ObjectId,
+        ref: "Address",
+        required: true
+    },
+    invoiceDate: {
+        type: Date,
+        default: Date.now,
+    },
+    createdOn: {
+        type: Date,
+        default: Date.now,
+        required: true
+    },
+    coupenApplied: {
+        type: Boolean,
+        default: false
+    }
+});
 
 const Order = mongoose.model("Order", orderSchema);
 

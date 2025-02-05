@@ -145,7 +145,7 @@ const categoryInfo = async (req, res) => {
             // console.log(id);
             const category = await Category.findOne({_id:id});
             console.log(category);
-            res.render("edit-category",{category:category});
+            res.render("edit-category",{category:category,activePage: 'category'});
         } catch (error) {
            res.redirect('/pageerror'); 
         }

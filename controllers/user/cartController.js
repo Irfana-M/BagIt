@@ -3,26 +3,25 @@ const Cart = require('../../models/cartSchema');
 const Product = require('../../models/productSchema');
 const Address = require('../../models/addressSchema');
 const Order = require('../../models/orderSchema');
+const { v4: uuidv4 } = require('uuid');
+
 
 
 const addToCart = async (req, res) => {
     try {
-        const userId = req.session.user; // Get the logged-in user's ID
-        const productId = req.query.id;  // Get the product ID from query params
-
-        // Fetch the product details
+        const userId = req.session.user; 
+        const productId = req.query.id;  
+        
         const product = await Product.findById(productId);
         if (!product) {
             return res.status(404).send('Product not found');
         }
 
-        const price = product.salePrice; // Assuming 'salePrice' exists in Product schema
-        
-        // Find the user's cart
+        const price = product.salePrice; 
         let cart = await Cart.findOne({ userId });
 
         if (!cart) {
-            // Create a new cart for the user if it doesn't exist
+            
             cart = new Cart({
                 userId,
                 items: [{
@@ -153,7 +152,7 @@ const getCheckout = async (req, res) => {
                 message: "Your cart is empty"
             });
         }
-
+        
         let totalOriginalPrice = 0;
         let totalOfferPrice = 0;
 
@@ -161,10 +160,11 @@ const getCheckout = async (req, res) => {
             totalOriginalPrice += item.productId.regularPrice * item.quantity;
             totalOfferPrice += item.productId.salePrice * item.quantity;
         });
-
+        
         const totalDiscount = totalOriginalPrice - totalOfferPrice;
         const shippingCharge = 50;
         const subTotal = shippingCharge + totalOfferPrice;
+        console.log(subTotal);
         res.render("checkout", {
             addresses: addresses,
             cart,
@@ -172,7 +172,8 @@ const getCheckout = async (req, res) => {
             totalOfferPrice,
             totalDiscount,
             subTotal,
-            shippingCharge
+            shippingCharge,
+           
         });
     } catch (error) {
         console.error("Error in getCheckout:", error);
@@ -181,41 +182,38 @@ const getCheckout = async (req, res) => {
 };
 
 
-const { v4: uuidv4 } = require('uuid'); // Import UUID for unique IDs
-
 const getConfirmation = async (req, res) => {
-    const decodeHtmlEntities = (str) => {
-        return str.replace(/&#34;/g, '"');
-    };
     try {
-        const { addressId, totalPrice, cartItems } = req.query; 
-        let rawCartItems = req.query.cartItems;
-        let decodedCartItems = decodeHtmlEntities(rawCartItems); 
-        let parsedCartItems = JSON.parse(decodedCartItems); 
-        
+        const { addressId, totalPrice, cartItems,status } = req.query;
+
+        // Ensure cartItems exist
+        if (!cartItems) {
+            return res.redirect('/checkout');
+        }
+
+        let rawCartItems = JSON.parse(decodeURIComponent(cartItems));
+
         if (!addressId) {
-            return res.redirect('/checkout'); 
+            return res.redirect('/checkout');
         }
 
         const userId = req.session.user;
-        const user = await Address.findOne({ userId });
-        
-        const addressData = await Address.findOneAndUpdate(
+
+        const addressData = await Address.findOne(
             { userId, "address._id": addressId },
-            {},
-            { new: true, projection: { "address.$": 1 } } 
+            { "address.$": 1 }
         );
 
         if (!addressData || !addressData.address.length) {
-            return res.redirect('/checkout'); 
+            return res.redirect('/checkout');
         }
 
-        const selectedAddress = addressData.address[0]; 
+        const selectedAddress = addressData.address[0];
 
         let totalOriginalPrice = 0;
         let totalOfferPrice = 0;
 
-        parsedCartItems.items.forEach(item => {
+        rawCartItems.forEach(item => {
             if (item.productId && item.productId.regularPrice && item.productId.salePrice) {
                 totalOriginalPrice += item.productId.regularPrice * item.quantity;
                 totalOfferPrice += item.productId.salePrice * item.quantity;
@@ -225,55 +223,74 @@ const getConfirmation = async (req, res) => {
         const totalDiscount = totalOriginalPrice - totalOfferPrice;
         const shippingCharge = 50;
         const subTotal = shippingCharge + totalOfferPrice;
+        const orderStatus = status || "Order Placed"; 
+        
+        for (const item of rawCartItems) {
+            try {
+                const newOrder = new Order({
+                    userId,
+                    productId: item.productId._id,
+                    quantity: item.quantity,
+                    price: item.productId.salePrice,
+                    status: orderStatus,
+                    totalPrice: totalOfferPrice,
+                    discount: totalDiscount,
+                    finalAmount: subTotal,
+                    address: selectedAddress._id,
+                    invoiceDate: new Date(), 
+                    createdOn: new Date(),
+                    orderId: uuidv4(),  // Ensure UUID is generated properly
+                });
+        
+                console.log("Saving Order:", newOrder);
+        
+                await newOrder.save();
+                console.log(" Order Saved Successfully");
+            } catch (error) {
+                console.error(" Error saving order:", error);
+            }
+        }
+        
+        
 
-        // Generate a unique order ID for the entire order
-        const uniqueOrderId = uuidv4();  
-
-        const newOrder = new Order({
-            userId,
-            orderId: uniqueOrderId,  // Assign unique order ID
-            orderItems: parsedCartItems.items.map(item => ({
-                orderItemId: uuidv4(), // Assign unique ID for each product ordered
-                product: item.productId,
-                quantity: item.quantity,
-                price: item.productId.salePrice
-            })),
-            totalPrice: totalOfferPrice,
-            discount: totalDiscount,
-            finalAmount: subTotal,
-            address: selectedAddress._id,
-            status: 'Pending',
-            coupenApplied: false,
-        });
-
-        await newOrder.save();
-
-        // Reduce the product stock in the database
-        await Promise.all(parsedCartItems.items.map(async (item) => {
-            const product = await Product.findById(item.productId);
+        // Reduce stock quantity for each purchased item
+        await Promise.all(rawCartItems.map(async (item) => {
+            const product = await Product.findById(item.productId._id);
             if (product) {
-                product.quantity -= item.quantity; 
+                product.quantity -= item.quantity;
                 await product.save();
             }
         }));
 
-        // Empty the user's cart in the database
-        await Cart.deleteOne({ userId: userId });
+        // Clear user's cart after order placement
+        await Cart.deleteOne({ userId });
 
-        res.render('confirmation', {
+        // Render confirmation page
+        console.log('Rendering confirmation page with the following data:', {
             selectedAddress,
-            totalPrice,
-            cartItems: parsedCartItems,
+            totalPrice: totalOfferPrice,
+            cartItems: rawCartItems,
             totalOriginalPrice,
             subTotal,
             shippingCharge
         });
 
-    } catch (error) {
-        console.error("Error in getConfirmation:", error);
-        res.status(500).send("Internal Server Error");
+        res.render('confirmation', {
+            selectedAddress,
+            totalPrice: totalOfferPrice,
+            cartItems: rawCartItems,
+            totalOriginalPrice,
+            subTotal,
+            shippingCharge
+        });
+
+    } catch (e) {
+        console.error('An error occurred:', e.message); 
+        return res.status(500).send("Something went wrong!");
     }
 };
 
 
-module.exports = { addToCart, viewCart, deleteCart,getCheckout,getConfirmation,getConfirmation };
+
+
+module.exports = { addToCart, viewCart, deleteCart,getCheckout,getConfirmation};

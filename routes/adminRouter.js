@@ -9,6 +9,7 @@ const customerController = require("../controllers/admin/customerController");
 const categoryController = require("../controllers/admin/categoryController");
 const productController = require("../controllers/admin/productController");
 const orderController = require("../controllers/admin/orderController");
+const couponController = require("../controllers/admin/couponController");
 
 const {userAuth,adminAuth} = require("../middlewares/auth");
 const uploads = require('../middlewares/upload');
@@ -50,8 +51,15 @@ router.post("/deleteImage",adminAuth,productController.deleteSingleImage);
 router.delete('/deleteProduct', adminAuth, productController.deleteProduct);
 
 //Order Management
-router.get('/orders',adminAuth,orderController.placeOrder);
+router.get('/orders',adminAuth,orderController.getOrder);
 router.post('/update-order-status',adminAuth,orderController.updateOrderStatus);
 router.get('/delete-order',adminAuth,orderController.deleteOrder);
+
+//Coupen Management
+router.get("/coupon",adminAuth,couponController.loadCoupon);
+router.post("/createCoupon",adminAuth,couponController.createCoupon);
+router.get("/editCoupon",adminAuth,couponController.editCoupon);
+router.post("/updateCoupon",adminAuth,couponController.updateCoupon);
+router.get("/deleteCoupon",adminAuth,couponController.deleteCoupon);
 
 module.exports = router;

@@ -3,38 +3,80 @@ const Cart = require("../../models/cartSchema");
 const Product = require("../../models/productSchema");
 const Address = require("../../models/addressSchema");
 const { v4: uuidv4 } = require("uuid");
-const placeOrder = async (req, res) => {
-  try {
-    const orders = await Order.find()
-      .populate("userId") // Populate the whole user object
-      .populate("orderItems.product")
-      .populate("address"); // Populate products
 
-    console.log(orders, "orders");
-    //console.log(orders.address);
-    res.render("admin-order", { activePage: "order", orders });
+
+const getOrder = async (req, res) => {
+  try {
+    const { page = 1, limit = 5, search = "" } = req.query; 
+    
+    const sanitizedSearch = search.replace(/[^a-zA-Z0-9 ]/g, "");
+
+   
+    console.log("Sanitized Search Term:", sanitizedSearch);
+    if (!sanitizedSearch) {
+      console.log("No search term provided, fetching all orders.");
+    }
+
+    const searchQuery = sanitizedSearch
+      ? {
+          $or: [
+            { "userId.name": { $regex: sanitizedSearch, $options: "i" } }, 
+            { "productId.productName": { $regex: sanitizedSearch, $options: "i" } } 
+          ]
+        }
+      : {}; 
+    console.log("Search Query:", JSON.stringify(searchQuery, null, 2));
+
+    const orders = await Order.find(searchQuery)
+      .populate("userId") 
+      .populate({
+        path: 'productId', // Fetch product details
+        populate: { path: 'category', select: 'name' } // Fetch category name
+      }) 
+      .populate({
+        path: "address",
+        select: "address", 
+    })
+      .skip((page - 1) * limit)  
+      .limit(Number(limit));   
+    console.log("Orders Found:", orders);
+
+    
+    const totalOrders = await Order.countDocuments(searchQuery);
+    const totalPages = Math.ceil(totalOrders / limit);
+
+    
+    res.render("admin-order", {
+      activePage: "order",
+      orders,
+      currentPage: Number(page),
+      totalPages,
+      searchQuery: sanitizedSearch, 
+    });
   } catch (error) {
     console.error("Error fetching orders:", error);
     res.redirect("/pageerror");
   }
 };
 
+
+
 const updateOrderStatus = async (req, res) => {
   try {
-    console.log("Received request to update order status:", req.body); // Debugging
+    console.log("Received request to update order status:", req.body);
 
     const { orderId, status } = req.body;
     if (!orderId || !status) {
       return res.json({ success: false, message: "Invalid request data" });
     }
 
-    const order = await Order.findById(orderId).populate("orderItems.product");
+    const order = await Order.findById(orderId).populate("productId");
 
     if (!order) {
       return res.json({ success: false, message: "Order not found" });
     }
 
-    // Prevent updates for Delivered or Cancelled orders
+    // Prevent modification if the order is already delivered or cancelled
     if (order.status === "Delivered" || order.status === "Cancelled") {
       return res.json({
         success: false,
@@ -42,28 +84,22 @@ const updateOrderStatus = async (req, res) => {
       });
     }
 
-    // Restock items if order is cancelled
-    if (status === "Cancelled") {
-      for (let item of order.orderItems) {
-        if (item.product) {
-          item.product.quantity += item.quantity;
-          await item.product.save();
-        }
-      }
+    // Handle "Cancelled" status - Restocking the product
+    if (status === "Cancelled" && order.productId) {
+      order.productId.quantity += order.quantity;
+      await order.productId.save();
     }
 
-    // Deduct stock if order is delivered
-    if (status === "Delivered") {
-      for (let item of order.orderItems) {
-        if (item.product && item.product.quantity >= item.quantity) {
-          item.product.quantity -= item.quantity;
-          await item.product.save();
-        } else {
-          return res.json({
-            success: false,
-            message: `Not enough stock for ${item.product.name}`,
-          });
-        }
+    // Handle "Delivered" status - Deducting stock
+    if (status === "Delivered" && order.productId) {
+      if (order.productId.quantity >= order.quantity) {
+        order.productId.quantity -= order.quantity;
+        await order.productId.save();
+      } else {
+        return res.json({
+          success: false,
+          message: `Not enough stock for ${order.productId.productName}`,
+        });
       }
     }
 
@@ -84,10 +120,9 @@ const deleteOrder = async (req, res) => {
 
     if (!order) return res.status(404).json({ message: "Order not found" });
 
-    if (order.status === "Delivered") {
-      return res
-        .status(400)
-        .json({ message: "Delivered orders cannot be deleted" });
+    // Prevent deletion of delivered or cancelled orders
+    if (order.status === "Delivered" || order.status === "Cancelled") {
+      return res.status(400).json({ message: "Order cannot be deleted" });
     }
 
     await Order.findByIdAndDelete(orderId);
@@ -97,8 +132,9 @@ const deleteOrder = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
 module.exports = {
-  placeOrder,
+  getOrder,
   updateOrderStatus,
   deleteOrder,
 };

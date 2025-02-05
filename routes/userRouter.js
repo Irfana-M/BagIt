@@ -6,6 +6,7 @@ const productController = require("../controllers/user/productController");
 const profileController = require("../controllers/user/profileController");
 const cartController = require("../controllers/user/cartController");
 const orderController = require("../controllers/user/orderController");
+const wishlistController = require("../controllers/user/wishlistController")
 const {userAuth,adminAuth} = require("../middlewares/auth");
 //const google = require('google');
 
@@ -18,6 +19,11 @@ router.get('/filter',userController.filterProduct);
 router.get('/filterPrice',userController.filterByPrice);
 router.post('/search',userController.searchProducts);
 router.get("/productDetails",productController.productDetails);
+//Wishlist Management
+router.get("/wishlist",userAuth,wishlistController.loadWishlist);
+router.post("/addToWishlist",userAuth,wishlistController.addToWishlist);
+router.get("/removeFromWishlist",userAuth,wishlistController.removeProducts);
+
 router.get("/sortProduct",userController.getSortProduct);
 router.get("/sortProducts",userController.SortProduct);
 //user management
@@ -49,7 +55,7 @@ router.post("/verify-changepassword-otp",userAuth,profileController.verifyChange
 //address management
 router.get("/myAddress",userAuth,profileController.getMyAddress);
 router.get("/add-address",userAuth,profileController.addAddress);
-router.post("/add-address",userAuth,profileController.postAddAddress);
+router.post("/add-address", userAuth,profileController.postAddAddress);
 router.get("/editAddress",userAuth,profileController.editAddress)
 router.post("/editAddress",userAuth,profileController.postEditAddress);
 router.get("/deleteAddress",userAuth,profileController.deleteAddress);
@@ -61,7 +67,8 @@ router.get("/checkout",userAuth,cartController.getCheckout);
 router.get("/confirmation",userAuth,cartController.getConfirmation);
 //order management
 router.get("/orders",userAuth,orderController.getOrder);
-router.post("/cancelOrder/:orderId",userAuth,orderController.cancelOrder);
+router.post("/cancelOrder/:orderId",userAuth,orderController.cancelOrderItem);
+router.get("/orderDetails/:orderId",userAuth,orderController.orderDetails);
 
 //logout
 router.get('/logout',userController.logout);

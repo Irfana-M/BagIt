@@ -93,6 +93,33 @@
             font-size: 14px;
             margin-left: 8px;
         }
+		.pagination-container {
+				text-align: center;
+				margin-top: 20px;
+			}
+
+			.pagination-btn {
+				display: inline-block;
+				padding: 8px 15px;
+				margin: 5px;
+				font-size: 16px;
+				color: white;
+				background-color: #007bff; /* Bootstrap primary color */
+				border-radius: 5px;
+				text-decoration: none;
+				transition: background-color 0.3s;
+			}
+
+			.pagination-btn:hover {
+				background-color: #0056b3; /* Darker blue on hover */
+			}
+
+			.pagination-text {
+				font-size: 18px;
+				font-weight: bold;
+				margin: 0 10px;
+			}
+
     </style>
 </head>
 
@@ -203,35 +230,53 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <% products.forEach(item => { %>
-                            <tr>
-                                <td><%= item.orderId %></td> <!-- Order ID from the order object -->
-                                <td>
-                                    <%= item.product.productName     %>
-                                    
-                                </td> <!-- Product name from the populated product -->
-                                <td>₹<%= item.product.salePrice     %></td> <!-- Product price -->
-                                <td>14/12/2024</td> <!-- You can replace this with dynamic delivery date if available -->
-                                <td><%= item.status %></td> <!-- Status -->
-                                <td>
-									<img class="product-img" src="/uploads/product-images/<%= item.product.productImage[0] %>" alt="">
+							<% if (orders.length === 0) { %>
+								<tr>
+									<td colspan="7" class="text-center">No orders found.</td>
+								</tr>
+							<% } else { %>
+								<% orders.forEach(order => { %>
+										<tr>
+											<td><%= order.orderId %></td>
+											<td><%= order.productId.productName %></td> <!-- Assuming 'name' is a field in Product schema -->
+											<td>₹<%= order.price.toFixed(2) %></td>
+											<td> <!-- Delivery Date -->
+												<%= order.invoiceDate %>
+											</td>
+											<td><%= order.status %></td>
+											<td>
+												<img src="uploads/product-images/<%= order.productId.productImage %>" alt="Product Image" width="50" height="50">
+											</td>
+											<td>
+												<a href="/orderDetails/<%= order.orderId %>" class="btn btn-primary btn-sm">View</a>
 
-                                </td>
-                                <td class="acproductNametion-buttons">
-                                    
-                                        <% if (item.status === 'Pending') { %>
-                                            <button class="cancel-btn" onclick="confirmCancelOrder('<%= item.orderId %>')">Cancel Order</button>
-                                        <% } else { %>
-                                            <span class="status-<%= item.status %>"><%= item.status %></span>
-                                        <% } %>
-                                    
-                                </td>
-                            </tr>
-                            <% }) %>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+												<a onclick="confirmCancelOrder('<%= order.orderId %>')" class="btn btn-danger btn-sm">Cancel</a>
+											</td>
+										</tr>
+								<% }) %>
+							<% } %>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</body>
+
+	<!-- pagiantion -->
+
+	<div class="pagination-container">
+		<% if (currentPage > 1) { %>
+			<a href="?page=<%= currentPage - 1 %>" class="pagination-btn">Previous</a>
+		<% } %>
+	
+		<span class="pagination-text">Page <%= currentPage %> of <%= totalPages %></span>
+	
+		<% if (currentPage < totalPages) { %>
+			<a href="?page=<%= currentPage + 1 %>" class="pagination-btn">Next</a>
+		<% } %>
+	</div>
+	
+	
              <!-- start footer Area -->
 	<footer class="footer-area section_gap">
 		<div class="container">
@@ -353,13 +398,13 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
             preConfirm: (reason) => {
                 if (!reason) {
                     Swal.showValidationMessage("Please select a reason");
-                    return false; // Prevent confirmation if no reason is selected
+                    return false; 
                 }
-                return reason; // Return the reason
+                return reason; 
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                // Send cancellation request to server using orderId
+               
                 fetch(`/cancelOrder/${orderId}`, {  
                     method: "POST",
                     headers: {

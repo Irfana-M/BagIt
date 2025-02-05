@@ -348,46 +348,54 @@ const filterByPrice = async (req, res) => {
         const user = req.session.user;
         const userData = await User.findOne({ _id: user });
         const categories = await Category.find({ isListed: true }).lean();
-        const message = req.session.message || null;
-        req.session.message = null;
+        let message = req.session.message || null;
+        req.session.message = null;  // Clear the message after retrieving it
 
         // Parse query parameters for price filtering
-        const gtPrice = parseFloat(req.query.gt) || 0;
-        const ltPrice = parseFloat(req.query.lt) || Infinity;
+        const gtPrice = parseFloat(req.query.gt) || 0; // Default to 0 if not provided
+        const ltPrice = parseFloat(req.query.lt) || Infinity; // Default to Infinity if not provided
 
         let findProducts = await Product.find({
-            salePrice: { $gt: gtPrice, $lt: ltPrice },
+            salePrice: { $gt: gtPrice, $lt: ltPrice }, // Filter products based on price range
             isBlocked: false,
-            quantity: { $gt: 0 }
+            quantity: { $gt: 0 } // Ensure products are available in stock
         }).lean();
 
         // Sort products by creation date (newest first)
         findProducts.sort((a, b) => new Date(b.createdOn) - new Date(a.createdOn));
+
+        // // Check if no products are found in the filtered price range
+        // if (findProducts.length === 0) {
+        //     // If no products found, set a message
+        //     req.session.message = "No products found in this price range.";
+        // }
 
         // Pagination logic
         const itemsPerPage = 6;
         const currentPage = Math.max(parseInt(req.query.page) || 1, 1);
         const totalPages = Math.ceil(findProducts.length / itemsPerPage);
 
-        // Ensure currentPage is within valid range
+        
         const validPage = Math.min(currentPage, totalPages);
         const startIndex = (validPage - 1) * itemsPerPage;
         const endIndex = startIndex + itemsPerPage;
 
         const currentProducts = findProducts.slice(startIndex, endIndex);
 
-        // Store filtered products in session
+        
         req.session.filteredProducts = findProducts;
 
-        // Render the shop page
+        
         res.render("shop", {
             user: userData,
             products: currentProducts,
             category: categories,
             totalPages,
             currentPage: validPage,
-            message:message
         });
+
+        
+        //req.session.message = null;
     } catch (error) {
         console.error("Error in filterByPrice:", error);
         res.redirect("/pageNotFound");
@@ -402,38 +410,40 @@ const searchProducts = async (req, res) => {
         req.session.message = null;
 
         const userData = await User.findOne({ _id: user });
-        let search = req.body.query;
-       
 
+        // Get search query from GET or POST request
+        let search = (req.body.query || req.query.query || "").toString().trim();
+
+        // Fetch listed categories
         const categories = await Category.find({ isListed: true }).lean();
         const categoryIds = categories.map(category => category._id.toString());
+
         let searchResult = [];
 
-        // If filtered products are available in session
-        if (req.session.filteredProducts && req.session.filteredProducts.length > 0) {
-            searchResult = req.session.filteredProducts.filter(product => {
-                return product.productName.toLowerCase().includes(search.toLowerCase());
-            });
+        if (req.session.filteredProducts && Array.isArray(req.session.filteredProducts)) {
+            // If filtered products exist in session, search within them
+            searchResult = req.session.filteredProducts.filter(product => 
+                product.productName.toLowerCase().includes(search.toLowerCase())
+            );
         } else {
-            // If no filtered products in session, fetch from database
+            // Fetch from database if no session-stored products
             searchResult = await Product.find({
                 productName: { $regex: ".*" + search + ".*", $options: "i" },
                 isBlocked: false,
                 quantity: { $gt: 0 },
                 category: { $in: categoryIds }
-            });
+            }).lean();
         }
-        
 
-        // Sorting search results by creation date
+        // Sort by latest created products
         searchResult.sort((a, b) => new Date(b.createdOn) - new Date(a.createdOn));
 
+        // Pagination setup
         let itemsPerPage = 6;
         let currentPage = parseInt(req.query.page) || 1;
         let startIndex = (currentPage - 1) * itemsPerPage;
-        let endIndex = startIndex + itemsPerPage;
         let totalPages = Math.ceil(searchResult.length / itemsPerPage);
-        const currentProduct = searchResult.slice(startIndex, endIndex);
+        const currentProduct = searchResult.slice(startIndex, startIndex + itemsPerPage);
 
         res.render("shop", {
             user: userData,
@@ -442,13 +452,14 @@ const searchProducts = async (req, res) => {
             totalPages,
             currentPage,
             count: searchResult.length, // Total count of search results
-            message:message
+            message
         });
     } catch (error) {
-        console.log("Error:", error);
+        console.error("Search Error:", error);
         res.redirect("/pageNotFound");
     }
 };
+
 
 
 

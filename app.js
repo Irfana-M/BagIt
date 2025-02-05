@@ -8,6 +8,9 @@ const db = require('./config/db');
 const userRouter = require('./routes/userRouter');
 const adminRouter = require('./routes/adminRouter');
 const User = require('./models/userSchema');
+const MongoStore = require("connect-mongo");
+
+
 db()
 
 app.use(express.json());
@@ -16,13 +19,43 @@ app.use(express.urlencoded({extended:true}));
 app.use(session({
   secret:process.env.SESSION_SECRET,
   resave:false,
-  saveUninitialized:true,
+  saveUninitialized:false,
   cookie:{
-    secure:false,
+    secure: process.env.NODE_ENV === "production",
     httpOnly:true,
     maxAge:72*60*60*1000
   } 
 }))
+app.use(passport.initialize());
+app.use(passport.session()); // Ensure this is only called once
+
+app.get("/auth/google/callback", passport.authenticate("google", {
+  successRedirect: "/",
+  failureRedirect: "/login",
+}), (req, res) => {
+  console.log("User after Google login:", req.user); // Check if user is set
+  res.redirect("/");
+});
+
+
+// app.use(
+//   session({
+//       secret: process.env.SESSION_SECRET,
+//       resave: false,
+//       saveUninitialized: false,
+//       store: MongoStore.create({
+//           mongoUrl: process.env.MONGO_URI,
+//           collectionName: "sessions",
+//       }),
+//       cookie: {
+//           secure: process.env.NODE_ENV === "production", // Set secure cookies in production
+//           httpOnly: true,
+//           maxAge: 1000 * 60 * 60 * 24, // 1 day
+//       },
+//   })
+// );
+
+
 
 app.use((req, res, next) => {
   res.set('Cache-Control', 'no-store');

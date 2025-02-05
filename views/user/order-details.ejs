@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Details</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+  /* General Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  line-height: 1.6;
+  background-color: #f4f7fc;
+  color: #333;
+  padding: 20px;
+}
+
+header {
+  background-color: #0056b3;
+  color: white;
+  padding: 20px 0;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+header h1 {
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.order-details {
+  background-color: #ffffff;
+  padding: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+  border-radius: 8px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+h3 {
+  font-size: 20px;
+  color: #0056b3;
+  margin-bottom: 15px;
+}
+
+p {
+  font-size: 16px;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+strong {
+  color: #333;
+}
+
+/* Product Information Section */
+.product-details {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+}
+
+.product-details .product {
+  display: flex;
+  align-items: center;
+  margin-right: 40px;
+  margin-bottom: 20px;
+}
+
+.product-details img {
+  width: 150px;
+  height: 150px;
+  border-radius: 8px;
+  object-fit: cover;
+  margin-right: 20px;
+}
+
+.product-info {
+  max-width: 600px;
+}
+
+.product-info h4 {
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.product-info p {
+  margin: 5px 0;
+}
+
+.product-info .price {
+  font-size: 18px;
+  color: #0056b3;
+  font-weight: 600;
+}
+
+.product-info .quantity {
+  font-size: 16px;
+  margin-top: 10px;
+}
+
+/* Tracking Information Section */
+.tracking-info {
+  margin-bottom: 30px;
+}
+
+.tracking-info ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.tracking-info li {
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tracking-info li strong {
+  color: #333;
+}
+
+.tracking-info .status {
+  font-weight: bold;
+  color: #0056b3;
+}
+
+/* Shipping Address Section */
+.shipping-address {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 6px;
+  margin-top: 30px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.shipping-address h3 {
+  color: #0056b3;
+}
+
+.shipping-address p {
+  font-size: 16px;
+  color: #555;
+}
+
+footer {
+  text-align: center;
+  padding: 20px;
+  background-color: #333;
+  color: white;
+  font-size: 14px;
+  margin-top: 40px;
+}
+
+footer p {
+  margin: 0;
+}
+
+/* Buttons and Links */
+button, a {
+  background-color: #0056b3;
+  color: white;
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 6px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover, a:hover {
+  background-color: #004299;
+}
+
+/* Responsive Layout */
+@media (max-width: 768px) {
+  .product-details {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .product-details .product {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .product-details img {
+    margin-bottom: 15px;
+  }
+
+  .product-info {
+    text-align: center;
+  }
+
+  footer {
+    font-size: 12px;
+  }
+}
+</style>
+</head>
+<body>
+  <!-- Header Section -->
+  <header>
+    <h1>Order Details</h1>
+  </header>
+
+  <!-- Order Information Section -->
+  <div class="order-details">
+    <h2>Order ID: <%= order.orderId %></h2>
+    <p><strong>Status:</strong> <%= order.status %></p>
+    <p><strong>Invoice Date:</strong> <%= order.invoiceDate.toDateString() %></p>
+    <p><strong>Final Amount:</strong> $<%= order.finalAmount %></p>
+
+    <!-- Product Information Section -->
+    <div class="product-details">
+      <h3>Product Details</h3>
+      <div class="product">
+        <img src="/uploads/product-images/<%= order.productId.productImage[0] %>" alt="Product Image">
+        <div class="product-info">
+          <h4><%= order.productId.productName %></h4>
+          <p><strong>Category:</strong> <%= order.productId.category.name %></p>
+          <p><strong>Description:</strong> <%= order.productId.description %></p>
+          <p><strong>Color:</strong> <%= order.productId.color %></p>
+          <p class="quantity"><strong>Quantity:</strong> <%= order.quantity %></p>
+          <p class="price"><strong>Price per Item:</strong> $<%= order.price %></p>
+          <p><strong>Total Price:</strong> $<%= order.totalPrice %></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tracking Information Section -->
+    <div class="tracking-info">
+      <h3>Track Your Order</h3>
+      <p><strong class="status">Current Status:</strong> <%= order.status %></p>
+
+      <% if (order.status === 'Pending') { %>
+        <p>Your order is still being processed. Please check back later for updates.</p>
+      <% } else if (order.status === 'Shipped') { %>
+        <p>Your order has been shipped. You can expect delivery soon.</p>
+      <% } else if (order.status === 'Delivered') { %>
+        <p>Your order has been delivered. Thank you for shopping with us!</p>
+      <% } %>
+
+      <!-- Order Tracking History (if available) -->
+      <% if (order.trackingHistory && order.trackingHistory.length > 0) { %>
+        <h4>Tracking History:</h4>
+        <ul>
+          <% order.trackingHistory.forEach(function(status, index) { %>
+            <li><strong>Step <%= index + 1 %>:</strong> <%= status %></li>
+          <% }); %>
+        </ul>
+      <% } else { %>
+        <p>No tracking history available for this order.</p>
+      <% } %>
+    </div>
+
+    <!-- Shipping Address Section -->
+    <% if (order.address) { %>
+      <div class="shipping-address">
+        <h3>Shipping Address</h3>
+        <p><%= order.address.address %></p>
+      </div>
+    <% } else { %>
+      <div class="shipping-address">
+        <h3>Shipping Address</h3>
+        <p>Address not available for this order.</p>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Footer Section -->
+  <footer>
+    <p>&copy; 2025 Your Company Name. All Rights Reserved.</p>
+  </footer>
+</body>
+</html>
