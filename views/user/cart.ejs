@@ -217,12 +217,12 @@ h5 {
 <body>
 
     <!-- Start Header Area -->
-	<header class="header_area sticky-header">
+    <header class="header_area sticky-header">
 		<div class="main_menu">
 			<nav class="navbar navbar-expand-lg navbar-light main_box">
 				<div class="container">
 					<!-- Brand and toggle get grouped for better mobile display -->
-					<a class="navbar-brand logo_h" href="index.html"><img src="img/logo.png" alt=""></a>
+					<a class="navbar-brand logo_h" href="/"><img src="img/logo.png" alt=""></a>
 					<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
 					 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
 						<span class="icon-bar"></span>
@@ -233,38 +233,29 @@ h5 {
 					<div class="collapse navbar-collapse offset" id="navbarSupportedContent">
 						<ul class="nav navbar-nav menu_nav ml-auto">
 							<li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-							<li class="nav-item submenu dropdown active">
-								<a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
-								 aria-expanded="false">Shop</a>
-								<ul class="dropdown-menu">
-									<li class="nav-item"><a class="nav-link" href="/shop">Shop Category</a></li>
-									<li class="nav-item"><a class="nav-link" href="/productDetails">Product Details</a></li>
-									<li class="nav-item"><a class="nav-link" href="checkout.html">Product Checkout</a></li>
-									<li class="nav-item active"><a class="nav-link" href="cart.html">Shopping Cart</a></li>
-									<li class="nav-item"><a class="nav-link" href="confirmation.html">Confirmation</a></li>
-								</ul>
-							</li>
+                            <li class="nav-item active"><a class="nav-link" href="/shop">Shop</a></li>
+                                <!-- <a href="/shop" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                                 aria-expanded="false">Shop</a> -->
+                                <!-- <ul class="dropdown-menu">
+                                    <li class="nav-item"><a class="nav-link" href="">Shop Category</a></li>
+                                    <li class="nav-item"><a class="nav-link" href="/checkout">Product Checkout</a></li>
+                                    <li class="nav-item"><a class="nav-link" href='/view-cart'>Shopping Cart</a></li>
+                                    <li class="nav-item"><a class="nav-link" href="confirmation.html">Confirmation</a></li>
+                                </ul> -->
+							
 							<li class="nav-item submenu dropdown">
 								<a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
-								 aria-expanded="false">Blog</a>
-								<ul class="dropdown-menu">
-									<li class="nav-item"><a class="nav-link" href="blog.html">Blog</a></li>
-									<li class="nav-item"><a class="nav-link" href="single-blog.html">Blog Details</a></li>
-								</ul>
-							</li>
-							<li class="nav-item submenu dropdown">
-								<a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
-								 aria-expanded="false">Pages</a>
+								 aria-expanded="false"></a>
 								<ul class="dropdown-menu">
 									<li class="nav-item"><a class="nav-link" href="login.html">Login</a></li>
 									<li class="nav-item"><a class="nav-link" href="tracking.html">Tracking</a></li>
 									<li class="nav-item"><a class="nav-link" href="elements.html">Elements</a></li>
 								</ul>
 							</li>
-							<li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+							<li class="nav-item"><a class="nav-link" href="contact.html"></a></li>
 						</ul>
 						<ul class="nav navbar-nav navbar-right">
-							<li class="nav-item"><a href="#" class="cart"><span class="ti-bag"></span></a></li>
+							<li class="nav-item"><a href="/view-cart" class="cart"><span class="ti-bag"></span></a></li>
 							<li class="nav-item">
 								<button class="search"><span class="lnr lnr-magnifier" id="search"></span></button>
 							</li>
@@ -335,14 +326,14 @@ h5 {
                                         <h5><%= item.productId.productName %></h5>
                                     </td>
                                     <td>
-                                        <h5><%= item.price %>₹</h5>
+                                        <h5><%= item.productId.salePrice %>₹</h5>
                                     </td>
                                     <td>
                                         <div class="product_count">
                                             <input type="text" name="qty" id="sst-<%= item.productId._id %>" maxlength="12" value="<%= item.quantity %>" title="Quantity:"
                                                 class="input-text qty">
-                                            <button onclick="increaseQuantity('<%= item.productId._id %>', <%= item.productId.quantity %>)" class="increase items-count" type="button"><i class="lnr lnr-chevron-up"></i></button>
-                                            <button onclick="decreaseQuantity('<%= item.productId._id %>', <%= item.productId.quantity %>)" class="reduced items-count" type="button"><i class="lnr lnr-chevron-down"></i></button>
+                                            <button onclick="increaseQuantity('<%= item.productId._id %>', '<%= item.productId.quantity %>')" class="increase items-count" type="button"><i class="lnr lnr-chevron-up"></i></button>
+                                            <button onclick="decreaseQuantity('<%= item.productId._id %>', '<%= item.productId.quantity %>')" class="reduced items-count" type="button"><i class="lnr lnr-chevron-down"></i></button>
                                         </div>
                                     </td>
                                     <td>
@@ -388,11 +379,11 @@ h5 {
                                 <td>
                                     <div class="shipping_box">
                                         <ul class="list">
-                                            <li><a href="#">Total Price:           ₹<%= totalPriceWithoutOffer.toLocaleString('en-IN') %>;</a></li>
-                                            <li><a href="#">Total Discount Price: -₹<%= totalDiscount.toLocaleString('en-IN') %></a></li>
-                                            <li><a href="#">Coupens for you:       ₹<%= couponDiscount.toLocaleString('en-IN') %></a></li>
-                                            <li ><a href="#">Delivery Charges     -₹<%= shippingCharge.toLocaleString('en-IN') %></a></li>
-                                            <li ><a href="#">Total Amount:         ₹<%= finalTotal.toLocaleString('en-IN') %></a></li>
+                                            <li>Total Price:           ₹<%= totalPriceWithoutOffer.toLocaleString('en-IN') %>;</li>
+                                            <li>Total Discount Price: -₹<%= totalDiscount.toLocaleString('en-IN') %></li>
+                                            <li>Coupens for you:       ₹<%= couponDiscount.toLocaleString('en-IN') %></li>
+                                            <li >Delivery Charges     -₹<%= shippingCharge.toLocaleString('en-IN') %></li>
+                                            <li ><h5>Total Amount:     ₹<%= finalTotal.toLocaleString('en-IN') %></h5></li>
                                         </ul>
                                     </div>
                                 </td>

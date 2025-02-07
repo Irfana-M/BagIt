@@ -130,22 +130,31 @@ const orderDetails = async (req, res) => {
                 path: 'productId',
                 populate: { path: 'category', select: 'name' }
             })
-            .populate({
-                path: "address",
-                select: "address", 
-            })
             .exec();
 
-        console.log(order);
+        
 
         if (!order) {
             return res.redirect("/pageNotFound");
         }
+        const addressDetails = await Address.findOne({ userId: order.userId }).exec();
+   
+        const address = addressDetails.address.find(
+        (addr) => addr._id.toString() === order.address.toString()
+        );
+    
 
         // Example of adding a mock tracking history to the order
-        order.trackingHistory = order.trackingHistory || ['Order Received', 'Shipped', 'Out for Delivery'];
-
-        res.render("order-details", { order });
+        //order.trackingHistory = order.trackingHistory || ['Order Received', 'Shipped', 'Out for Delivery'];
+        order.trackingHistory = [
+            { date: '2025-01-01', status: 'Order Placed' },
+            { date: '2025-01-03', status: 'Processing' },
+            { date: '2025-01-05', status: 'Shipped' },
+            { date: '2025-01-07', status: 'Out for Delivery' },
+            { date: '2025-01-08', status: 'Delivered' }
+          ];
+          
+        res.render("order-details", { order,address });
 
     } catch (error) {
         console.error("Error fetching order details:", error);

@@ -113,31 +113,68 @@ strong {
 }
 
 /* Tracking Information Section */
-.tracking-info {
-  margin-bottom: 30px;
+.tracking-progress {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  margin: 30px 0;
+  padding: 20px;
+  width: 80%;
+  margin: auto;
 }
 
-.tracking-info ul {
-  list-style-type: none;
-  padding-left: 0;
+.tracking-step {
+  text-align: center;
+  flex: 1;
+  position: relative;
 }
 
-.tracking-info li {
-  background-color: #f9f9f9;
-  padding: 15px;
-  border-radius: 6px;
-  margin-bottom: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.tracking-info li strong {
-  color: #333;
-}
-
-.tracking-info .status {
+.tracking-step .circle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #ccc;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-weight: bold;
-  color: #0056b3;
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
 }
+
+/* Connector Line */
+.tracking-step::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 4px;
+  background-color: #ccc;
+  top: 50%;
+  left: -50%;
+  z-index: 1;
+}
+
+.tracking-step:first-child::before {
+  display: none;
+}
+
+/* Highlight Completed Steps */
+.tracking-step.completed .circle {
+  background-color: #28a745;
+}
+
+.tracking-step.completed p {
+  font-weight: bold;
+  color: #28a745;
+}
+
+.tracking-step.completed::before {
+  background-color: #28a745;
+}
+
 
 /* Shipping Address Section */
 .shipping-address {
@@ -224,7 +261,7 @@ button:hover, a:hover {
     <h2>Order ID: <%= order.orderId %></h2>
     <p><strong>Status:</strong> <%= order.status %></p>
     <p><strong>Invoice Date:</strong> <%= order.invoiceDate.toDateString() %></p>
-    <p><strong>Final Amount:</strong> $<%= order.finalAmount %></p>
+    <p><strong>Final Amount:</strong> ₹<%= order.finalAmount %></p>
 
     <!-- Product Information Section -->
     <div class="product-details">
@@ -237,8 +274,8 @@ button:hover, a:hover {
           <p><strong>Description:</strong> <%= order.productId.description %></p>
           <p><strong>Color:</strong> <%= order.productId.color %></p>
           <p class="quantity"><strong>Quantity:</strong> <%= order.quantity %></p>
-          <p class="price"><strong>Price per Item:</strong> $<%= order.price %></p>
-          <p><strong>Total Price:</strong> $<%= order.totalPrice %></p>
+          <p class="price"><strong>Price per Item:</strong> ₹<%= order.price %></p>
+          <p><strong>Total Price:</strong> ₹<%= order.totalPrice %></p>
         </div>
       </div>
     </div>
@@ -257,23 +294,34 @@ button:hover, a:hover {
       <% } %>
 
       <!-- Order Tracking History (if available) -->
-      <% if (order.trackingHistory && order.trackingHistory.length > 0) { %>
-        <h4>Tracking History:</h4>
-        <ul>
-          <% order.trackingHistory.forEach(function(status, index) { %>
-            <li><strong>Step <%= index + 1 %>:</strong> <%= status %></li>
-          <% }); %>
-        </ul>
-      <% } else { %>
-        <p>No tracking history available for this order.</p>
-      <% } %>
-    </div>
+     <!-- Order Tracking Progress -->
+     <div class="tracking-progress">
+      <% const statuses = ["Order Placed", "Processing", "Shipped", "Out for Delivery", "Delivered"]; %>
+      <% let currentIndex = order.trackingHistory.findIndex(entry => entry.status === order.status); %>
+      
+      <% statuses.forEach((step, index) => { %>
+          <div class="tracking-step <%= index <= currentIndex ? 'completed' : '' %>">
+              <div class="circle"><%= index + 1 %></div>
+              <p><%= step %></p>
+          </div>
+      <% }); %>
+  </div>
+  
 
     <!-- Shipping Address Section -->
-    <% if (order.address) { %>
+    <% if (address) { %>
       <div class="shipping-address">
         <h3>Shipping Address</h3>
-        <p><%= order.address.address %></p>
+        <div>
+          <strong>Address Type:</strong> <%= address.addressType %><br>
+          <strong>Name:</strong> <%= address.name %><br>
+          <strong>City:</strong> <%= address.city %><br>
+          <strong>Landmark:</strong> <%= address.landMark %><br>
+          <strong>State:</strong> <%= address.state %><br>
+          <strong>Pincode:</strong> <%= address.pincode %><br>
+          <strong>Phone:</strong> <%= address.phone %><br>
+          <strong>Alternate Phone:</strong> <%= address.altPhone %><br>
+      </div>
       </div>
     <% } else { %>
       <div class="shipping-address">

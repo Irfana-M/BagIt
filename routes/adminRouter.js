@@ -54,6 +54,7 @@ router.delete('/deleteProduct', adminAuth, productController.deleteProduct);
 router.get('/orders',adminAuth,orderController.getOrder);
 router.post('/update-order-status',adminAuth,orderController.updateOrderStatus);
 router.get('/delete-order',adminAuth,orderController.deleteOrder);
+router.get('/order-details/:orderId',adminAuth,orderController.viewOrder);
 
 //Coupen Management
 router.get("/coupon",adminAuth,couponController.loadCoupon);

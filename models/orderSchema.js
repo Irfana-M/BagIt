@@ -28,8 +28,8 @@ const orderSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Return request', 'Returned'],
-        default: 'Pending'
+        enum: ['Order Placed', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered','Cancelled', 'Return request', 'Returned'],
+        default: 'Order Placed'
     },
     totalPrice: {
         type: Number,
@@ -60,7 +60,12 @@ const orderSchema = new Schema({
     coupenApplied: {
         type: Boolean,
         default: false
-    }
+    },
+    orderMethod: { 
+        type: String,
+        enum: ['Cash on Delivery', 'Online Payment'],
+        default:'Cash on Delivery',
+        required: true },
 });
 
 const Order = mongoose.model("Order", orderSchema);

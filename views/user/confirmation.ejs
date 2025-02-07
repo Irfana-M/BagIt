@@ -130,6 +130,9 @@
         footer .social-icons a:hover {
             color: #00bcd4;
         }
+        .paymentClass{
+            color:#00bcd4
+        }
     </style>
 </head>
 
@@ -245,7 +248,8 @@
                 </div>
             </div>
             <div class="order_details_table">
-                <h2>Order Details</h2>
+                <h2><u>Order Details</u></h2>
+                <h2>Order Method: <span class="paymentClass"><%=paymentMethod%></span></h2>
                 <div class="table-responsive">
                     <table class="table">
                         <thead>

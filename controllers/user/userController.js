@@ -218,6 +218,7 @@ const loadHomepage = async (req, res) => {
         if (userId) {
             userData = await User.findOne({ _id: userId });
         } else if (googleId) {
+            console.log(userData)
             userData = await User.findOne({ googleId: googleId });
         }
 
@@ -349,28 +350,18 @@ const filterByPrice = async (req, res) => {
         const userData = await User.findOne({ _id: user });
         const categories = await Category.find({ isListed: true }).lean();
         let message = req.session.message || null;
-        req.session.message = null;  // Clear the message after retrieving it
-
-        // Parse query parameters for price filtering
-        const gtPrice = parseFloat(req.query.gt) || 0; // Default to 0 if not provided
-        const ltPrice = parseFloat(req.query.lt) || Infinity; // Default to Infinity if not provided
-
+        req.session.message = null;  
+        const gtPrice = parseFloat(req.query.gt) || 0; 
+        const ltPrice = parseFloat(req.query.lt) || Infinity; 
         let findProducts = await Product.find({
-            salePrice: { $gt: gtPrice, $lt: ltPrice }, // Filter products based on price range
-            isBlocked: false,
-            quantity: { $gt: 0 } // Ensure products are available in stock
+            salePrice: { $gt: gtPrice, $lt: ltPrice }, 
+            quantity: { $gt: 0 } 
         }).lean();
 
-        // Sort products by creation date (newest first)
+        
         findProducts.sort((a, b) => new Date(b.createdOn) - new Date(a.createdOn));
 
-        // // Check if no products are found in the filtered price range
-        // if (findProducts.length === 0) {
-        //     // If no products found, set a message
-        //     req.session.message = "No products found in this price range.";
-        // }
-
-        // Pagination logic
+        
         const itemsPerPage = 6;
         const currentPage = Math.max(parseInt(req.query.page) || 1, 1);
         const totalPages = Math.ceil(findProducts.length / itemsPerPage);
@@ -392,10 +383,10 @@ const filterByPrice = async (req, res) => {
             category: categories,
             totalPages,
             currentPage: validPage,
+            message
         });
 
         
-        //req.session.message = null;
     } catch (error) {
         console.error("Error in filterByPrice:", error);
         res.redirect("/pageNotFound");
@@ -411,10 +402,8 @@ const searchProducts = async (req, res) => {
 
         const userData = await User.findOne({ _id: user });
 
-        // Get search query from GET or POST request
         let search = (req.body.query || req.query.query || "").toString().trim();
 
-        // Fetch listed categories
         const categories = await Category.find({ isListed: true }).lean();
         const categoryIds = categories.map(category => category._id.toString());
 
@@ -425,10 +414,17 @@ const searchProducts = async (req, res) => {
             searchResult = req.session.filteredProducts.filter(product => 
                 product.productName.toLowerCase().includes(search.toLowerCase())
             );
-        } else {
-            // Fetch from database if no session-stored products
+        } else if (search) {
+            // Fetch from database if no session-stored products and search query is not empty
             searchResult = await Product.find({
                 productName: { $regex: ".*" + search + ".*", $options: "i" },
+                isBlocked: false,
+                quantity: { $gt: 0 },
+                category: { $in: categoryIds }
+            }).lean();
+        } else {
+            // Handle empty search query
+            searchResult = await Product.find({
                 isBlocked: false,
                 quantity: { $gt: 0 },
                 category: { $in: categoryIds }

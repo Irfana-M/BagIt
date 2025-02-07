@@ -81,7 +81,7 @@ const viewCart = async (req, res) => {
 
         let shippingCharge = 50; 
         let couponDiscount = req.session.couponDiscount || 0; 
-        let finalTotal = totalPriceWithOffer + shippingCharge - couponDiscount;
+        let finalTotal = totalPriceWithOffer - shippingCharge - couponDiscount;
 
         res.render('cart', { 
             cart, 
@@ -184,7 +184,7 @@ const getCheckout = async (req, res) => {
 
 const getConfirmation = async (req, res) => {
     try {
-        const { addressId, totalPrice, cartItems,status } = req.query;
+        const { addressId, totalPrice, cartItems,status,paymentMethod } = req.query;
 
         // Ensure cartItems exist
         if (!cartItems) {
@@ -239,11 +239,9 @@ const getConfirmation = async (req, res) => {
                     address: selectedAddress._id,
                     invoiceDate: new Date(), 
                     createdOn: new Date(),
-                    orderId: uuidv4(),  // Ensure UUID is generated properly
+                    orderId: uuidv4(),
+                    orderMethod: paymentMethod  
                 });
-        
-                console.log("Saving Order:", newOrder);
-        
                 await newOrder.save();
                 console.log(" Order Saved Successfully");
             } catch (error) {
@@ -253,7 +251,7 @@ const getConfirmation = async (req, res) => {
         
         
 
-        // Reduce stock quantity for each purchased item
+        
         await Promise.all(rawCartItems.map(async (item) => {
             const product = await Product.findById(item.productId._id);
             if (product) {
@@ -262,17 +260,18 @@ const getConfirmation = async (req, res) => {
             }
         }));
 
-        // Clear user's cart after order placement
+        
         await Cart.deleteOne({ userId });
 
-        // Render confirmation page
+        
         console.log('Rendering confirmation page with the following data:', {
             selectedAddress,
             totalPrice: totalOfferPrice,
             cartItems: rawCartItems,
             totalOriginalPrice,
             subTotal,
-            shippingCharge
+            shippingCharge,
+            paymentMethod
         });
 
         res.render('confirmation', {
@@ -281,7 +280,8 @@ const getConfirmation = async (req, res) => {
             cartItems: rawCartItems,
             totalOriginalPrice,
             subTotal,
-            shippingCharge
+            shippingCharge,
+            paymentMethod
         });
 
     } catch (e) {

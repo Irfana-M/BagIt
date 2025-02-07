@@ -45,31 +45,38 @@ const loadWishlist = async (req, res) => {
 
 
 
+
 const addToWishlist = async (req, res) => {
     try {
         const productId = req.body.productId;
         const userId = req.session.user;
-        
-        
-        if (!userId) {
-            return res.redirect("/login");  
-        }
 
+        console.log("Add to wishlist request received. Product ID:", productId);
+
+       
+        if (!userId) {
+            console.log("User not logged in.");
+            return res.status(401).json({ status: false, message: "User not logged in" });
+        }
         const user = await User.findById(userId);
         if (!user) {
+            console.log(" User not found. ID:", userId);
             return res.status(400).json({ status: false, message: "User not found" });
         }
 
-        if (user.wishlist.includes(productId)) {
-            return res.status(200).json({ status: false, message: 'Product already in wishlist' });
+        if (user.wishlist.some(id => id.equals(productId))) {
+            console.log("Product already in wishlist. User ID:", userId);
+            return res.status(200).json({ status: false, message: "Product already in wishlist" });
         }
-
+        
         user.wishlist.push(productId);
         await user.save();
-        
+
+        console.log(" Product added to wishlist. User ID:", userId);
         return res.status(200).json({ status: true, message: "Product added to wishlist" });
+
     } catch (error) {
-        console.error(error);
+        console.error(" Server Error:", error);
         return res.status(500).json({ status: false, message: "Server error" });
     }
 };
