@@ -23,7 +23,7 @@ router.get("/productDetails",productController.productDetails);
 router.get("/wishlist",userAuth,wishlistController.loadWishlist);
 router.post("/addToWishlist",userAuth,wishlistController.addToWishlist);
 router.get("/removeFromWishlist",userAuth,wishlistController.removeProducts);
-
+//sortProduct
 router.get("/sortProduct",userController.getSortProduct);
 router.get("/sortProducts",userController.SortProduct);
 //user management
@@ -66,6 +66,13 @@ router.get("/view-cart",userAuth,cartController.viewCart);
 router.get("/deleteCart",userAuth,cartController.deleteCart);
 router.get("/checkout",userAuth,cartController.getCheckout);
 router.get("/confirmation",userAuth,cartController.getConfirmation);
+//coupen management
+router.post("/apply-coupon",userAuth,cartController.applyCoupon);
+router.get("/remove-coupon", (req, res) => {
+    req.session.couponCode = null;
+    res.redirect("/view-cart?success=Coupon Removed");
+});
+
 //order management
 router.get("/orders",userAuth,orderController.getOrder);
 router.post("/cancelOrder/:orderId",userAuth,orderController.cancelOrderItem);

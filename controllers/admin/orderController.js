@@ -165,7 +165,7 @@ const viewOrder = async (req, res) => {
       }
     
     const addressDetails = await Address.findOne({ userId: order.userId }).exec();
-   clg(addressDetails)
+  
     const address = addressDetails.address.find(
       (addr) => addr._id.toString() === order.address.toString()
     );

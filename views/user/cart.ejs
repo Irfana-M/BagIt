@@ -5,7 +5,7 @@
     <!-- Mobile Specific Meta -->
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <!-- Favicon-->
-    <link rel="shortcut icon" href="img/fav.png">
+    <link rel="shortcut icon" href="img/logo.png">
     <!-- Author Meta -->
     <meta name="author" content="CodePixar">
     <!-- Meta Description -->
@@ -30,183 +30,161 @@
     <link rel="stylesheet" href="css/main.css">
     <!-- Include SweetAlert2 library -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+
 <style>
-    /* General Styling */
-body {
-    font-family: 'Poppins', sans-serif;
+    .cart_area {
+    padding: 50px 0;
     background-color: #f8f9fa;
 }
 
-/* Cart Table */
-.cart_area {
-    padding: 60px 0;
-}
-
-.cart_inner {
-    background: #ffffff;
-    padding: 30px;
+.table {
+    background: #fff;
     border-radius: 10px;
-    box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.cart_inner .table {
-    margin-bottom: 0;
-}
-
-.cart_inner .table th {
-    background: #00bcd4;;
-    color: white;
+.table th {
+    background: #343a40;
+    color: #fff;
+    text-transform: uppercase;
+    padding: 15px;
     text-align: center;
-    padding: 15px;
-    font-size: 16px;
 }
 
-.cart_inner .table td {
+.table td {
+    padding: 15px;
     vertical-align: middle;
-    padding: 15px;
-    font-size: 15px;
+    text-align: center;
 }
 
-/* Product Image */
 .cartImg {
     width: 80px;
-    height: 80px;
+    height: auto;
     border-radius: 8px;
-    object-fit: cover;
-    transition: transform 0.3s ease-in-out;
 }
 
-.cartImg:hover {
-    transform: scale(1.1);
-}
-
-/* Product Name */
-.media-body p {
-    font-weight: 600;
-    margin-left: 10px;
-}
-
-/* Quantity Box */
 .product_count {
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.qty {
+.product_count input {
     width: 50px;
-    height: 40px;
     text-align: center;
+    font-size: 16px;
+    padding: 5px;
     border: 1px solid #ddd;
     border-radius: 5px;
-    margin: 0 5px;
-    font-weight: 600;
 }
 
-.items-count {
-    background: #00bcd4;;
+.product_count button {
+    background: #007bff;
     color: white;
     border: none;
-    width: 30px;
-    height: 30px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    margin: 0 5px;
     cursor: pointer;
-    border-radius: 50%;
-    font-size: 14px;
-    transition: background 0.3s;
 }
 
-.items-count:hover {
-    background: #00bcd4;;
+.product_count button:hover {
+    background: #0056b3;
 }
 
-/* Remove Button */
 .remove-btn {
     background: #dc3545;
     color: white;
     border: none;
-    padding: 4px 1px;
+    padding: 7px 12px;
     border-radius: 5px;
-    font-size: 10px;
+    font-size: 14px;
     cursor: pointer;
-    transition: background 0.3s ease-in-out;
 }
 
 .remove-btn:hover {
-    background: #00bcd4;;
-}
-
-/* Subtotal & Price Details */
-h5 {
-    font-weight: bold;
-    color: #333;
+    background: #a71d2a;
 }
 
 /* Coupon Section */
-.cupon_text {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.coupon-section {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.cupon_text input {
+.coupon-section input {
+    padding: 8px;
+    width: 250px;
     border: 1px solid #ddd;
     border-radius: 5px;
-    padding: 8px 10px;
-    width: 200px;
-    margin-right: 10px;
 }
 
-.primary-btn, .gray_btn {
+.coupon-section button {
+    background: #28a745;
+    color: white;
     padding: 8px 15px;
+    border: none;
     border-radius: 5px;
-    text-decoration: none;
-    font-weight: 600;
-    text-transform: uppercase;
-    transition: all 0.3s ease-in-out;
+    cursor: pointer;
 }
 
-.primary-btn {
-    background: #00bcd4;;
-    color: white;
+.coupon-section button:hover {
+    background: #218838;
 }
 
-.primary-btn:hover {
-    background: #00bcd4;;
+/* Price Details */
+.price-details {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.gray_btn {
-    background: #6c757d;
-    color: white;
+.price-details ul {
+    list-style: none;
+    padding: 0;
 }
 
-.gray_btn:hover {
-    background: #5a6268;
+.price-details ul li {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-size: 16px;
+}
+
+.price-details ul li h5 {
+    font-weight: bold;
+    color: #007bff;
+}
+
+.final-total {
+    font-size: 22px;
+    font-weight: bold;
+    color: #28a745;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .cart_inner {
-        padding: 15px;
+    .table th, .table td {
+        font-size: 14px;
+        padding: 10px;
     }
 
     .cartImg {
         width: 60px;
-        height: 60px;
     }
 
-    .qty {
-        width: 40px;
-        height: 35px;
+    .coupon-section input {
+        width: 100%;
     }
 
-    .items-count {
-        width: 25px;
-        height: 25px;
-    }
-
-    .remove-btn {
-        padding: 6px 10px;
-        font-size: 12px;
+    .coupon-section button {
+        width: 100%;
+        margin-top: 10px;
     }
 }
 
@@ -306,7 +284,7 @@ h5 {
                                 <th scope="col">Price</th>
                                 <th scope="col">Quantity</th>
                                 <th scope="col">Total</th>
-                                <th scope="col"></th>
+                                <th scope="col">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -339,8 +317,12 @@ h5 {
                                     <td>
                                         <h5><%= item.totalPrice%>₹</h5>
                                     </td>
-                                    <td><a href="/deleteCart?id=<%=item.productId._id%>"><button onclick="return confirm('Are you sure you want to delete this item?')"
-                                        class="remove-btn">Remove</button></a></td>
+                                    <td>
+                                        <a href="/deleteCart?id=<%= item.productId._id %>" onclick="return confirm('Are you sure you want to delete this item?')">
+                                            <i class="bi bi-trash text-danger" style="font-size: 1.2rem; cursor: pointer;"></i>
+                                        </a>
+                                    </td>
+                                    
                                 </tr>
                                 <% } %>
                             <% }) %>
@@ -352,10 +334,51 @@ h5 {
                                 <td></td>
                                 <td></td>
                                 <td>
-                                    <div class="cupon_text d-flex align-items-center">
+                                    <!-- <div class="cupon_text d-flex align-items-center">
                                         <input type="text" placeholder="Coupon Code">
                                         <a class="primary-btn" href="#">Apply</a>
-                                    </div>
+                                    </div> --> <!-- Applied Coupon Discount -->
+                                    <% if (appliedCoupon) { %>
+                                        <p>Applied Coupon: <strong><%= appliedCoupon.name %></strong> - ₹<%= couponDiscount %> OFF</p>
+                                        <a href="/remove-coupon" class="btn btn-danger">Remove Coupon</a>
+                                    <% } else { %>
+                                        <p>No Coupon Applied</p>
+                                    <% } %>
+                                    
+                                    <h4>Final Total: ₹<%= finalTotal %></h4>
+                                    
+                                    <hr>
+                                    
+                                    <!-- Coupon Application Form -->
+                                    <h3>Apply Coupon</h3>
+                                    <form action="/apply-coupon" method="POST">
+                                        <input type="text" name="couponCode" placeholder="Enter Coupon Code" required>
+                                        
+                                        <!-- Pass cart items as hidden fields -->
+                                        <% cart.items.forEach((item, index) => { %>
+                                            <input type="hidden" name="cartItems[<%= index %>][productId]" value="<%= item.productId %>">
+                                            <input type="hidden" name="cartItems[<%= index %>][totalPrice]" value="<%= item.totalPrice %>">
+                                        <% }); %>
+                                        
+                                        <button type="submit">Apply Coupon</button>
+                                    </form>
+                                    
+                                    
+                                    <!-- Available Coupons List -->
+                                    <% if (coupons.length > 0) { %>
+                                        <h4>Available Coupons:</h4>
+                                        <ul>
+                                            <% coupons.forEach(coupon => { %>
+                                                <li>
+                                                    <strong><%= coupon.name %></strong> - ₹<%= coupon.offerPrice %> Off 
+                                                    (Min Purchase: ₹<%= coupon.minimumPrice %>)
+                                                </li>
+                                            <% }) %>
+                                        </ul>
+                                    <% } else { %>
+                                        <p>No Coupons Available</p>
+                                    <% } %>
+                                    
                                 </td>
                             </tr>
                             <tr>
@@ -372,7 +395,24 @@ h5 {
                             <tr class="shipping_area">
                                 <td></td>
                                 <td></td>
-                                <td></td>
+                                <td><% if (errorMessage.length) { %>
+                                    <div class="alert alert-danger"><%= errorMessage[0] %></div>
+                                <% } %>
+                                
+                                <% if (successMessage.length) { %>
+                                    <div class="alert alert-success"><%= successMessage[0] %></div>
+                                <% } %>
+                                
+                                    <!-- <% if (appliedCoupon) { %>
+                                        <p>Applied Coupon: <strong><%= appliedCoupon.name %></strong> - ₹<%= appliedCoupon.discount %> OFF</p>
+                                        <a href="/remove-coupon" class="btn btn-danger">Remove Coupon</a>
+                                    <% } else { %>
+                                        <p>No Coupon Applied</p>
+                                    <% } %> -->
+                                    
+                                    <!-- <h4>Final Total: ₹<%= finalTotal %></h4>
+                                     -->
+                                </td>
                                 <td>
                                     <h5>Price Details</h5>
                                 </td>
@@ -381,26 +421,28 @@ h5 {
                                         <ul class="list">
                                             <li>Total Price:           ₹<%= totalPriceWithoutOffer.toLocaleString('en-IN') %>;</li>
                                             <li>Total Discount Price: -₹<%= totalDiscount.toLocaleString('en-IN') %></li>
-                                            <li>Coupens for you:       ₹<%= couponDiscount.toLocaleString('en-IN') %></li>
+                                            <li>Coupens for you:      -₹<%= couponDiscount.toLocaleString('en-IN') %></li>
                                             <li >Delivery Charges     -₹<%= shippingCharge.toLocaleString('en-IN') %></li>
                                             <li ><h5>Total Amount:     ₹<%= finalTotal.toLocaleString('en-IN') %></h5></li>
                                         </ul>
                                     </div>
                                 </td>
-                                
                             </tr>
-                            <tr class="out_button_area">
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td>
-                                    <div class="checkout_btn_inner d-flex align-items-center">
-                                        <a class="gray_btn" href="/shop">Continue Shopping</a>
-                                        <a class="primary-btn" href="/checkout">Place Order</a>
-                                    </div>
-                                </td>
+                            <tr>
+                                <tr class="out_button_area">
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>
+                                        <div class="checkout_btn_inner d-flex align-items-center">
+                                            <a class="gray_btn" href="/shop">Continue Shopping</a>
+                                            <a class="primary-btn" href="/checkout">Place Order</a>
+                                        </div>
+                                    </td>
+                                </tr>
+    
                             </tr>
                             <% } else { %>
                                 <p>Your cart is empty. <a href="/shop">Continue shopping</a></p>

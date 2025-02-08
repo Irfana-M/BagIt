@@ -243,14 +243,7 @@ body {
 						<ul class="nav navbar-nav menu_nav ml-auto">
 							<li class="nav-item"><a class="nav-link" href="/">Home</a></li>
                             <li class="nav-item active"><a class="nav-link" href="/shop">Shop</a></li>
-                                <!-- <a href="/shop" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
-                                 aria-expanded="false">Shop</a> -->
-                                <!-- <ul class="dropdown-menu">
-                                    <li class="nav-item"><a class="nav-link" href="">Shop Category</a></li>
-                                    <li class="nav-item"><a class="nav-link" href="/checkout">Product Checkout</a></li>
-                                    <li class="nav-item"><a class="nav-link" href='/view-cart'>Shopping Cart</a></li>
-                                    <li class="nav-item"><a class="nav-link" href="confirmation.html">Confirmation</a></li>
-                                </ul> -->
+                                
 							
 							<li class="nav-item submenu dropdown">
 								<a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
@@ -492,6 +485,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     <script src="js/gmaps.min.js"></script>
     <script src="js/main.js"></script>
     <script>
+        
         function updateCheckoutLink() {
             const selectedPayment = document.querySelector('input[name="paymentMethod"]:checked');
             if (!selectedPayment) {
@@ -510,6 +504,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     
             let addressId = selectedAddress.value;
             console.log("Address ID:", addressId); // Add this line
+  
     
             let totalPrice = "<%= subTotal %>";
             let cartItems = encodeURIComponent('<%- JSON.stringify(cart.items || []) %>');

@@ -72,50 +72,38 @@ const cancelOrderItem = async (req, res) => {
             return res.status(400).json({ success: false, message: "Cancellation reason is required" });
         }
 
-        
-        const order = await Order.findOne({ "order.orderId": orderItemId }).populate("order.productId");
+        // Find the order with populated product details
+        const order = await Order.findOne({ orderId }).populate("productId");
 
         if (!order) {
             return res.status(404).json({ success: false, message: "Order not found" });
         }
 
-        
-        const orderItem = order.orderItems.find(item => item.orderItemId === orderId);
-
-        if (!orderItem) {
-            return res.status(404).json({ success: false, message: "Order item not found" });
-        }
-
-        
+        // Check if the order is cancellable
         if (order.status === "Shipped" || order.status === "Delivered") {
-            return res.status(400).json({ success: false, message: "Order cannot be cancelled after shipment" });
+            return res.status(400).json({ success: false, message: "Order cannot be cancelled after shipment or delivery" });
         }
 
-        
-        if (orderItem.product) {
-            const product = orderItem.product; 
-            product.stock += orderItem.quantity; 
-            await product.save(); 
-            console.log(`Stock updated: ${product.productName} now has ${product.stock} items.`);
+        // Update the product stock
+        if (order.productId) {
+            order.productId.stock += order.quantity; 
+            await order.productId.save(); 
+            console.log(`Stock updated: ${order.productId.name} now has ${order.productId.stock} items.`);
         }
 
-        orderItem.status = "Cancelled";
-        orderItem.cancellationReason = reason;
-
-        
-        const allCancelled = order.orderItems.every(item => item.status === "Cancelled");
-        if (allCancelled) {
-            order.status = "Cancelled";
-        }
+        // Update order status
+        order.status = "Cancelled";
+        order.cancellationReason = reason;
 
         await order.save();
 
-        res.json({ success: true, message: "Order item cancelled and stock updated successfully" });
+        res.json({ success: true, message: "Order cancelled and stock updated successfully" });
     } catch (error) {
         console.error("Error cancelling order item:", error);
         res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 };
+
 
 
 const orderDetails = async (req, res) => {
