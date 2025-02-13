@@ -13,6 +13,10 @@ const orderSchema = new Schema({
         default: () => uuidv4(),
         unique: true
     },
+    orderGroupId: {
+        type: String,
+        required: true
+    },
     productId: {  
         type: Schema.Types.ObjectId,
         ref: "Product",
@@ -61,11 +65,12 @@ const orderSchema = new Schema({
         type: Boolean,
         default: false
     },
-    orderMethod: { 
-        type: String,
-        enum: ['Cash on Delivery', 'Online Payment'],
-        default:'Cash on Delivery',
-        required: true },
+    paymentId:{
+        type:String,
+        required:false
+    },
+    paymentMethod: { type: String, required: true },
+    paymentStatus: { type: String, enum: ["Pending", "Paid"], default: "Pending" },
 });
 
 const Order = mongoose.model("Order", orderSchema);

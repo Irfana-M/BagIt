@@ -40,19 +40,50 @@
             font-weight: 600;
         }
 
-        .tracking-step {
+                .tracking-progress {
             display: flex;
-            align-items: center;
             justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin: 20px 0;
+            position: relative;
         }
 
-        .tracking-step .status {
+        .progress-step {
+            text-align: center;
+            flex: 1;
+            position: relative;
+        }
+
+        .step-circle {
+            width: 35px;
+            height: 35px;
+            line-height: 35px;
+            border-radius: 50%;
+            background-color: #d6d6d6;
+            color: #fff;
             font-weight: bold;
+            margin: auto;
+            transition: 0.3s ease-in-out;
         }
 
-        .tracking-step .date {
-            color: #6c757d;
+        .status-text {
+            font-size: 14px;
+            margin-top: 5px;
         }
+
+        .progress-step.active .step-circle {
+            background-color: #007bff;
+        }
+
+        .expected-date {
+            font-size: 12px;
+            color: #28a745;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+
 
         .order-summary {
             background-color: #f8f9fa;
@@ -160,17 +191,30 @@
                 <hr>
 
                 <!-- Tracking History -->
-                <div class="order-summary mb-4">
-                    <h5>Order Tracking</h5>
-                    <ul class="list-group">
-                        <% order.trackingHistory.forEach(entry => { %>
-                            <li class="list-group-item">
-                                <strong><%= entry.date %></strong> - <%= entry.status %>
-                            </li>
-                        <% }); %>
-                    </ul>
-                </div>
+                <!-- Order Tracking -->
 
+                <h5>Order Tracking</h5>
+                    <div class="tracking-progress">
+                        <% let currentStatusReached = false; %>
+                        <% order.trackingHistory.forEach((track, index) => { %>
+                            <div class="progress-step <%= track.status === order.status ? 'active' : '' %>">
+                                <div class="step-circle"><%= index + 1 %></div>
+                                <p class="status-text"><%= track.status %></p>
+
+                                <% if (track.status === order.status) { 
+                                    currentStatusReached = true; 
+                                } %>
+
+                                <% if (track.status === order.status) { %>
+                                    <!-- Show date normally for current status -->
+                                    <p class="date"><%= track.date %></p>
+                                <% } else if (currentStatusReached) { %>
+                                    <!-- Show "Expected: DD/MM/YYYY" for future statuses -->
+                                    <p class="expected-date">Expected: <%= track.date %></p>
+                                <% } %>
+                            </div>
+                        <% }); %>
+                    </div>
             </div>
 
             <div class="card-footer">

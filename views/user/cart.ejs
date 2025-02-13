@@ -187,6 +187,38 @@
         margin-top: 10px;
     }
 }
+.cartImg {
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.list-group-item {
+    border: none;
+    padding: 0.75rem 0;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #004085;
+}
+
+.btn-outline-secondary {
+    border-color: #ddd;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #f8f9fa;
+}
 
 </style>
 
@@ -270,189 +302,124 @@
     </section>
     <!-- End Banner Area -->
 
-    <!--================Cart Area =================-->
-    <section class="cart_area">
-        <div class="container">
-            <div class="cart_inner">
-                <div class="table-responsive">
-                    <% if (cart && cart.items && cart.items.length > 0) { %>
-                    <table class="table">
-                        <thead>
+<!--================Cart Area =================-->
+<section class="cart_area py-5">
+    <div class="container">
+        <div class="cart_inner bg-white p-4 rounded shadow-sm">
+            <% if (cart && cart.length > 0) { %>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col">Product</th>
+                            <th scope="col">Product Name</th>
+                            <th scope="col">Price</th>
+                            <th scope="col">Quantity</th>
+                            <th scope="col">Total</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% cart.forEach((item) => { %>
+                            <% if (item.productId && item.productId.productName && item.productId.productImage) { %>
                             <tr>
-                                <th scope="col">Product</th>
-                                <th scope="col">Product Name</th>
-                                <th scope="col">Price</th>
-                                <th scope="col">Quantity</th>
-                                <th scope="col">Total</th>
-                                <th scope="col">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% cart.items.forEach((item) => { %>
-                                <% if (item.productId && item.productId.productName && item.productId.productImage) { %>
-                                <tr>
-                                    <td>
-                                        <div class="media">
-                                            <div class="d-flex">
-                                                <img class="cartImg" src="/uploads/product-images/<%= item.productId.productImage[0] %>" alt="<%= item.productId.name %>">
-                                            </div>
-                                            <div class="media-body">
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <h5><%= item.productId.productName %></h5>
-                                    </td>
-                                    <td>
-                                        <h5><%= item.productId.salePrice %>₹</h5>
-                                    </td>
-                                    <td>
-                                        <div class="product_count">
-                                            <input type="text" name="qty" id="sst-<%= item.productId._id %>" maxlength="12" value="<%= item.quantity %>" title="Quantity:"
-                                                class="input-text qty">
-                                            <button onclick="increaseQuantity('<%= item.productId._id %>', '<%= item.productId.quantity %>')" class="increase items-count" type="button"><i class="lnr lnr-chevron-up"></i></button>
-                                            <button onclick="decreaseQuantity('<%= item.productId._id %>', '<%= item.productId.quantity %>')" class="reduced items-count" type="button"><i class="lnr lnr-chevron-down"></i></button>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <h5><%= item.totalPrice%>₹</h5>
-                                    </td>
-                                    <td>
-                                        <a href="/deleteCart?id=<%= item.productId._id %>" onclick="return confirm('Are you sure you want to delete this item?')">
-                                            <i class="bi bi-trash text-danger" style="font-size: 1.2rem; cursor: pointer;"></i>
-                                        </a>
-                                    </td>
-                                    
-                                </tr>
-                                <% } %>
-                            <% }) %>
-                            <tr class="bottom_button">
                                 <td>
-                                   
-                                </td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td>
-                                    <!-- <div class="cupon_text d-flex align-items-center">
-                                        <input type="text" placeholder="Coupon Code">
-                                        <a class="primary-btn" href="#">Apply</a>
-                                    </div> --> <!-- Applied Coupon Discount -->
-                                    <% if (appliedCoupon) { %>
-                                        <p>Applied Coupon: <strong><%= appliedCoupon.name %></strong> - ₹<%= couponDiscount %> OFF</p>
-                                        <a href="/remove-coupon" class="btn btn-danger">Remove Coupon</a>
-                                    <% } else { %>
-                                        <p>No Coupon Applied</p>
-                                    <% } %>
-                                    
-                                    <h4>Final Total: ₹<%= finalTotal %></h4>
-                                    
-                                    <hr>
-                                    
-                                    <!-- Coupon Application Form -->
-                                    <h3>Apply Coupon</h3>
-                                    <form action="/apply-coupon" method="POST">
-                                        <input type="text" name="couponCode" placeholder="Enter Coupon Code" required>
-                                        
-                                        <!-- Pass cart items as hidden fields -->
-                                        <% cart.items.forEach((item, index) => { %>
-                                            <input type="hidden" name="cartItems[<%= index %>][productId]" value="<%= item.productId %>">
-                                            <input type="hidden" name="cartItems[<%= index %>][totalPrice]" value="<%= item.totalPrice %>">
-                                        <% }); %>
-                                        
-                                        <button type="submit">Apply Coupon</button>
-                                    </form>
-                                    
-                                    
-                                    <!-- Available Coupons List -->
-                                    <% if (coupons.length > 0) { %>
-                                        <h4>Available Coupons:</h4>
-                                        <ul>
-                                            <% coupons.forEach(coupon => { %>
-                                                <li>
-                                                    <strong><%= coupon.name %></strong> - ₹<%= coupon.offerPrice %> Off 
-                                                    (Min Purchase: ₹<%= coupon.minimumPrice %>)
-                                                </li>
-                                            <% }) %>
-                                        </ul>
-                                    <% } else { %>
-                                        <p>No Coupons Available</p>
-                                    <% } %>
-                                    
-                                </td>
-                            </tr>
-                            <tr>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td>
-                                    <h5>Subtotal</h5>
-                                </td>
-                                <td>
-                                    <h5><%= cart.items.reduce((acc, item) => acc + item.totalPrice, 0) %>₹</h5>
-                                </td>
-                            </tr>
-                            <tr class="shipping_area">
-                                <td></td>
-                                <td></td>
-                                <td><% if (errorMessage.length) { %>
-                                    <div class="alert alert-danger"><%= errorMessage[0] %></div>
-                                <% } %>
-                                
-                                <% if (successMessage.length) { %>
-                                    <div class="alert alert-success"><%= successMessage[0] %></div>
-                                <% } %>
-                                
-                                    <!-- <% if (appliedCoupon) { %>
-                                        <p>Applied Coupon: <strong><%= appliedCoupon.name %></strong> - ₹<%= appliedCoupon.discount %> OFF</p>
-                                        <a href="/remove-coupon" class="btn btn-danger">Remove Coupon</a>
-                                    <% } else { %>
-                                        <p>No Coupon Applied</p>
-                                    <% } %> -->
-                                    
-                                    <!-- <h4>Final Total: ₹<%= finalTotal %></h4>
-                                     -->
-                                </td>
-                                <td>
-                                    <h5>Price Details</h5>
-                                </td>
-                                <td>
-                                    <div class="shipping_box">
-                                        <ul class="list">
-                                            <li>Total Price:           ₹<%= totalPriceWithoutOffer.toLocaleString('en-IN') %>;</li>
-                                            <li>Total Discount Price: -₹<%= totalDiscount.toLocaleString('en-IN') %></li>
-                                            <li>Coupens for you:      -₹<%= couponDiscount.toLocaleString('en-IN') %></li>
-                                            <li >Delivery Charges     -₹<%= shippingCharge.toLocaleString('en-IN') %></li>
-                                            <li ><h5>Total Amount:     ₹<%= finalTotal.toLocaleString('en-IN') %></h5></li>
-                                        </ul>
+                                    <div class="d-flex align-items-center">
+                                        <img class="cartImg me-3" src="/uploads/product-images/<%= item.productId.productImage[0] %>" alt="<%= item.productId.name %>" style="width: 80px; height: 80px; object-fit: cover;">
                                     </div>
                                 </td>
+                                <td>
+                                    <h5 class="mb-0"><%= item.productId.productName %></h5>
+                                </td>
+                                <td>
+                                    <h5 class="mb-0">₹<%= item.productId.salePrice %></h5>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <button onclick="decreaseQuantity('<%= item.productId._id %>', '<%= item.productId.quantity %>')" class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-dash"></i>
+                                        </button>
+                                        <input type="text" name="qty" id="sst-<%= item.productId._id %>" maxlength="12" value="<%= item.quantity %>" class="form-control form-control-sm mx-2 text-center" style="width: 50px;">
+                                        <button onclick="increaseQuantity('<%= item.productId._id %>', '<%= item.productId.quantity %>')" class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-plus"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                                <td>
+                                    <h5 class="mb-0">₹<%= item.totalPrice %></h5>
+                                </td>
+                                <td>
+                                    <a href="/deleteCart?id=<%= item.productId._id %>" onclick="return confirm('Are you sure you want to delete this item?')" class="btn btn-sm btn-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </td>
                             </tr>
-                            <tr>
-                                <tr class="out_button_area">
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td>
-                                        <div class="checkout_btn_inner d-flex align-items-center">
-                                            <a class="gray_btn" href="/shop">Continue Shopping</a>
-                                            <a class="primary-btn" href="/checkout">Place Order</a>
-                                        </div>
-                                    </td>
-                                </tr>
-    
-                            </tr>
-                            <% } else { %>
-                                <p>Your cart is empty. <a href="/shop">Continue shopping</a></p>
                             <% } %>
-                        </tbody>
-                    </table>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Coupon and Price Details Section -->
+
+                <div class="col-md-4">
+                    <!-- Price Details -->
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Price Details</h5>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Total Price
+                                    <span>₹<%= totalPriceWithoutOffer.toLocaleString('en-IN') %></span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Total Discount
+                                    <span>-₹<%= totalDiscount.toLocaleString('en-IN') %></span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center fw-bold">
+                                    Total Amount
+                                    <span>₹<%= finalTotal.toLocaleString('en-IN') %></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            <!-- Continue Shopping and Checkout Buttons -->
+            <div class="d-flex justify-content-between mt-4">
+                <a href="/shop" class="btn btn-outline-secondary">Continue Shopping</a>
+                <a href="/checkout" class="btn btn-primary">Place Order</a>
+            </div>
+            <% } else { %>
+                <div class="text-center py-5">
+                    <h3>Your cart is empty</h3>
+                    <p class="mb-4">Looks like you haven't added anything to your cart yet.</p>
+                    <a href="/shop" class="btn btn-primary">Continue Shopping</a>
+                </div>
+            <% } %>
         </div>
-    </section>
+    </div>
+</section>
+<% if (cart && cart.length > 0) { %>
+    <!-- Cart Items Table/Display Here -->
+  
+    <!-- Pagination Controls -->
+    <div class="pagination">
+      <% if (currentPage > 1) { %>
+        <a href="?page=<%= currentPage - 1 %>">Previous</a>
+      <% } %>
+  
+      <span>Page <%= currentPage %> of <%= totalPages %></span>
+  
+      <% if (currentPage < totalPages) { %>
+        <a href="?page=<%= currentPage + 1 %>">Next</a>
+      <% } %>
+    </div>
+  <% } else { %>
+    <p>Your cart is empty.</p>
+  <% } %>
+  
     
     <!--================End Cart Area =================-->
 

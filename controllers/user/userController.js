@@ -4,6 +4,7 @@ const Product = require('../../models/productSchema')
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
 const env = require("dotenv").config();
+const mongoose = require("mongoose");
 
 const  pageNotFound = async (req,res)=>{
     try{
@@ -141,6 +142,8 @@ const securePassword = async (password)=>{
         
     }
 }
+
+
 const verifyOtp = async(req,res)=>{
     
     try {
@@ -266,6 +269,9 @@ try {
     }));
     //console.log(categoriesWithIds);
     // Render the shop page with the appropriate data
+    const sort = req.query.sort || ""; // Get sorting value from query params
+
+
     res.render("shop", {
         user: userData,
         products: products,
@@ -274,6 +280,7 @@ try {
         currentPage: page,
         totalPages: totalPages,
         message: message ,
+        sort
     });
 } catch (error) {
     console.error("Error while loading shop page:", error);
@@ -325,7 +332,9 @@ const filterProduct = async (req, res) => {
                 await userData.save();
             }
         }
-
+        const sort = req.query.sort || ""; // Get sorting value from query params
+        
+        
         req.session.filteredProducts = currentProduct;
         res.render("shop", {
             user: userData,
@@ -334,7 +343,8 @@ const filterProduct = async (req, res) => {
             totalPages,
             currentPage,
             selectedCategory: category || null,
-            message: message 
+            message: message ,
+            sort
         });
 
     } catch (error) {
@@ -376,14 +386,15 @@ const filterByPrice = async (req, res) => {
         
         req.session.filteredProducts = findProducts;
 
-        
+        const sort = req.query.sort || ""; 
+
         res.render("shop", {
             user: userData,
             products: currentProducts,
             category: categories,
             totalPages,
             currentPage: validPage,
-            message
+            message,sort
         });
 
         
@@ -403,53 +414,82 @@ const searchProducts = async (req, res) => {
         const userData = await User.findOne({ _id: user });
 
         let search = (req.body.query || req.query.query || "").toString().trim();
+        let gt = parseInt(req.query.gt) || 0;
+        let lt = parseInt(req.query.lt) || Number.MAX_SAFE_INTEGER;
+        let sortOption = req.query.sort || "";
+        let selectedCategory = req.query.category || "";
 
         const categories = await Category.find({ isListed: true }).lean();
-        const categoryIds = categories.map(category => category._id.toString());
+        const categoryIds = categories.map(category => category._id);
 
-        let searchResult = [];
+        let query = {
+            isBlocked: false,
+            quantity: { $gt: 0 },
+            salePrice: { $gte: gt, $lte: lt }
+        };
 
-        if (req.session.filteredProducts && Array.isArray(req.session.filteredProducts)) {
-            // If filtered products exist in session, search within them
-            searchResult = req.session.filteredProducts.filter(product => 
-                product.productName.toLowerCase().includes(search.toLowerCase())
-            );
-        } else if (search) {
-            // Fetch from database if no session-stored products and search query is not empty
-            searchResult = await Product.find({
-                productName: { $regex: ".*" + search + ".*", $options: "i" },
-                isBlocked: false,
-                quantity: { $gt: 0 },
-                category: { $in: categoryIds }
-            }).lean();
-        } else {
-            // Handle empty search query
-            searchResult = await Product.find({
-                isBlocked: false,
-                quantity: { $gt: 0 },
-                category: { $in: categoryIds }
-            }).lean();
+        console.log("selectedCategory:", selectedCategory);
+
+        // Handle Category Filtering using conditional array
+        if (selectedCategory) {
+            if (mongoose.Types.ObjectId.isValid(selectedCategory)) {
+                query.category = new mongoose.Types.ObjectId(selectedCategory);
+            } else {
+                query.category = { $in: categoryIds };
+            }
+            console.log("Category Filter (selectedCategory):", query.category);
+        } else if (categoryIds.length > 0) {
+            query.category = { $in: categoryIds };
+            console.log("Category Filter (all categories):", query.category);
         }
 
-        // Sort by latest created products
-        searchResult.sort((a, b) => new Date(b.createdOn) - new Date(a.createdOn));
+        // Apply search filter for product name if search term exists
+        if (search) {
+            query.productName = { $regex: search, $options: "i" };
+        }
 
-        // Pagination setup
+        console.log("Final Query Object:", JSON.stringify(query, null, 2));
+
         let itemsPerPage = 6;
         let currentPage = parseInt(req.query.page) || 1;
-        let startIndex = (currentPage - 1) * itemsPerPage;
-        let totalPages = Math.ceil(searchResult.length / itemsPerPage);
-        const currentProduct = searchResult.slice(startIndex, startIndex + itemsPerPage);
+        let skip = (currentPage - 1) * itemsPerPage;
+
+        // Sorting Logic
+        let sortCriteria = {};
+        if (sortOption === "price_asc") {
+            sortCriteria.price = 1;
+        } else if (sortOption === "price_desc") {
+            sortCriteria.price = -1;
+        } else {
+            sortCriteria.createdOn = -1;
+        }
+
+        console.log("Sorting Criteria:", sortCriteria);
+        console.log("Pagination - Skip:", skip, " Items Per Page:", itemsPerPage);
+
+        let searchResult = await Product.find(query)
+            .sort(sortCriteria)
+            .skip(skip)
+            .limit(itemsPerPage)
+            .lean();
+
+        console.log("Search Result:", searchResult);
+
+        let totalProducts = await Product.countDocuments(query);
+        let totalPages = Math.ceil(totalProducts / itemsPerPage);
 
         res.render("shop", {
             user: userData,
-            products: currentProduct,
+            products: searchResult,
             category: categories,
             totalPages,
             currentPage,
-            count: searchResult.length, // Total count of search results
-            message
+            count: totalProducts,
+            message,
+            sort: sortOption,
+            selectedCategory
         });
+
     } catch (error) {
         console.error("Search Error:", error);
         res.redirect("/pageNotFound");
@@ -460,104 +500,82 @@ const searchProducts = async (req, res) => {
 
 
 
-const getSortProduct = async (req, res) => {
+const sortProduct = async (req, res) => {
     try {
-        const { category, gt, lt, sort, page } = req.query;
-
-        // Reset category and price filters if sorting is applied
-        const filterQuery = {
-            isBlocked: false,
-            quantity: { $gt: 0 }, // Ensure the product is in stock
-        };
-
-        // Apply sorting logic
-        let sortOptions = {};
-        switch (sort) {
-            case 'price-asc': sortOptions = { salePrice: 1 }; break;
-            case 'price-desc': sortOptions = { salePrice: -1 }; break;
-            case 'name-asc': sortOptions = { productName: 1 }; break;
-            case 'name-desc': sortOptions = { productName: -1 }; break;
-            default: sortOptions = { createdOn: -1 }; // Default sorting by creation date
-        }
-
-        // Fetch products
-        const products = await Product.find(filterQuery).sort(sortOptions).lean();
-
-        // Pagination
-        const itemsPerPage = 6;
-        const currentPage = Math.max(parseInt(page) || 1, 1);
-        const totalPages = Math.ceil(products.length / itemsPerPage);
-        const validPage = Math.min(currentPage, totalPages);
-        const startIndex = (validPage - 1) * itemsPerPage;
-        const endIndex = startIndex + itemsPerPage;
-        const currentProducts = products.slice(startIndex, endIndex);
-
-        // Fetch categories for the sidebar
+        const user = req.session.user;
+        const userData = await User.findOne({ _id: user });
         const categories = await Category.find({ isListed: true }).lean();
-
-        // Render the shop page
-        res.render('shop', {
-            products: currentProducts,
-            category: categories,
-            totalPages,
-            currentPage: validPage,
-            sort, // Pass the sort parameter to the view
-        });
-    } catch (error) {
-        console.error("Error in getSortProduct:", error);
-        res.redirect('/pageNotFound');
-    }
-};
-
-
-const SortProduct = async (req, res) => {
-    try {
-        let sortQuery = {};
-        const { sort, page } = req.query;
-        console.log(sort,page);
-        const message = req.session.message || null;
+        let message = req.session.message || null;
         req.session.message = null;
 
+        const { category, gt, lt, sort, page } = req.query;
 
-        // Apply sorting based on query parameter
-        if (sort === "price_asc") {
-            sortQuery = { salePrice: 1 };  // Sort price from low to high
-        } else if (sort === "price_desc") {
-            sortQuery = { salePrice: -1 }; // Sort price from high to low
-        } else if (sort === "name_asc") {
-            sortQuery = { productName: 1 };  // Sort alphabetically A-Z
-        } else if (sort === "name_desc") {
-            sortQuery = { productName: -1 }; // Sort alphabetically Z-A
+        // Set default price range
+        const gtPrice = parseFloat(gt) || 0;
+        const ltPrice = parseFloat(lt) || Infinity;
+
+        // Build query
+        let query = {
+            salePrice: { $gt: gtPrice, $lt: ltPrice }, 
+            quantity: { $gt: 0 } // Only products in stock
+        };
+
+        // Apply category filter if selected
+        let selectedCategory = null;
+        if (category) {
+            const findCategory = await Category.findById(category);
+            if (findCategory) {
+                query.category = findCategory._id; 
+                selectedCategory = findCategory._id; 
+            }
         }
 
-        // Fetch categories for the sidebar
-        const categories = await Category.find({ isListed: true }).lean();
+        // Sorting logic
+        let sortQuery = {};
+        if (sort === "price_asc") {
+            sortQuery = { salePrice: 1 }; // Price Low to High
+        } else if (sort === "price_desc") {
+            sortQuery = { salePrice: -1 }; // Price High to Low
+        } else if (sort === "name_asc") {
+            sortQuery = { productName: 1 }; // A-Z
+        } else if (sort === "name_desc") {
+            sortQuery = { productName: -1 }; // Z-A
+        } else {
+            sortQuery = { createdOn: -1 }; // Default: Newest first
+        }
 
-        // Fetch all products with sorting applied
-        const products = await Product.find().sort(sortQuery).lean();
-        console.log(products);
+        // Pagination setup
+        const itemsPerPage = 6;
+        const currentPage = Math.max(parseInt(page) || 1, 1);
+        const totalProducts = await Product.countDocuments(query);
+        const totalPages = Math.max(Math.ceil(totalProducts / itemsPerPage), 1);
+        const validPage = Math.min(currentPage, totalPages);
+        const startIndex = (validPage - 1) * itemsPerPage;
 
-        // Pagination logic
-        const itemsPerPage = 6;  // Number of products per page
-        const currentPage = Math.max(parseInt(page) || 1, 1);  // Get the current page from query, default to 1
-        const totalPages = Math.ceil(products.length / itemsPerPage);  // Calculate total pages
-        const validPage = Math.min(currentPage, totalPages);  // Ensure the current page is not out of bounds
-        const startIndex = (validPage - 1) * itemsPerPage;  // Calculate start index for products on current page
-        const endIndex = startIndex + itemsPerPage;  // Calculate end index for products on current page
-        const currentProducts = products.slice(startIndex, endIndex);  // Get the products for the current page
+        // Fetch products with filtering, sorting, and pagination
+        const currentProducts = await Product.find(query)
+            .sort(sortQuery)
+            .skip(startIndex)
+            .limit(itemsPerPage)
+            .lean();
 
-        // Render the shop page with products, categories, and pagination details
+        // Render shop page
         res.render("shop", {
+            user: userData,
             products: currentProducts,
+            category: categories,
+            selectedCategory,
             totalPages,
             currentPage: validPage,
-            sort,  // Pass the sort parameter to maintain sorting on page reload
-            category: categories,
-            message  // Pass the categories to the view
+            message,
+            sort,
+            gt: gt || "",
+            lt: lt || "",
         });
+
     } catch (error) {
-        console.error("Error fetching products:", error);
-        res.status(500).json({ message: "Internal Server Error" });
+        console.error("Error in filterByPrice:", error);
+        res.redirect("/pageNotFound");
     }
 };
 
@@ -590,5 +608,5 @@ const logout = async (req,res)=>{
 
 
 module.exports = {loadHomepage,pageNotFound,loadLogin,loadSignUp,signUp,verifyOtp,resendOtp,login,logout,
-    loadShoppingPage,filterProduct,filterByPrice,searchProducts,getSortProduct,SortProduct
+    loadShoppingPage,filterProduct,filterByPrice,searchProducts,sortProduct
 };

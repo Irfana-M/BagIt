@@ -7,7 +7,7 @@ const loadCoupon = async (req,res)=>{
 
         return res.render("coupon",{activePage:"coupon",coupons:findCoupons});
     } catch (error) {
-       return res.redirect("/pageerror"); 
+       return res.redirect("/admin/pageerror"); 
     }
 }
 
@@ -31,7 +31,7 @@ const createCoupon = async  (req,res)=>{
         await newCoupon.save();
         return res.redirect("/admin/coupon");
     } catch (error) {
-        res.redirect("/pageeeror");
+        return res.redirect("/admin/pageerror");
     }
 }
 
@@ -44,7 +44,7 @@ const editCoupon = async (req,res)=>{
             activePage : 'coupon'
         })
     } catch (error) {
-        res.redirect('/pageerror');
+       return  res.redirect("/admin/pageerror");
     }
 }
 
@@ -78,7 +78,7 @@ const updateCoupon = async (req,res)=>{
             }
         }
     } catch (error) {
-        res.redirect("/pageerror");
+       return res.redirect("/admin/pageerror");
     }
 }
 
@@ -100,7 +100,9 @@ const deleteCoupon = async (req, res) => {
         res.status(200).send({ success: true, message: "Coupon deleted successfully" });
     } catch (error) {
         console.error("Error deleting coupon:", error);
-        res.status(500).send({ success: false, message: "Failed to delete coupon" });
+        //res.status(500).send({ success: false, message: "Failed to delete coupon" });
+       return res.redirect("/admin/pageerror");
+
     }
 };
 

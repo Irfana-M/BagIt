@@ -9,7 +9,6 @@ const userRouter = require('./routes/userRouter');
 const adminRouter = require('./routes/adminRouter');
 const User = require('./models/userSchema');
 const MongoStore = require("connect-mongo");
-const flash = require("express-flash");
 
 
 
@@ -30,7 +29,6 @@ app.use(session({
 }))
 app.use(passport.initialize());
 app.use(passport.session()); 
-app.use(flash());
 app.use((req, res, next) => {
   res.set('Cache-Control', 'no-store');
   next();

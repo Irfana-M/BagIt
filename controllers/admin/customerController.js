@@ -30,7 +30,8 @@ const customerInfo = async(req,res)=>{
         activePage: 'customers'});
     } catch (error) {
         console.error(error);
-        res.status(500).send("An error occured");
+        //res.status(500).send("An error occured");
+        return res.redirect("/admin/pageerror");
     }
 }
 

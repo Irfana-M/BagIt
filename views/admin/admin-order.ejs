@@ -150,17 +150,10 @@
                                   </td>
                                   
                                 <td>₹<%=order.price %></td>
-                                <td><%=order.invoiceDate %></td>
+                                <td><%=order.formattedCreatedOn %></td>
                                 
                                 <td><%=order.status%>
-                                    <!-- <select class="order-status-dropdown" data-order-id="<%= order._id %>" data-current-status="<%= order.status %>">
-                                        <option value="Order Placed" <%= order.status === 'Order Placed' ? 'selected' : '' %>>Pending</option>
-                                        <option value="Processing" <%= order.status === 'Processing' ? 'selected' : '' %>>Processing</option>
-                                        <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
-                                        <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
-                                        <option value="Out for Delivery" <%= order.status === 'Out for Delivery' ? 'selected' : '' %>>Out for Delivery</option>
-                                        <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
-                                    </select> -->
+                                    
                                 </td>
                                 <td>
                                     <a href="/admin/order-details/<%= order._id %>">
@@ -169,11 +162,7 @@
                                             View
                                         </button>
                                     </a>
-                                    <!-- <a href="/admin/delete-order/<%= order._id %>>
-                                    <button class="btn btn-danger delete-order " data-order-id="<%= order._id %>" <%= (order.status === 'Delivered' || order.status === 'Cancelled') ? 'disabled' : '' %>>
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                    </a> -->
+                                   
                                 </td>
                             </tr>
                         <% }); %>

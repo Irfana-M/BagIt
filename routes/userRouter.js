@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const passport = require("passport");
+const Razorpay = require("razorpay");
+const crypto = require("crypto");
 const userController = require('../controllers/user/userController');
 const productController = require("../controllers/user/productController");
 const profileController = require("../controllers/user/profileController");
@@ -8,7 +10,17 @@ const cartController = require("../controllers/user/cartController");
 const orderController = require("../controllers/user/orderController");
 const wishlistController = require("../controllers/user/wishlistController")
 const {userAuth,adminAuth} = require("../middlewares/auth");
-//const google = require('google');
+
+const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET
+});
+
+//payment management
+router.post('/razorpay-payment',userAuth,orderController.razorpayPayment);
+router.post('/razorpay-verify',userAuth,orderController.verifyRazorpay);
+router.post('/cod-payment',userAuth,orderController.codPayment);
+router.post('/wallet-payment',userAuth,orderController.walletPayment)
 
 //home page
 router.get('/pageNotFound',userController.pageNotFound);
@@ -17,15 +29,15 @@ router.get('/',userController.loadHomepage);
 router.get("/shop",userController.loadShoppingPage);
 router.get('/filter',userController.filterProduct);
 router.get('/filterPrice',userController.filterByPrice);
-router.post('/search',userController.searchProducts);
+router.get('/search',userController.searchProducts);
 router.get("/productDetails",productController.productDetails);
 //Wishlist Management
 router.get("/wishlist",userAuth,wishlistController.loadWishlist);
 router.post("/addToWishlist",userAuth,wishlistController.addToWishlist);
 router.get("/removeFromWishlist",userAuth,wishlistController.removeProducts);
 //sortProduct
-router.get("/sortProduct",userController.getSortProduct);
-router.get("/sortProducts",userController.SortProduct);
+//router.get("/sortProduct",userController.getSortProduct);
+router.get("/sortProducts",userController.sortProduct);
 //user management
 router.get('/signup',userController.loadSignUp);
 router.get('/login',userController.loadLogin);
@@ -68,15 +80,14 @@ router.get("/checkout",userAuth,cartController.getCheckout);
 router.get("/confirmation",userAuth,cartController.getConfirmation);
 //coupen management
 router.post("/apply-coupon",userAuth,cartController.applyCoupon);
-router.get("/remove-coupon", (req, res) => {
-    req.session.couponCode = null;
-    res.redirect("/view-cart?success=Coupon Removed");
-});
+router.post("/remove-coupon",userAuth,cartController.removeCoupon );
+
 
 //order management
 router.get("/orders",userAuth,orderController.getOrder);
 router.post("/cancelOrder/:orderId",userAuth,orderController.cancelOrderItem);
 router.get("/orderDetails/:orderId",userAuth,orderController.orderDetails);
+router.put("/cancel-order/:orderGroupId",userAuth,orderController.cancelOrder);
 
 //logout
 router.get('/logout',userController.logout);

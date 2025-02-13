@@ -30,7 +30,7 @@ const categoryInfo = async (req, res) => {
         });
     } catch (error) {
         console.error(error);
-        res.redirect("/pageerror");
+        res.redirect("/admin/pageerror");
     }
 }
 
@@ -54,6 +54,8 @@ const categoryInfo = async (req, res) => {
              return res.status(500).json({error:"Internal server error"})
         }
     }
+
+
 
     const addCategoryOffer = async(req,res)=>{
         try {
@@ -122,7 +124,7 @@ const categoryInfo = async (req, res) => {
             await Category.updateOne({_id:id},{$set:{isListed:false}});
             res.redirect("/admin/category");
         } catch (error) {
-           res.redirect('/pageerror'); 
+           res.redirect('/admin/pageerror'); 
         }
     }
 
@@ -133,7 +135,7 @@ const categoryInfo = async (req, res) => {
             await Category.updateOne({_id:id},{$set:{isListed:true}});
             res.redirect("/admin/category");
         } catch (error) {
-            res,redirect("/pageerror");
+            res,redirect("/admin/pageerror");
         }
     }
 
@@ -147,7 +149,7 @@ const categoryInfo = async (req, res) => {
             console.log(category);
             res.render("edit-category",{category:category,activePage: 'category'});
         } catch (error) {
-           res.redirect('/pageerror'); 
+           res.redirect('/admin/pageerror'); 
         }
     }
 
@@ -156,13 +158,7 @@ const categoryInfo = async (req, res) => {
         try {
             
             const id = req.params.id;
-            // console.log(id);
             const {categoryName,description} = req.body;
-            //const existingCategory = await Category.findOne({name:categoryName});
-
-            // if(existingCategory){
-            //     return res.status(400).json({error:"Category exists ,Please choose another one"});
-            // }
             const updateCategory = await Category.findByIdAndUpdate(id,{
                 name:categoryName,
                 description:description},{new:true});
@@ -173,19 +169,21 @@ const categoryInfo = async (req, res) => {
                 res.status(404).json({error:"Category not found"})
             }
         } catch (error) {
-            res.status(500).json({error:"Internal server error"});
+            console.error("Error caught:", error);
+           return res.redirect('/admin/pageerror'); 
+            //res.status(500).json({error:"Internal server error"});
         }
     }
 
     const deleteCategory = async (req, res) => {
         try {
-          const { categoryId } = req.body; // Get categoryId from the request body
+          const { categoryId } = req.body; 
           console.log(categoryId);
           if (!categoryId) {
             return res.status(400).json({ status: false, message: "Category ID is required." });
           }
       
-          const deletedCategory = await Category.findByIdAndDelete(categoryId); // Delete the category
+          const deletedCategory = await Category.findByIdAndDelete(categoryId); 
       
           if (!deletedCategory) {
             return res.status(404).json({ status: false, message: "Category not found." });

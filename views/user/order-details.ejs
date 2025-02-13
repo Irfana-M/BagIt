@@ -280,6 +280,22 @@ button:hover, a:hover {
       </div>
     </div>
 
+    <!-- Other Items in the Same Order Section -->
+    <div class="other-items">
+      <h3>Other Items in the Same Order</h3>
+      <% otherItems.forEach(item => { %>
+        <div class="product" >
+          <img style="height: 10%; width: 10%;" src="/uploads/product-images/<%= item.image[0] %>" alt="Product Image">
+          <div class="product-info">
+            <h4><%= item.name %></h4>
+            <p><strong>Status:</strong> <%= item.status %></p> 
+          </div>
+        </div>
+      <% }); %>
+    </div>
+    <button class="btn btn-warning" onclick="cancelOrder('<%= order.orderGroupId %>')">Cancel Order</button>
+
+
     <!-- Tracking Information Section -->
     <div class="tracking-info">
       <h3>Track Your Order</h3>
@@ -308,6 +324,7 @@ button:hover, a:hover {
   </div>
   
 
+
     <!-- Shipping Address Section -->
     <% if (address) { %>
       <div class="shipping-address">
@@ -335,5 +352,51 @@ button:hover, a:hover {
   <footer>
     <p>&copy; 2025 Your Company Name. All Rights Reserved.</p>
   </footer>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script>
+    function cancelOrder(orderGroupId) {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "Do you want to cancel this order?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Yes, cancel it!"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/cancel-order/${orderGroupId}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    Swal.fire({
+                        title: "Cancelled!",
+                        text: data.message,
+                        icon: "success",
+                        confirmButtonText: "OK"
+                    }).then(() => {
+                        window.location.reload(); // Refresh to update status
+                    });
+                })
+                .catch(error => {
+                    Swal.fire({
+                        title: "Error!",
+                        text: "Something went wrong. Please try again.",
+                        icon: "error",
+                        confirmButtonText: "OK"
+                    });
+                });
+            }
+        });
+    }
+</script>
+
+
+
 </body>
 </html>

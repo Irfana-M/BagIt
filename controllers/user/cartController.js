@@ -1,526 +1,486 @@
-const User = require('../../models/userSchema');
-const Cart = require('../../models/cartSchema');
-const Product = require('../../models/productSchema');
-const Address = require('../../models/addressSchema');
-const Order = require('../../models/orderSchema');
-const Coupon = require('../../models/couponSchema');
-const { v4: uuidv4 } = require('uuid');
-const { session } = require('passport');
-
-
+const User = require("../../models/userSchema");
+const Cart = require("../../models/cartSchema");
+const Product = require("../../models/productSchema");
+const Address = require("../../models/addressSchema");
+const Order = require("../../models/orderSchema");
+const Coupon = require("../../models/couponSchema");
+const { v4: uuidv4 } = require("uuid");
+const { session } = require("passport");
 
 const addToCart = async (req, res) => {
-    try {
-        const userId = req.session.user; 
-        const productId = req.query.id;  
-        
-        const product = await Product.findById(productId);
-        if (!product) {
-            return res.status(404).send('Product not found');
-        }
-//let cartFromSession = req.session.cart || { items: [] };;
-        const price = product.salePrice; 
-        let cart = await Cart.findOne({ userId });
-       
+  try {
+    const userId = req.session.user;
+    const productId = req.query.id;
 
-        if (!cart) {
-            
-            cart = new Cart({
-                userId,
-                items: [{
-                    productId: product._id,
-                    quantity: 1,
-                    price,
-                    totalPrice: price,
-                }],
-            });
-        } else {
-            const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId);
-
-            if (itemIndex > -1) {
-                cart.items[itemIndex].quantity += 1;
-                cart.items[itemIndex].totalPrice = cart.items[itemIndex].price * cart.items[itemIndex].quantity;
-            } else {
-                cart.items.push({
-                    productId: product._id,
-                    quantity: 1,
-                    price,
-                    totalPrice: price,
-                });
-            }
-        }
-        product.quantity -= 1;
-        await product.save(); 
-        await cart.save();
-       // req.session.cart = cart;
-        req.session.message = { status: 'success', message: 'Item added to cart' };
-        return res.redirect('/shop'); 
-    } catch (error) {
-        console.error('Error adding item to cart:', error);
-        req.session.message = { status: 'failure', message: 'Server Error' };
-        return res.redirect('/shop');
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).send("Product not found");
     }
+    //let cartFromSession = req.session.cart || { items: [] };;
+    const price = product.salePrice;
+    let cart = await Cart.findOne({ userId });
+
+    if (!cart) {
+      cart = new Cart({
+        userId,
+        items: [
+          {
+            productId: product._id,
+            quantity: 1,
+            price,
+            totalPrice: price,
+          },
+        ],
+      });
+    } else {
+      const itemIndex = cart.items.findIndex(
+        (item) => item.productId.toString() === productId
+      );
+
+      if (itemIndex > -1) {
+        cart.items[itemIndex].quantity += 1;
+        cart.items[itemIndex].totalPrice =
+          cart.items[itemIndex].price * cart.items[itemIndex].quantity;
+      } else {
+        cart.items.push({
+          productId: product._id,
+          quantity: 1,
+          price,
+          totalPrice: price,
+        });
+      }
+    }
+    product.quantity -= 1;
+    await product.save();
+    await cart.save();
+    // req.session.cart = cart;
+    req.session.message = { status: "success", message: "Item added to cart" };
+    return res.redirect("/shop");
+  } catch (error) {
+    console.error("Error adding item to cart:", error);
+    req.session.message = { status: "failure", message: "Server Error" };
+    return res.redirect("/shop");
+  }
 };
-
-
-// const viewCart = async (req, res) => {
-//     try {
-//         const userId = req.session.user;
-//         if (!userId) {
-//             return res.redirect('/login'); 
-//         }
-
-//         const cart = await Cart.findOne({ userId }).populate('items.productId');
-
-//         if (!cart || cart.items.length === 0) {
-//             return res.render('cart', { cart: null, message: 'Your cart is empty' });
-//         }
-
-//         let totalPriceWithoutOffer = cart.items.reduce((acc, item) => acc + item.productId.regularPrice * item.quantity, 0);
-
-//         let totalPriceWithOffer = cart.items.reduce((acc, item) => acc + item.productId.salePrice * item.quantity, 0);
-
-//         let totalDiscount = totalPriceWithoutOffer - totalPriceWithOffer;
-
-//         let shippingCharge = 50; 
-//         let couponDiscount = req.session.couponDiscount || 0; 
-//         let finalTotal = totalPriceWithOffer - shippingCharge - couponDiscount;
-
-//         res.render('cart', { 
-//             cart, 
-//             totalPriceWithoutOffer, 
-//             totalPriceWithOffer, 
-//             totalDiscount,
-//             shippingCharge,
-//             couponDiscount,
-//             finalTotal 
-//         });
-
-//     } catch (error) {
-//         console.error('Error viewing cart:', error);
-//         res.render('shop', { message: 'Server Error, please try again!', status: 'failure' });
-//     }
-// };
 
 
 
 const viewCart = async (req, res) => {
-    try {
-        const userId = req.session.user;
-        if (!userId) {
-            return res.redirect('/login');
-        }
-
-        
-        const cart = await Cart.findOne({ userId }).populate('items.productId');
-
-        if (!cart || cart.items.length === 0) {
-            return res.render('cart', { cart: null, message: 'Your cart is empty' });
-        }
-
-        let totalPriceWithoutOffer = cart.items.reduce((acc, item) => acc + item.productId.regularPrice * item.quantity, 0);
-        let totalPriceWithOffer = cart.items.reduce((acc, item) => acc + item.productId.salePrice * item.quantity, 0);
-        let totalDiscount = totalPriceWithoutOffer - totalPriceWithOffer;
-
-        let shippingCharge = 50;
-
-        
-        const today = new Date(); // Get today's date
-const coupons = await Coupon.find({ 
-    isList: true, 
-    expireOn: { $gt: today }  // Filters coupons with expiryDate greater than today
-});
-
-
-        let appliedCoupon = req.session.appliedCoupon; 
-console.log("Applied Coupon:", appliedCoupon);
-let couponDiscount = 0;
-
-// Ensure appliedCoupon exists before accessing properties
-if (appliedCoupon) {
-    console.log("Total Price with Offer:", totalPriceWithOffer);
-    console.log("Coupon Minimum Price:", appliedCoupon.minimumPrice);
-
-    if (totalPriceWithOffer >= appliedCoupon.minimumPrice) {
-        couponDiscount = appliedCoupon.discount; // Use the stored discount value
-        console.log("Coupon Discount Applied:", couponDiscount);
-    } else {
-        console.log("Coupon not applicable as totalPriceWithOffer is less than minimumPrice.");
-        req.session.appliedCoupon = null; // Reset coupon if conditions not met
+  try {
+    const userId = req.session.user;
+    if (!userId) {
+      return res.redirect("/login");
     }
-}
-
-// Ensure discount doesn't exceed total price
-couponDiscount = Math.min(couponDiscount, totalPriceWithOffer);
-console.log("Final Coupon Discount:", couponDiscount);
-
-        
-        let finalTotal = totalPriceWithOffer - couponDiscount + shippingCharge;
-
-        res.render('cart', {
-            errorMessage: req.flash("error"),
-            successMessage: req.flash("success"),
-            cart,
-            totalPriceWithoutOffer,
-            totalPriceWithOffer,
-            totalDiscount,
-            shippingCharge,
-            coupons, 
-            appliedCoupon: req.session.appliedCoupon || null, 
-            couponDiscount,
-            finalTotal,
-        });
-
-    } catch (error) {
-        console.error('Error viewing cart:', error);
-        res.render('shop', { message: 'Server Error, please try again!', status: 'failure' });
+    const page = parseInt(req.query.page) || 1; 
+    const itemsPerPage = 10; 
+    const cart = await Cart.findOne({ userId }).populate("items.productId");
+    if (!cart || cart.items.length === 0) {
+      return res.render("cart", { cart: null, message: "Your cart is empty" });
     }
+
+    const totalItems = cart.items.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const paginatedItems = cart.items.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+    let totalPriceWithoutOffer = paginatedItems.reduce(
+      (acc, item) => acc + item.productId.regularPrice * item.quantity,
+      0
+    );
+    let totalPriceWithOffer = paginatedItems.reduce(
+      (acc, item) => acc + item.productId.salePrice * item.quantity,
+      0
+    );
+    let totalDiscount = totalPriceWithoutOffer - totalPriceWithOffer;
+    let shippingCharge = 50;
+
+    res.render("cart", {
+      errorMessage: null,
+      successMessage: null,
+      cart: paginatedItems, // Send paginated items to the view
+      totalPriceWithoutOffer,
+      finalTotal: totalPriceWithOffer,
+      totalDiscount,
+      shippingCharge,
+      currentPage: page,
+      totalPages: totalPages,
+    });
+  } catch (error) {
+    console.error("Error viewing cart:", error);
+    res.render("shop", {
+      message: "Server Error, please try again!",
+      status: "failure",
+    });
+  }
 };
-
 
 
 
 const deleteCart = async (req, res) => {
-    try {
-        const productId = req.query.id;
-        const cart = await Cart.findOne({ "items.productId": productId });
-        if (!cart) {
-            return res.status(404).send("Cart not found");
-        }
-
-        const item = cart.items.find(item => item.productId.toString() === productId);
-        if (!item) {
-            return res.status(404).send("Product not found in cart");
-        }
-
-        const removedQuantity = item.quantity; 
-        await Product.findByIdAndUpdate(productId, { $inc: { quantity: removedQuantity } });
-
-        await Cart.updateOne(
-            { "items.productId": productId },
-            {
-                $pull: {
-                    items: {
-                        productId: productId,
-                    }
-                }
-            }
-        );
-
-        res.redirect("/view-cart");
-
-    } catch (error) {
-        console.error("Error in delete product", error);
-        res.redirect("/pageNotFound");
+  try {
+    const productId = req.query.id;
+    const cart = await Cart.findOne({ "items.productId": productId });
+    if (!cart) {
+      return res.status(404).send("Cart not found");
     }
+
+    const item = cart.items.find(
+      (item) => item.productId.toString() === productId
+    );
+    if (!item) {
+      return res.status(404).send("Product not found in cart");
+    }
+
+    const removedQuantity = item.quantity;
+    await Product.findByIdAndUpdate(productId, {
+      $inc: { quantity: removedQuantity },
+    });
+
+    await Cart.updateOne(
+      { "items.productId": productId },
+      {
+        $pull: {
+          items: {
+            productId: productId,
+          },
+        },
+      }
+    );
+
+    res.redirect("/view-cart");
+  } catch (error) {
+    console.error("Error in delete product", error);
+    res.redirect("/pageNotFound");
+  }
 };
-
-
 
 const getCheckout = async (req, res) => {
-    try {
-        const userId = req.session.user; 
-        const user = await Address.findOne({ userId });
-        const addresses = user ? user : []; 
-        const cart = await Cart.findOne({ userId }).populate("items.productId");
+  try {
+    const userId = req.session.user;
+    const user = await Address.findOne({ userId });
+    const addresses = user ? user : [];
 
-        if (!cart || cart.items.length === 0) {
-            return res.render("checkout", {
-                addresses: addresses,
-                cart: null,
-                message: "Your cart is empty"
-            });
-        }
-        
-        let totalOriginalPrice = 0;
-        let totalOfferPrice = 0;
+    
+    let cart = req.session.cart || await Cart.findOne({ userId }).populate("items.productId");
 
-        cart.items.forEach(item => {
-            totalOriginalPrice += item.productId.regularPrice * item.quantity;
-            totalOfferPrice += item.productId.salePrice * item.quantity;
-        });
-        
-        const totalDiscount = totalOriginalPrice - totalOfferPrice;
-        const shippingCharge = 50;
-        const subTotal = shippingCharge + totalOfferPrice;
-        console.log(subTotal);
-        res.render("checkout", {
-            addresses: addresses,
-            cart,
-            totalOriginalPrice,
-            totalOfferPrice,
-            totalDiscount,
-            subTotal,
-            shippingCharge,
-           
-        });
-    } catch (error) {
-        console.error("Error in getCheckout:", error);
-        res.redirect("/pageNotFound");
+    if (!cart || cart.items.length === 0) {
+      return res.render("cart", { cart: null, message: "Your cart is empty" });
     }
+
+    const productIds = cart.items.map(item => item.productId);
+    const products = await Product.find({ _id: { $in: productIds } }, 'productOffer');
+
+    const productOfferMap = products.reduce((acc, product) => {
+        acc[product._id.toString()] = product.productOffer || 0;
+        return acc;
+    }, {});
+
+    const totalProductOffer = cart.items.reduce((acc, item) => {
+        return acc + ((productOfferMap[item.productId.toString()] || 0) * item.quantity);
+    }, 0);
+
+
+    req.session.cart = cart;
+
+    
+    let totalOriginalPrice = 0;
+    let totalOfferPrice = 0;
+    let totalDiscount = 0;
+    let shippingCharge = 50;
+    let subTotal = 0;
+    let couponDiscount = 0;
+
+    
+    cart.items.forEach((item) => {
+      totalOriginalPrice += item.productId.regularPrice * item.quantity;
+      totalOfferPrice += item.productId.salePrice * item.quantity;
+    });
+
+    totalDiscount = totalOriginalPrice - totalOfferPrice;
+    subTotal = totalOfferPrice + shippingCharge;
+
+    
+    const today = new Date();
+    const coupons = await Coupon.find({
+      isList: true,
+      expireOn: { $gt: today },
+    });
+
+    
+    let appliedCoupon = req.session.appliedCoupon;
+    if (appliedCoupon) {
+      if (subTotal >= appliedCoupon.minimumPrice) {
+        couponDiscount = appliedCoupon.discount;
+      } else {
+        req.session.appliedCoupon = null; 
+      }
+    }
+
+    couponDiscount = Math.min(couponDiscount, subTotal);
+    let finalTotal = subTotal - couponDiscount;
+const razorpayKey = process.env.RAZORPAY_KEY_ID;
+    
+    res.render("checkout", {
+      addresses,
+      cart,
+      totalOriginalPrice,
+      totalOfferPrice,
+      totalProductOffer:totalProductOffer||null,
+      totalDiscount,
+      subTotal,
+      shippingCharge,
+      coupons, 
+      appliedCoupon: req.session.appliedCoupon || null,
+      couponDiscount,
+      finalTotal,
+      couponSuccess: req.session.couponSuccess || null,
+      couponError: req.session.couponError || null,
+      razorpayKey
+    });
+    req.session.couponSuccess = null;
+    req.session.couponError = null;
+  } catch (error) {
+    console.error("Error in getCheckout:", error);
+    res.redirect("/pageNotFound");
+  }
 };
+
+
+
 
 
 const getConfirmation = async (req, res) => {
-    try {
-        const { addressId, totalPrice, cartItems,status,paymentMethod } = req.query;
+  try {
+    const { addressId, totalPrice, cartItems, paymentMethod, paymentId } = req.query;
 
-        // Ensure cartItems exist
-        if (!cartItems) {
-            return res.redirect('/checkout');
-        }
-
-        let rawCartItems = JSON.parse(decodeURIComponent(cartItems));
-
-        if (!addressId) {
-            return res.redirect('/checkout');
-        }
-
-        const userId = req.session.user;
-
-        const addressData = await Address.findOne(
-            { userId, "address._id": addressId },
-            { "address.$": 1 }
-        );
-
-        if (!addressData || !addressData.address.length) {
-            return res.redirect('/checkout');
-        }
-
-        const selectedAddress = addressData.address[0];
-
-        let totalOriginalPrice = 0;
-        let totalOfferPrice = 0;
-
-        rawCartItems.forEach(item => {
-            if (item.productId && item.productId.regularPrice && item.productId.salePrice) {
-                totalOriginalPrice += item.productId.regularPrice * item.quantity;
-                totalOfferPrice += item.productId.salePrice * item.quantity;
-            }
-        });
-
-        const totalDiscount = totalOriginalPrice - totalOfferPrice;
-        const shippingCharge = 50;
-        const subTotal = shippingCharge + totalOfferPrice;
-        const orderStatus = status || "Order Placed"; 
-        
-        for (const item of rawCartItems) {
-            try {
-                const newOrder = new Order({
-                    userId,
-                    productId: item.productId._id,
-                    quantity: item.quantity,
-                    price: item.productId.salePrice,
-                    status: orderStatus,
-                    totalPrice: totalOfferPrice,
-                    discount: totalDiscount,
-                    finalAmount: subTotal,
-                    address: selectedAddress._id,
-                    invoiceDate: new Date(), 
-                    createdOn: new Date(),
-                    orderId: uuidv4(),
-                    orderMethod: paymentMethod  
-                });
-                await newOrder.save();
-                console.log(" Order Saved Successfully");
-            } catch (error) {
-                console.error(" Error saving order:", error);
-            }
-        }
-        
-        
-
-        
-        await Promise.all(rawCartItems.map(async (item) => {
-            const product = await Product.findById(item.productId._id);
-            if (product) {
-                product.quantity -= item.quantity;
-                await product.save();
-            }
-        }));
-
-        
-        await Cart.deleteOne({ userId });
-
-        
-        console.log('Rendering confirmation page with the following data:', {
-            selectedAddress,
-            totalPrice: totalOfferPrice,
-            cartItems: rawCartItems,
-            totalOriginalPrice,
-            subTotal,
-            shippingCharge,
-            paymentMethod
-        });
-
-        res.render('confirmation', {
-            selectedAddress,
-            totalPrice: totalOfferPrice,
-            cartItems: rawCartItems,
-            totalOriginalPrice,
-            subTotal,
-            shippingCharge,
-            paymentMethod
-        });
-
-    } catch (e) {
-        console.error('An error occurred:', e.message); 
-        return res.status(500).send("Something went wrong!");
+    if (!cartItems) {
+      return res.redirect("/checkout");
     }
+
+    let rawCartItems = JSON.parse(decodeURIComponent(cartItems));
+
+    if (!addressId) {
+      return res.redirect("/checkout");
+    }
+
+    const userId = req.session.user;
+
+    // Fetch the selected address
+    const addressData = await Address.findOne(
+      { userId, "address._id": addressId },
+      { "address.$": 1 }
+    );
+
+    if (!addressData || !addressData.address.length) {
+      return res.redirect("/checkout");
+    }
+
+    const selectedAddress = addressData.address[0];
+
+    // Calculate Total Price Before and After Discounts
+    let totalOriginalPrice = 0;
+    let totalOfferPrice = 0;
+
+    rawCartItems.forEach((item) => {
+      if (item.productId && item.productId.regularPrice && item.productId.salePrice) {
+        totalOriginalPrice += item.productId.regularPrice * item.quantity;
+        totalOfferPrice += item.productId.salePrice * item.quantity;
+      }
+    });
+
+    const totalDiscount = totalOriginalPrice - totalOfferPrice;
+    const shippingCharge = 50;
+
+    // Fetch applied coupon (if any)
+    const appliedCoupon = req.session.cart?.appliedCoupon?.discount || { discount: 0 };
+    const couponDiscount = appliedCoupon.discount || 0;
+
+    // Final amount after applying coupon discount
+    let finalAmount = totalOfferPrice - couponDiscount + shippingCharge;
+    finalAmount = Math.max(finalAmount, 0); // Ensure final amount is not negative
+
+    const orderStatus = paymentMethod === "Cash on Delivery" ? "Pending" : "Order Placed";
+    const currentDate = new Date();
+
+    // Invoice Date
+    const invoiceDate = currentDate.toISOString();
+
+    // Expiry Date (e.g., 30 days from order date)
+    const expireDate = new Date();
+    expireDate.setDate(currentDate.getDate() + 30);
+    const formattedExpireDate = expireDate.toISOString();
+    const orderGroupId = uuidv4(); 
+
+    // Save Order Details for all items in the cart
+    const orderPromises = rawCartItems.map(async (item) => {
+      const newOrder = new Order({
+        userId,
+        productId: item.productId._id,
+        quantity: item.quantity,
+        price: item.productId.salePrice,
+        status: orderStatus,
+        totalPrice: totalOfferPrice,
+        discount: totalDiscount + couponDiscount, // Include both product and coupon discounts
+        finalAmount: finalAmount,
+        address: selectedAddress._id,
+        createdOn: invoiceDate,
+        orderId: uuidv4(),
+        paymentMethod,
+        paymentId: paymentMethod === "razorPay" ? paymentId : null, // Store paymentId for Razorpay
+        orderGroupId: orderGroupId, // Assign orderGroupId
+        totalDiscount,
+        couponApplied:couponDiscount>0
+      });
+      await newOrder.save();
+    });
+
+    await Promise.all(orderPromises);
+
+
+    if (paymentMethod !== "Cash on Delivery") {
+      await Promise.all(
+        rawCartItems.map(async (item) => {
+          const product = await Product.findById(item.productId._id);
+          if (product) {
+            product.quantity -= item.quantity;
+            await product.save();
+          }
+        })
+      );
+    }
+
+    // Clear cart after placing order
+    await Cart.deleteOne({ userId });
+
+    console.log("Rendering confirmation page with the following data:", {
+      selectedAddress,
+      totalPrice: totalOfferPrice,
+      totalOriginalPrice,
+      subTotal: finalAmount,
+      shippingCharge,
+      paymentMethod,
+      couponDiscount,
+      totalDiscount,
+    });
+
+    // Render confirmation page
+    res.render("confirmation", {
+      selectedAddress,
+      totalPrice: totalOfferPrice,
+      cartItems: rawCartItems,
+      totalOriginalPrice,
+      subTotal: finalAmount,
+      shippingCharge,
+      paymentMethod,
+      couponDiscount,
+      totalDiscount,
+      deliveryDateNew: expireDate.toLocaleDateString("en-US", { timeZone: "Asia/Kolkata" }), // Displayed as local date
+    });
+  } catch (e) {
+    console.error("An error occurred:", e.message);
+    return res.status(500).send("Something went wrong!");
+  }
 };
 
 
 
-// const applyCoupon = async (req, res) => {
-//     try {
-//         const { couponCode } = req.body;
 
-//         const coupon = await Coupon.findOne({ name: couponCode });
-//         console.log(coupon)
-
-
-//         if (!coupon) {
-//             req.flash("error", "Invalid Coupon");
-//             return res.redirect("/view-cart")
-//         }
-
-//         const today = new Date();
-//         const expiryDate = new Date(coupon.expireOn);
-//         const startDate = new Date(coupon.createdON);
-
-//         if (today < startDate || today > expiryDate) {
-//             req.flash("error", "Coupon Expired or Not Yet Valid");
-//             return res.redirect("/view-cart");
-//         }
-
-//         const cart = req.session.cart || { items: [] };
-
-//         if (!cart.items.length) {
-//             req.flash("error", "Cart is Empty");
-//             return res.redirect("/view-cart");
-//         }
-
-//         const totalPrice = cart.items.reduce((acc, item) => acc + item.totalPrice, 0);
-
-//         if (totalPrice < coupon.minimumPrice) {
-//             req.flash("error", `Minimum purchase should be ₹${coupon.minimumPrice}`);
-//             return res.redirect("/view-cart");
-//         }
-
-//         const discountAmount = coupon.offerPrice;
-
-//         req.session.appliedCoupon = {
-//             name: coupon.name,
-//             discount: discountAmount,
-//         };
-//         req.session.finalTotal = totalPrice - discountAmount;
-
-//         req.flash("success", "Coupon Applied Successfully!");
-//         res.redirect("/view-cart");
-//     } catch (error) {
-//         console.error("Error applying coupon:", error);
-//         req.flash("error", "Something went wrong");
-//         res.redirect("/view-cart");
-//     }
-// };
-
-// const applyCoupon = async (req, res) => {
-//     try {
-//         const { couponCode, cartItems } = req.body;
-
-//         // Find the coupon
-//         const coupon = await Coupon.findOne({ name: couponCode });
-//         if (!coupon) {
-//             return res.status(400).json({ message: "Invalid Coupon" });
-//         }
-
-//         // Check coupon validity
-//         const today = new Date();
-//         if (today < new Date(coupon.createdON) || today > new Date(coupon.expireOn)) {
-//             return res.status(400).json({ message: "Coupon Expired or Not Yet Valid" });
-//         }
-
-//         // Ensure cart is not empty
-//         if (!cartItems || cartItems.length === 0) {
-//             return res.status(400).json({ message: "Cart is Empty" });
-//         }
-
-//         // Calculate total price from received cart items
-//         const totalPrice = cartItems.reduce((acc, item) => acc + item.totalPrice, 0);
-
-//         // Check if total price meets coupon conditions
-//         if (totalPrice < coupon.minimumPrice) {
-//             return res.status(400).json({ message: `Minimum purchase should be ₹${coupon.minimumPrice}` });
-//         }
-
-//         // Apply discount
-//         const discountAmount = coupon.offerPrice;
-//         req.session.appliedCoupon = {
-//             name: coupon.name,
-//             discount: discountAmount
-//         };
-//         req.session.finalTotal = totalPrice - discountAmount;
-
-//         return res.status(200).json({ message: "Coupon Applied Successfully!", finalTotal: req.session.finalTotal });
-//     } catch (error) {
-//         console.error("Error applying coupon:", error);
-//         return res.status(500).json({ message: "Something went wrong" });
-//     }
-// };
 
 const applyCoupon = async (req, res) => {
-    try {
-        const { couponCode, cartItems } = req.body;
+  try {
+      const { couponCode } = req.body;
+      const cart = req.session.cart;
 
-        // Find the coupon
-        const coupon = await Coupon.findOne({ name: couponCode });
-        if (!coupon) {
-            req.flash("error", "Invalid Coupon");
-            return res.redirect("/view-cart");
-        }
+      if (!cart || !cart.items || cart.items.length === 0) {
+          return res.json({ success: false, message: "Cart is empty" });
+      }
 
-        // Check coupon validity
-        const today = new Date();
-        if (today < new Date(coupon.createdON) || today > new Date(coupon.expireOn)) {
-            req.flash("error", "Coupon Expired or Not Yet Valid");
-            return res.redirect("/view-cart");
-        }
+      
+      const productIds = cart.items.map(item => item.productId); 
+      const products = await Product.find({ _id: { $in: productIds } }, 'productOffer');
 
-        // Ensure cart is not empty
-        if (!cartItems || cartItems.length === 0) {
-            req.flash("error", "Cart is Empty");
-            return res.redirect("/view-cart");
-        }
+      
+      const productOfferMap = products.reduce((acc, product) => {
+          acc[product._id.toString()] = product.productOffer || 0; 
+          return acc;
+      }, {});
 
-        // Calculate total price from received cart items
-        const totalPrice = cartItems.reduce((acc, item) => acc + Number(item.totalPrice), 0);
+      
+      const totalProductOffer = cart.items.reduce((acc, item) => {
+          const offerAmount = productOfferMap[item.productId.toString()] || 0;
+          return acc + (offerAmount * item.quantity);
+      }, 0);
 
-        // Check if total price meets coupon conditions
-        if (totalPrice < coupon.minimumPrice) {
-            req.flash("error", `Minimum purchase should be ₹${coupon.minimumPrice}`);
-            return res.redirect("/view-cart");
-        }
+     
+      const subTotal = cart.items.reduce((acc, item) => acc + (item.price * item.quantity), 0); 
+      const totalOfferPrice = subTotal - totalProductOffer; 
+      req.session.cart.subTotal = subTotal;
+      const coupon = await Coupon.findOne({ name: couponCode });
 
-        // Apply discount
-        const discountAmount = coupon.offerPrice;
-        req.session.appliedCoupon = {
-            name: coupon.name,
-            discount: coupon.offerPrice,  // Assuming offerPrice is the correct field
-            minimumPrice: coupon.minimumPrice, // Add this line
-        };
-        
-        req.session.finalTotal = totalPrice - discountAmount;
+      if (!coupon) {
+          return res.json({ success: false, message: "Invalid Coupon" });
+      }
 
-        req.flash("success", "Coupon Applied Successfully!");
-        return res.redirect("/view-cart"); // Redirect to render updated price
-    } catch (error) {
-        console.error("Error applying coupon:", error);
-        req.flash("error", "Something went wrong");
-        return res.redirect("/view-cart");
-    }
+      const today = new Date();
+      if (today < new Date(coupon.createdOn) || today > new Date(coupon.expireOn)) {
+          return res.json({ success: false, message: "Coupon Expired or Not Yet Valid" });
+      }
+
+      if (totalOfferPrice < coupon.minimumPrice) {
+          return res.json({ success: false, message: `Minimum purchase should be ₹${coupon.minimumPrice}` });
+      }
+
+      const couponDiscount = coupon.offerPrice;
+      req.session.cart.appliedCoupon = {
+          name: coupon.name,
+          discount: couponDiscount,
+      };
+
+      const finalTotal = totalOfferPrice - couponDiscount; 
+
+      return res.json({ 
+          success: true, 
+          message: "Coupon Applied Successfully!", 
+          subTotal, 
+          totalProductOffer, 
+          totalOfferPrice, 
+          finalTotal, 
+          couponDiscount
+      });
+  } catch (error) {
+      console.error("Error applying coupon:", error);
+      return res.json({ success: false, message: "Something went wrong" });
+  }
 };
 
 
 
 
-module.exports = { addToCart, viewCart, deleteCart,getCheckout,getConfirmation,applyCoupon};
+const removeCoupon = async (req, res) => {
+  try {
+      const cart = req.session.cart;
+console.log(cart);
+      if (!cart.appliedCoupon) {
+          return res.json({ success: false, message: "No coupon applied" });
+      }
+      delete req.session.cart.appliedCoupon;
+      const finalTotal = cart.subTotal; 
+
+      return res.json({ success: true, message: "Coupon Removed", finalTotal });
+  } catch (error) {
+      console.error("Error removing coupon:", error);
+      return res.json({ success: false, message: "Something went wrong" });
+  }
+};
+
+
+
+
+
+module.exports = {
+  addToCart,
+  viewCart,
+  deleteCart,
+  getCheckout,
+  getConfirmation,
+  applyCoupon,
+  removeCoupon
+};
