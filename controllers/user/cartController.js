@@ -249,13 +249,7 @@ const razorpayKey = process.env.RAZORPAY_KEY_ID;
 
 const getConfirmation = async (req, res) => {
   try {
-    const { addressId, totalPrice, cartItems, paymentMethod, paymentId } = req.query;
-
-    if (!cartItems) {
-      return res.redirect("/checkout");
-    }
-
-    let rawCartItems = JSON.parse(decodeURIComponent(cartItems));
+    const { addressId, totalPrice, paymentMethod } = req.query;
 
     if (!addressId) {
       return res.redirect("/checkout");
@@ -275,111 +269,56 @@ const getConfirmation = async (req, res) => {
 
     const selectedAddress = addressData.address[0];
 
-    // Calculate Total Price Before and After Discounts
+    // Fetch applied coupon (if any)
+    const appliedCoupon = req.session.cart?.appliedCoupon?.discount || { discount: 0 };
+    const couponDiscount = appliedCoupon.discount || 0;
+    const shippingCharge = 50;
+
+    // You need to calculate `totalOriginalPrice` and `totalDiscount` here
     let totalOriginalPrice = 0;
-    let totalOfferPrice = 0;
+    let totalOfferPrice = totalPrice;
+
+    // Assuming `cartItems` were stored in the session after processing in `codPayment`
+    const rawCartItems = req.session.cartItems || [];
 
     rawCartItems.forEach((item) => {
-      if (item.productId && item.productId.regularPrice && item.productId.salePrice) {
+      if (item.productId && item.productId.regularPrice) {
         totalOriginalPrice += item.productId.regularPrice * item.quantity;
-        totalOfferPrice += item.productId.salePrice * item.quantity;
       }
     });
 
     const totalDiscount = totalOriginalPrice - totalOfferPrice;
-    const shippingCharge = 50;
-
-    // Fetch applied coupon (if any)
-    const appliedCoupon = req.session.cart?.appliedCoupon?.discount || { discount: 0 };
-    const couponDiscount = appliedCoupon.discount || 0;
-
-    // Final amount after applying coupon discount
-    let finalAmount = totalOfferPrice - couponDiscount + shippingCharge;
-    finalAmount = Math.max(finalAmount, 0); // Ensure final amount is not negative
-
-    const orderStatus = paymentMethod === "Cash on Delivery" ? "Pending" : "Order Placed";
-    const currentDate = new Date();
-
-    // Invoice Date
-    const invoiceDate = currentDate.toISOString();
-
-    // Expiry Date (e.g., 30 days from order date)
-    const expireDate = new Date();
-    expireDate.setDate(currentDate.getDate() + 30);
-    const formattedExpireDate = expireDate.toISOString();
-    const orderGroupId = uuidv4(); 
-
-    // Save Order Details for all items in the cart
-    const orderPromises = rawCartItems.map(async (item) => {
-      const newOrder = new Order({
-        userId,
-        productId: item.productId._id,
-        quantity: item.quantity,
-        price: item.productId.salePrice,
-        status: orderStatus,
-        totalPrice: totalOfferPrice,
-        discount: totalDiscount + couponDiscount, // Include both product and coupon discounts
-        finalAmount: finalAmount,
-        address: selectedAddress._id,
-        createdOn: invoiceDate,
-        orderId: uuidv4(),
-        paymentMethod,
-        paymentId: paymentMethod === "razorPay" ? paymentId : null, // Store paymentId for Razorpay
-        orderGroupId: orderGroupId, // Assign orderGroupId
-        totalDiscount,
-        couponApplied:couponDiscount>0
-      });
-      await newOrder.save();
-    });
-
-    await Promise.all(orderPromises);
-
-
-    if (paymentMethod !== "Cash on Delivery") {
-      await Promise.all(
-        rawCartItems.map(async (item) => {
-          const product = await Product.findById(item.productId._id);
-          if (product) {
-            product.quantity -= item.quantity;
-            await product.save();
-          }
-        })
-      );
-    }
-
-    // Clear cart after placing order
-    await Cart.deleteOne({ userId });
 
     console.log("Rendering confirmation page with the following data:", {
       selectedAddress,
-      totalPrice: totalOfferPrice,
+      totalPrice,
+      subTotal: totalPrice - couponDiscount + shippingCharge,
       totalOriginalPrice,
-      subTotal: finalAmount,
+      totalDiscount,
       shippingCharge,
       paymentMethod,
       couponDiscount,
-      totalDiscount,
+      cartItems:rawCartItems
     });
 
     // Render confirmation page
     res.render("confirmation", {
       selectedAddress,
-      totalPrice: totalOfferPrice,
-      cartItems: rawCartItems,
+      totalPrice,
+      subTotal: totalPrice - couponDiscount + shippingCharge,
       totalOriginalPrice,
-      subTotal: finalAmount,
+      totalDiscount,
       shippingCharge,
       paymentMethod,
       couponDiscount,
-      totalDiscount,
-      deliveryDateNew: expireDate.toLocaleDateString("en-US", { timeZone: "Asia/Kolkata" }), // Displayed as local date
+      cartItems:rawCartItems,
+      deliveryDateNew: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString("en-US", { timeZone: "Asia/Kolkata" }), // Displayed as local date
     });
   } catch (e) {
     console.error("An error occurred:", e.message);
     return res.status(500).send("Something went wrong!");
   }
 };
-
 
 
 

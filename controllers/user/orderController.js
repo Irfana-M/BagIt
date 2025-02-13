@@ -182,8 +182,10 @@ const cancelOrder = async (req,res)=>{
 
 const razorpayPayment = async (req, res) => {
     try {
-        const { razorpay_payment_id, razorpay_order_id, razorpay_signature, addressId, totalPrice, cartItems } = req.body;
-
+        
+       
+        const { addressId, totalPrice, cartItems } = req.body;
+        console.log("the data came are:",req.body);
         if (!razorpay_payment_id || !razorpay_order_id || !razorpay_signature || !addressId || !totalPrice || !cartItems) {
             return res.status(400).json({ success: false, message: "Invalid input data." });
         }
@@ -194,6 +196,11 @@ const razorpayPayment = async (req, res) => {
 
         if (generatedSignature !== razorpay_signature) {
             return res.status(400).json({ success: false, message: "Payment verification failed!" });
+        }
+
+        // Ensure cartItems is an array
+        if (!Array.isArray(cartItems)) {
+            return res.status(400).json({ success: false, message: "cartItems must be an array" });
         }
 
         const newOrder = new Order({
@@ -221,22 +228,28 @@ const razorpayPayment = async (req, res) => {
 };
 
 
+
 const verifyRazorpay = async (req, res) => {
     try {
         const { razorpay_payment_id, razorpay_order_id, razorpay_signature, addressId, totalPrice, cartItems } = req.body;
-        
+
         if (!razorpay_payment_id || !razorpay_order_id || !razorpay_signature || !addressId || !totalPrice || !cartItems) {
             return res.status(400).json({ success: false, message: "Invalid input data." });
         }
-        
+
         const hmac = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET);
         hmac.update(razorpay_order_id + "|" + razorpay_payment_id);
         const generatedSignature = hmac.digest("hex");
-        
+
         if (generatedSignature !== razorpay_signature) {
             return res.status(400).json({ success: false, message: "Payment verification failed!" });
         }
-        
+
+        // Ensure cartItems is an array
+        if (!Array.isArray(cartItems)) {
+            return res.status(400).json({ success: false, message: "cartItems must be an array" });
+        }
+
         const newOrder = new Order({
             userId: req.user.id,
             address: addressId,
@@ -249,12 +262,17 @@ const verifyRazorpay = async (req, res) => {
         });
 
         await newOrder.save();
-        res.status(200).json({ success: true, message: "Payment verified and order placed!", order: newOrder });
+        res.status(200).json({
+            success: true,
+            message: "Payment verified and order placed!",
+            order: newOrder,
+        });
     } catch (error) {
         console.error("Error verifying Razorpay payment:", error);
         res.status(500).json({ success: false, message: "Server error. Please try again later." });
     }
 };
+
 
 
 const walletPayment = async (req, res) => {
@@ -296,21 +314,15 @@ const walletPayment = async (req, res) => {
     }
 };
 
+
 const codPayment = async (req, res) => {
     try {
         const { addressId, totalPrice, cartItems } = req.body;
+        console.log("Raw cartItems:", cartItems);
 
-      
-        let rawCartItems;
-        try {
-            rawCartItems = JSON.parse(decodeURIComponent(cartItems));
-        } catch (e) {
-            console.error("Error parsing cartItems:", e);
-            return res.status(400).json({ success: false, message: "Invalid cart items." });
-        }
-        console.log(rawCartItems);
-        if (!addressId) {
-            return res.status(400).json({ success: false, message: "Address ID is required." });
+        // Ensure cartItems is an array
+        if (!Array.isArray(cartItems)) {
+            return res.status(400).json({ success: false, message: "cartItems must be an array" });
         }
 
         const userId = req.session.user;
@@ -327,14 +339,11 @@ const codPayment = async (req, res) => {
 
         const selectedAddress = addressData.address[0];
 
-        // Parse cart items
-        
-
         // Calculate Total Price Before and After Discounts
         let totalOriginalPrice = 0;
         let totalOfferPrice = 0;
 
-        rawCartItems.forEach((item) => {
+        cartItems.forEach((item) => {
             if (item.productId && item.productId.regularPrice && item.productId.salePrice) {
                 totalOriginalPrice += item.productId.regularPrice * item.quantity;
                 totalOfferPrice += item.productId.salePrice * item.quantity;
@@ -362,13 +371,13 @@ const codPayment = async (req, res) => {
         const orderGroupId = uuidv4();
 
         // Save Order Details for all items in the cart
-        const orderPromises = rawCartItems.map(async (item) => {
+        const orderPromises = cartItems.map(async (item) => {
             const newOrder = new Order({
                 userId,
                 productId: item.productId._id,
                 quantity: item.quantity,
                 price: item.productId.salePrice,
-                status: "Order Placed", // For Cash on Delivery
+                status: "Order Placed", // Ensure this matches a valid enum value
                 totalPrice: totalOfferPrice,
                 discount: totalDiscount + couponDiscount, // Include both product and coupon discounts
                 finalAmount: finalAmount,
@@ -384,7 +393,7 @@ const codPayment = async (req, res) => {
         });
 
         await Promise.all(orderPromises);
-
+        req.session.cartItems = cartItems;
         // Clear cart after placing order
         await Cart.deleteOne({ userId });
 
@@ -395,6 +404,7 @@ const codPayment = async (req, res) => {
         res.status(500).json({ success: false, message: "Internal server error." });
     }
 };
+
 
 
 
