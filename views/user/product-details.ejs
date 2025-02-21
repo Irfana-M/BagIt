@@ -526,9 +526,13 @@
 
 						</a>
 						<div class="card-body d-flex flex-column">
-						  <h5 class="card-title mb-2">
-							<a href="/product-details?id=<%= product._id %>" class="text-dark text-decoration-none"><%= relatedProducts[i].productName %></a>
-						  </h5>
+							<h5 class="card-title mb-2">
+								<a href="productDetails?id=<%= relatedProducts[i]._id %>" 
+								   class="text-dark text-decoration-none">
+								   <%= relatedProducts[i].productName %>
+								</a>
+							</h5>
+							
 						  <div class="mt-auto"> <!-- Pushes the price section to the bottom -->
 							<div class="price d-flex justify-content-between align-items-center">
 							  <span class="text-success fw-bold"><%= relatedProducts[i].salePrice %></span>

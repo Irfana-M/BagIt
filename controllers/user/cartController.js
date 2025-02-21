@@ -95,7 +95,7 @@ const viewCart = async (req, res) => {
     res.render("cart", {
       errorMessage: null,
       successMessage: null,
-      cart: paginatedItems, // Send paginated items to the view
+      cart: paginatedItems, 
       totalPriceWithoutOffer,
       finalTotal: totalPriceWithOffer,
       totalDiscount,
@@ -109,6 +109,57 @@ const viewCart = async (req, res) => {
       message: "Server Error, please try again!",
       status: "failure",
     });
+  }
+};
+
+const updateCart = async (req, res) => {
+  try {
+    const { productId, quantity } = req.body;
+
+    if (!productId || quantity < 1) {
+      return res.status(400).json({ success: false, message: "Invalid request" });
+    }
+
+    let cartItem = await Cart.findOne({ "items.productId": productId }).populate("items.productId");
+
+    if (!cartItem) {
+      return res.status(404).json({ success: false, message: "Cart item not found" });
+    }
+
+    let itemIndex = cartItem.items.findIndex(item => item.productId._id.toString() === productId);
+    if (itemIndex === -1) {
+      return res.status(404).json({ success: false, message: "Product not found in cart" });
+    }
+
+    let product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
+
+    cartItem.items[itemIndex].quantity = quantity;
+    cartItem.items[itemIndex].totalPrice = product.salePrice * quantity;
+
+    cartItem.totalPriceWithOffer = cartItem.items.reduce((sum, item) => sum + (item.quantity * item.productId.salePrice), 0);
+    cartItem.totalPriceWithoutOffer = cartItem.items.reduce((sum, item) => sum + (item.quantity * item.productId.regularPrice), 0);
+    cartItem.totalDiscount = cartItem.totalPriceWithoutOffer - cartItem.totalPriceWithOffer;
+
+    await cartItem.save();
+
+    // 🔥 Update session cart after modifying the database
+    req.session.cart = cartItem;
+
+    res.json({
+      success: true,
+      message: "Cart updated successfully",
+      newTotalPrice: cartItem.items[itemIndex].totalPrice,
+      finalTotal: cartItem.totalPriceWithOffer,
+      totalOriginalPrice: cartItem.totalPriceWithoutOffer,
+      totalDiscount: cartItem.totalDiscount
+    });
+
+  } catch (error) {
+    console.error("Error updating cart:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
@@ -151,6 +202,8 @@ const deleteCart = async (req, res) => {
     res.redirect("/pageNotFound");
   }
 };
+
+
 
 const getCheckout = async (req, res) => {
   try {
@@ -216,9 +269,9 @@ const getCheckout = async (req, res) => {
 
     couponDiscount = Math.min(couponDiscount, subTotal);
     let finalTotal = subTotal - couponDiscount;
-const razorpayKey = process.env.RAZORPAY_KEY_ID;
+    const razorpayKey = process.env.RAZORPAY_KEY_ID;
     
-    res.render("checkout", {
+      res.render("checkout", {
       addresses,
       cart,
       totalOriginalPrice,
@@ -244,6 +297,114 @@ const razorpayKey = process.env.RAZORPAY_KEY_ID;
 };
 
 
+const getSingleProductCheckout = async (req, res) => {
+  try {
+    const userId = req.session.user;
+    const user = await Address.findOne({ userId });
+    const addresses = user ? user : [];
+
+    let { id, quantity } = req.query;
+    console.log("queryitems:",req.query) // Accept quantity from query params
+    let cart;
+
+    if (id) {
+      const product = await Product.findById(id);
+      if (!product) {
+        return res.redirect("/cart"); 
+      }
+
+      // Use the correct quantity from the query
+      const parsedQuantity = parseInt(quantity, 10) || 1;
+
+      cart = {
+        items: [{ productId: product, quantity: parsedQuantity }]
+      };
+      console.log("Single product checkout cart:", cart);
+    } else {
+      // Use session cart if no specific product ID is provided
+      cart = req.session.cart || await Cart.findOne({ userId }).populate("items.productId");
+      console.log("Full cart checkout:", cart);
+    }
+
+    if (!cart || cart.items.length === 0) {
+      return res.render("cart", { cart: null, message: "Your cart is empty" });
+    }
+
+    const productIds = cart.items.map(item => item.productId._id);
+    const products = await Product.find({ _id: { $in: productIds } }, 'productOffer');
+
+    const productOfferMap = products.reduce((acc, product) => {
+      acc[product._id.toString()] = product.productOffer || 0;
+      return acc;
+    }, {});
+
+    const totalProductOffer = cart.items.reduce((acc, item) => {
+      return acc + ((productOfferMap[item.productId._id.toString()] || 0) * item.quantity);
+    }, 0);
+
+    let totalOriginalPrice = 0;
+    let totalOfferPrice = 0;
+    let totalDiscount = 0;
+    let shippingCharge = 50;
+    let subTotal = 0;
+    let couponDiscount = 0;
+
+    cart.items.forEach((item) => {
+      totalOriginalPrice += item.productId.regularPrice * item.quantity;
+      totalOfferPrice += item.productId.salePrice * item.quantity;
+    });
+
+    totalDiscount = totalOriginalPrice - totalOfferPrice;
+    subTotal = totalOfferPrice + shippingCharge;
+
+    const today = new Date();
+    const coupons = await Coupon.find({
+      isList: true,
+      expireOn: { $gt: today },
+    });
+
+    let appliedCoupon = req.session.appliedCoupon;
+    if (appliedCoupon) {
+      if (subTotal >= appliedCoupon.minimumPrice) {
+        couponDiscount = appliedCoupon.discount;
+      } else {
+        req.session.appliedCoupon = null;
+      }
+    }
+
+    couponDiscount = Math.min(couponDiscount, subTotal);
+    let finalTotal = subTotal - couponDiscount;
+    const razorpayKey = process.env.RAZORPAY_KEY_ID;
+
+    res.render("checkout", {
+      addresses,
+      cart,
+      totalOriginalPrice,
+      totalOfferPrice,
+      totalProductOffer: totalProductOffer || null,
+      totalDiscount,
+      subTotal,
+      shippingCharge,
+      coupons,
+      appliedCoupon: req.session.appliedCoupon || null,
+      couponDiscount,
+      finalTotal,
+      couponSuccess: req.session.couponSuccess || null,
+      couponError: req.session.couponError || null,
+      razorpayKey,
+      singleProductId: id || null 
+    });
+
+    req.session.couponSuccess = null;
+    req.session.couponError = null;
+  } catch (error) {
+    console.error("Error in getSingleProductCheckout:", error);
+    res.redirect("/pageNotFound");
+  }
+};
+
+
+
 
 
 
@@ -257,7 +418,6 @@ const getConfirmation = async (req, res) => {
 
     const userId = req.session.user;
 
-    // Fetch the selected address
     const addressData = await Address.findOne(
       { userId, "address._id": addressId },
       { "address.$": 1 }
@@ -267,18 +427,18 @@ const getConfirmation = async (req, res) => {
       return res.redirect("/checkout");
     }
 
-    const selectedAddress = addressData.address[0];
+    const shippingAddress = addressData.address[0];
 
-    // Fetch applied coupon (if any)
+    
     const appliedCoupon = req.session.cart?.appliedCoupon?.discount || { discount: 0 };
     const couponDiscount = appliedCoupon.discount || 0;
     const shippingCharge = 50;
 
-    // You need to calculate `totalOriginalPrice` and `totalDiscount` here
+    
     let totalOriginalPrice = 0;
     let totalOfferPrice = totalPrice;
 
-    // Assuming `cartItems` were stored in the session after processing in `codPayment`
+    
     const rawCartItems = req.session.cartItems || [];
 
     rawCartItems.forEach((item) => {
@@ -290,7 +450,7 @@ const getConfirmation = async (req, res) => {
     const totalDiscount = totalOriginalPrice - totalOfferPrice;
 
     console.log("Rendering confirmation page with the following data:", {
-      selectedAddress,
+      selectedAddress:shippingAddress,
       totalPrice,
       subTotal: totalPrice - couponDiscount + shippingCharge,
       totalOriginalPrice,
@@ -301,9 +461,9 @@ const getConfirmation = async (req, res) => {
       cartItems:rawCartItems
     });
 
-    // Render confirmation page
+    
     res.render("confirmation", {
-      selectedAddress,
+      selectedAddress:shippingAddress,
       totalPrice,
       subTotal: totalPrice - couponDiscount + shippingCharge,
       totalOriginalPrice,
@@ -321,45 +481,46 @@ const getConfirmation = async (req, res) => {
 };
 
 
-
-
 const applyCoupon = async (req, res) => {
   try {
-      const { couponCode } = req.body;
-      const cart = req.session.cart;
+      const { couponCode, cartItems } = req.body;
 
-      if (!cart || !cart.items || cart.items.length === 0) {
+      if (!Array.isArray(cartItems) || cartItems.length === 0) {
           return res.json({ success: false, message: "Cart is empty" });
       }
 
-      
-      const productIds = cart.items.map(item => item.productId); 
-      const products = await Product.find({ _id: { $in: productIds } }, 'productOffer');
+      const productIds = cartItems.map(item => item.productId).filter(Boolean);
 
-      
+      if (productIds.length === 0) {
+          return res.json({ success: false, message: "No valid products in cart" });
+      }
+
+      const products = await Product.find({ _id: { $in: productIds } }, 'productOffer').lean();
+
       const productOfferMap = products.reduce((acc, product) => {
-          acc[product._id.toString()] = product.productOffer || 0; 
+          acc[product._id.toString()] = product.productOffer ?? 0;
           return acc;
       }, {});
 
-      
-      const totalProductOffer = cart.items.reduce((acc, item) => {
-          const offerAmount = productOfferMap[item.productId.toString()] || 0;
-          return acc + (offerAmount * item.quantity);
+      const totalProductOffer = cartItems.reduce((acc, item) => {
+          const offerAmount = productOfferMap[item.productId.toString()] ?? 0;
+          return acc + (offerAmount * (item.quantity ?? 0));
       }, 0);
 
-     
-      const subTotal = cart.items.reduce((acc, item) => acc + (item.price * item.quantity), 0); 
-      const totalOfferPrice = subTotal - totalProductOffer; 
-      req.session.cart.subTotal = subTotal;
-      const coupon = await Coupon.findOne({ name: couponCode });
+      const subTotal = cartItems.reduce((acc, item) => acc + (item.price * (item.quantity ?? 0)), 0);
+      const totalOfferPrice = subTotal - totalProductOffer;
 
-      if (!coupon) {
-          return res.json({ success: false, message: "Invalid Coupon" });
+      const coupon = await Coupon.findOne({ name: couponCode }).lean();
+
+      if (!coupon || !coupon.createdOn || !coupon.expireOn) {
+          return res.json({ success: false, message: "Invalid or expired coupon" });
       }
 
-      const today = new Date();
-      if (today < new Date(coupon.createdOn) || today > new Date(coupon.expireOn)) {
+      const today = new Date().setHours(0, 0, 0, 0);
+      const createdOn = new Date(coupon.createdOn).setHours(0, 0, 0, 0);
+      const expireOn = new Date(coupon.expireOn).setHours(23, 59, 59, 999);
+
+      if (today < createdOn || today > expireOn) {
           return res.json({ success: false, message: "Coupon Expired or Not Yet Valid" });
       }
 
@@ -368,42 +529,51 @@ const applyCoupon = async (req, res) => {
       }
 
       const couponDiscount = coupon.offerPrice;
+      const finalTotal = Math.max(totalOfferPrice - couponDiscount, 0);
+
+      // ✅ Store subTotal, finalTotal, and appliedCoupon in session
+      req.session.cart = req.session.cart || {};
+      req.session.cart.subTotal = subTotal;  // <-- Store subtotal
+      req.session.cart.finalTotal = finalTotal;  // <-- Store final total after discount
       req.session.cart.appliedCoupon = {
           name: coupon.name,
           discount: couponDiscount,
       };
-
-      const finalTotal = totalOfferPrice - couponDiscount; 
-
-      return res.json({ 
-          success: true, 
-          message: "Coupon Applied Successfully!", 
-          subTotal, 
-          totalProductOffer, 
-          totalOfferPrice, 
-          finalTotal, 
-          couponDiscount
+      req.session.save();
+console.log("coupo in session is",req.session.cart.appliedCoupon)
+      return res.json({
+          success: true,
+          message: "Coupon Applied Successfully!",
+          subTotal,
+          totalProductOffer,
+          totalOfferPrice,
+          finalTotal,
+          couponDiscount,
+          appliedCoupon: req.session.cart.appliedCoupon
       });
+
   } catch (error) {
       console.error("Error applying coupon:", error);
-      return res.json({ success: false, message: "Something went wrong" });
+      return res.status(500).json({ success: false, message: "Something went wrong" });
   }
 };
 
-
-
-
 const removeCoupon = async (req, res) => {
   try {
-      const cart = req.session.cart;
-console.log(cart);
+      const cart = req.session.cart || {};
+      console.log("Before removing:", cart.appliedCoupon);
+
       if (!cart.appliedCoupon) {
           return res.json({ success: false, message: "No coupon applied" });
       }
-      delete req.session.cart.appliedCoupon;
-      const finalTotal = cart.subTotal; 
 
-      return res.json({ success: true, message: "Coupon Removed", finalTotal });
+      delete req.session.cart.appliedCoupon;
+      req.session.cart.finalTotal = req.session.cart.subTotal;  // <-- Reset final total to subTotal
+      req.session.save();
+
+      console.log("After removing:", req.session.cart.appliedCoupon);
+
+      return res.json({ success: true, message: "Coupon Removed", finalTotal: req.session.cart.finalTotal });
   } catch (error) {
       console.error("Error removing coupon:", error);
       return res.json({ success: false, message: "Something went wrong" });
@@ -421,5 +591,7 @@ module.exports = {
   getCheckout,
   getConfirmation,
   applyCoupon,
-  removeCoupon
+  removeCoupon,
+  updateCart,
+  getSingleProductCheckout
 };

@@ -16,11 +16,7 @@ const razorpay = new Razorpay({
     key_secret: process.env.RAZORPAY_KEY_SECRET
 });
 
-//payment management
-router.post('/razorpay-payment',userAuth,orderController.razorpayPayment);
-router.post('/razorpay-verify',userAuth,orderController.verifyRazorpay);
-router.post('/cod-payment',userAuth,orderController.codPayment);
-router.post('/wallet-payment',userAuth,orderController.walletPayment)
+
 
 //home page
 router.get('/pageNotFound',userController.pageNotFound);
@@ -78,6 +74,7 @@ router.get("/view-cart",userAuth,cartController.viewCart);
 router.get("/deleteCart",userAuth,cartController.deleteCart);
 router.get("/checkout",userAuth,cartController.getCheckout);
 router.get("/confirmation",userAuth,cartController.getConfirmation);
+router.post("/update-cart",userAuth,cartController.updateCart);
 //coupen management
 router.post("/apply-coupon",userAuth,cartController.applyCoupon);
 router.post("/remove-coupon",userAuth,cartController.removeCoupon );
@@ -88,6 +85,17 @@ router.get("/orders",userAuth,orderController.getOrder);
 router.post("/cancelOrder/:orderId",userAuth,orderController.cancelOrderItem);
 router.get("/orderDetails/:orderId",userAuth,orderController.orderDetails);
 router.put("/cancel-order/:orderGroupId",userAuth,orderController.cancelOrder);
+router.get("/getCheckout",userAuth,cartController.getSingleProductCheckout);
+
+//payment management
+router.post('/razorpay-payment',userAuth,orderController.razorpayPayment);
+router.post('/razorpay-verify',userAuth,orderController.verifyRazorpay);
+router.post('/cod-payment',userAuth,orderController.codPayment);
+router.post('/wallet-payment',userAuth,orderController.walletPayment);
+router.get('/payment-failure',userAuth,orderController.paymentFailure);
+
+//return management
+router.post('/returnOrder',userAuth,orderController.returnOrder);
 
 //logout
 router.get('/logout',userController.logout);

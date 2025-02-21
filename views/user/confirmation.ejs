@@ -27,7 +27,7 @@
     
         /* Confirmation Message Styling */
         .title_confirmation {
-            font-size: 36px;
+            font-size: 50px;
             font-weight: 700;
             color: #00bcd4;
             text-align: center;
@@ -244,11 +244,11 @@
     <!-- Order Details Section -->
     <section class="order_details section_gap">
         <div class="container">
-            <h3 class="title_confirmation">Thank you. Your order has been received.</h3>
+            <h1 class="title_confirmation">Thank you for your order. Your transaction has been completed successfully.</h1>
             <div class="row order_d_inner">
-                <div class="col-lg-6">
+                <div class="col-lg-6 display-flex align-content-center ">
                     <div class="details_item">
-                        <h4>Shipping Address</h4>
+                        <h4 style="color: #00bcd4;">Shipping Address</h4>
                         <ul class="list">
                             <li><a href="#"><span>Address Type</span>: <%= selectedAddress.addressType %></a></li>
                             <li><a href="#"><span>City</span>: <%= selectedAddress.city %></a></li>
@@ -260,9 +260,17 @@
                         </ul>
                     </div>
                 </div>
+                <div class="col-lg-6">
+                    <% cartItems.forEach(item => { %>
+                        <div class="details_item">
+                            <img src="uploads/product-images/<%= item.productId.productImage %>" class="img-fluid" alt="Product Image">
+                        </div>
+                    <% }); %>
+                </div>
+                
             </div>
             <div class="order_details_table">
-                <h2><u>Order Details</u></h2>
+                <h2 style="color: #00bcd4;"><u>Order Details</u></h2>
                 <h2>Order Method: <span class="paymentClass"><%= paymentMethod %></span></h2>
                 <div class="table-responsive">
                     <table class="table">

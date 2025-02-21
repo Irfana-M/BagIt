@@ -1,597 +1,779 @@
 <!DOCTYPE html>
 <html lang="zxx" class="no-js">
-
-<head>
+  <head>
     <!-- Mobile Specific Meta -->
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
     <!-- Favicon-->
-    <link rel="shortcut icon" href="img/logo.png">
+    <link rel="shortcut icon" href="img/logo.png" />
     <!-- Author Meta -->
-    <meta name="author" content="CodePixar">
+    <meta name="author" content="CodePixar" />
     <!-- Meta Description -->
-    <meta name="description" content="">
+    <meta name="description" content="" />
     <!-- Meta Keyword -->
-    <meta name="keywords" content="">
+    <meta name="keywords" content="" />
     <!-- meta character set -->
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <!-- Site Title -->
     <title>BAG IT Shopping</title>
 
     <!--
             CSS
             ============================================= -->
-    <link rel="stylesheet" href="css/linearicons.css">
-    <link rel="stylesheet" href="css/owl.carousel.css">
-    <link rel="stylesheet" href="css/font-awesome.min.css">
-    <link rel="stylesheet" href="css/themify-icons.css">
-    <link rel="stylesheet" href="css/nice-select.css">
-    <link rel="stylesheet" href="css/nouislider.min.css">
-    <link rel="stylesheet" href="css/bootstrap.css">
-    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/linearicons.css" />
+    <link rel="stylesheet" href="css/owl.carousel.css" />
+    <link rel="stylesheet" href="css/font-awesome.min.css" />
+    <link rel="stylesheet" href="css/themify-icons.css" />
+    <link rel="stylesheet" href="css/nice-select.css" />
+    <link rel="stylesheet" href="css/nouislider.min.css" />
+    <link rel="stylesheet" href="css/bootstrap.css" />
+    <link rel="stylesheet" href="css/main.css" />
     <!-- Include SweetAlert2 library -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"
+    />
 
-<style>
-    .cart_area {
-    padding: 50px 0;
-    background-color: #f8f9fa;
-}
+    <style>
+      .cart_area {
+        padding: 50px 0;
+        background-color: #f8f9fa;
+      }
 
-.table {
-    background: #fff;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
+      .table {
+        background: #fff;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
 
-.table th {
-    background: #343a40;
-    color: #fff;
-    text-transform: uppercase;
-    padding: 15px;
-    text-align: center;
-}
+      .table th {
+        background: #343a40;
+        color: #fff;
+        text-transform: uppercase;
+        padding: 15px;
+        text-align: center;
+      }
 
-.table td {
-    padding: 15px;
-    vertical-align: middle;
-    text-align: center;
-}
+      .table td {
+        padding: 15px;
+        vertical-align: middle;
+        text-align: center;
+      }
 
-.cartImg {
-    width: 80px;
-    height: auto;
-    border-radius: 8px;
-}
+      .cartImg {
+        width: 80px;
+        height: auto;
+        border-radius: 8px;
+      }
 
-.product_count {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+      .product_count {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
 
-.product_count input {
-    width: 50px;
-    text-align: center;
-    font-size: 16px;
-    padding: 5px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-}
+      .product_count input {
+        width: 50px;
+        text-align: center;
+        font-size: 16px;
+        padding: 5px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
 
-.product_count button {
-    background: #007bff;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 5px;
-    margin: 0 5px;
-    cursor: pointer;
-}
+      .product_count button {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+        margin: 0 5px;
+        cursor: pointer;
+      }
 
-.product_count button:hover {
-    background: #0056b3;
-}
+      .product_count button:hover {
+        background: #0056b3;
+      }
 
-.remove-btn {
-    background: #dc3545;
-    color: white;
-    border: none;
-    padding: 7px 12px;
-    border-radius: 5px;
-    font-size: 14px;
-    cursor: pointer;
-}
-
-.remove-btn:hover {
-    background: #a71d2a;
-}
-
-/* Coupon Section */
-.coupon-section {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-.coupon-section input {
-    padding: 8px;
-    width: 250px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-}
-
-.coupon-section button {
-    background: #28a745;
-    color: white;
-    padding: 8px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.coupon-section button:hover {
-    background: #218838;
-}
-
-/* Price Details */
-.price-details {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-.price-details ul {
-    list-style: none;
-    padding: 0;
-}
-
-.price-details ul li {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    font-size: 16px;
-}
-
-.price-details ul li h5 {
-    font-weight: bold;
-    color: #007bff;
-}
-
-.final-total {
-    font-size: 22px;
-    font-weight: bold;
-    color: #28a745;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .table th, .table td {
+      .remove-btn {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 7px 12px;
+        border-radius: 5px;
         font-size: 14px;
-        padding: 10px;
-    }
+        cursor: pointer;
+      }
 
-    .cartImg {
-        width: 60px;
-    }
+      .remove-btn:hover {
+        background: #a71d2a;
+      }
 
-    .coupon-section input {
-        width: 100%;
-    }
+      /* Coupon Section */
+      .coupon-section {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
 
-    .coupon-section button {
-        width: 100%;
-        margin-top: 10px;
-    }
-}
-.cartImg {
-    border-radius: 8px;
-    border: 1px solid #ddd;
-}
+      .coupon-section input {
+        padding: 8px;
+        width: 250px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
 
-.card {
-    border: none;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
+      .coupon-section button {
+        background: #28a745;
+        color: white;
+        padding: 8px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
 
-.list-group-item {
-    border: none;
-    padding: 0.75rem 0;
-}
+      .coupon-section button:hover {
+        background: #218838;
+      }
 
-.btn-primary {
-    background-color: #007bff;
-    border-color: #007bff;
-}
+      /* Price Details */
+      .price-details {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
 
-.btn-primary:hover {
-    background-color: #0056b3;
-    border-color: #004085;
-}
+      .price-details ul {
+        list-style: none;
+        padding: 0;
+      }
 
-.btn-outline-secondary {
-    border-color: #ddd;
-}
+      .price-details ul li {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        font-size: 16px;
+      }
 
-.btn-outline-secondary:hover {
-    background-color: #f8f9fa;
-}
+      .price-details ul li h5 {
+        font-weight: bold;
+        color: #007bff;
+      }
 
-</style>
+      .final-total {
+        font-size: 22px;
+        font-weight: bold;
+        color: #28a745;
+      }
 
-</head>
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .table th,
+        .table td {
+          font-size: 14px;
+          padding: 10px;
+        }
 
-<body>
+        .cartImg {
+          width: 60px;
+        }
 
+        .coupon-section input {
+          width: 100%;
+        }
+
+        .coupon-section button {
+          width: 100%;
+          margin-top: 10px;
+        }
+      }
+      .cartImg {
+        border-radius: 8px;
+        border: 1px solid #ddd;
+      }
+
+      .card {
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .list-group-item {
+        border: none;
+        padding: 0.75rem 0;
+      }
+
+      .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+      }
+
+      .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #004085;
+      }
+
+      .btn-outline-secondary {
+        border-color: #ddd;
+      }
+
+      .btn-outline-secondary:hover {
+        background-color: #f8f9fa;
+      }
+    </style>
+  </head>
+
+  <body>
     <!-- Start Header Area -->
     <header class="header_area sticky-header">
-		<div class="main_menu">
-			<nav class="navbar navbar-expand-lg navbar-light main_box">
-				<div class="container">
-					<!-- Brand and toggle get grouped for better mobile display -->
-					<a class="navbar-brand logo_h" href="/"><img src="img/logo.png" alt=""></a>
-					<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-					 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
-					</button>
-					<!-- Collect the nav links, forms, and other content for toggling -->
-					<div class="collapse navbar-collapse offset" id="navbarSupportedContent">
-						<ul class="nav navbar-nav menu_nav ml-auto">
-							<li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-                            <li class="nav-item active"><a class="nav-link" href="/shop">Shop</a></li>
-                                <!-- <a href="/shop" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+      <div class="main_menu">
+        <nav class="navbar navbar-expand-lg navbar-light main_box">
+          <div class="container">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <a class="navbar-brand logo_h" href="/"
+              ><img src="img/logo.png" alt=""
+            /></a>
+            <button
+              class="navbar-toggler"
+              type="button"
+              data-toggle="collapse"
+              data-target="#navbarSupportedContent"
+              aria-controls="navbarSupportedContent"
+              aria-expanded="false"
+              aria-label="Toggle navigation"
+            >
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div
+              class="collapse navbar-collapse offset"
+              id="navbarSupportedContent"
+            >
+              <ul class="nav navbar-nav menu_nav ml-auto">
+                <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                <li class="nav-item active">
+                  <a class="nav-link" href="/shop">Shop</a>
+                </li>
+                <!-- <a href="/shop" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
                                  aria-expanded="false">Shop</a> -->
-                                <!-- <ul class="dropdown-menu">
+                <!-- <ul class="dropdown-menu">
                                     <li class="nav-item"><a class="nav-link" href="">Shop Category</a></li>
                                     <li class="nav-item"><a class="nav-link" href="/checkout">Product Checkout</a></li>
                                     <li class="nav-item"><a class="nav-link" href='/view-cart'>Shopping Cart</a></li>
                                     <li class="nav-item"><a class="nav-link" href="confirmation.html">Confirmation</a></li>
                                 </ul> -->
-							
-							<li class="nav-item submenu dropdown">
-								<a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
-								 aria-expanded="false"></a>
-								<ul class="dropdown-menu">
-									<li class="nav-item"><a class="nav-link" href="login.html">Login</a></li>
-									<li class="nav-item"><a class="nav-link" href="tracking.html">Tracking</a></li>
-									<li class="nav-item"><a class="nav-link" href="elements.html">Elements</a></li>
-								</ul>
-							</li>
-							<li class="nav-item"><a class="nav-link" href="contact.html"></a></li>
-						</ul>
-						<ul class="nav navbar-nav navbar-right">
-							<li class="nav-item"><a href="/view-cart" class="cart"><span class="ti-bag"></span></a></li>
-							<li class="nav-item">
-								<button class="search"><span class="lnr lnr-magnifier" id="search"></span></button>
-							</li>
-						</ul>
-					</div>
-				</div>
-			</nav>
-		</div>
-		<div class="search_input" id="search_input_box">
-			<div class="container">
-				<form class="d-flex justify-content-between">
-					<input type="text" class="form-control" id="search_input" placeholder="Search Here">
-					<button type="submit" class="btn"></button>
-					<span class="lnr lnr-cross" id="close_search" title="Close Search"></span>
-				</form>
-			</div>
-		</div>
-	</header>
-	<!-- End Header Area -->
+
+                <li class="nav-item submenu dropdown">
+                  <a
+                    href="#"
+                    class="nav-link dropdown-toggle"
+                    data-toggle="dropdown"
+                    role="button"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                  ></a>
+                  <ul class="dropdown-menu">
+                    <li class="nav-item">
+                      <a class="nav-link" href="login.html">Login</a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" href="tracking.html">Tracking</a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" href="elements.html">Elements</a>
+                    </li>
+                  </ul>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="contact.html"></a>
+                </li>
+              </ul>
+              <ul class="nav navbar-nav navbar-right">
+                <li class="nav-item">
+                  <a href="/view-cart" class="cart"
+                    ><span class="ti-bag"></span
+                  ></a>
+                </li>
+                <li class="nav-item">
+                  <button class="search">
+                    <span class="lnr lnr-magnifier" id="search"></span>
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+      </div>
+      <div class="search_input" id="search_input_box">
+        <div class="container">
+          <form class="d-flex justify-content-between">
+            <input
+              type="text"
+              class="form-control"
+              id="search_input"
+              placeholder="Search Here"
+            />
+            <button type="submit" class="btn"></button>
+            <span
+              class="lnr lnr-cross"
+              id="close_search"
+              title="Close Search"
+            ></span>
+          </form>
+        </div>
+      </div>
+    </header>
+    <!-- End Header Area -->
 
     <!-- Start Banner Area -->
     <section class="banner-area organic-breadcrumb">
-        <div class="container">
-            <div class="breadcrumb-banner d-flex flex-wrap align-items-center justify-content-end">
-                <div class="col-first">
-                    <h1>Shopping Cart</h1>
-                    <nav class="d-flex align-items-center">
-                        <a href="index.html">Home<span class="lnr lnr-arrow-right"></span></a>
-                        <a href="category.html">Cart</a>
-                    </nav>
-                </div>
-            </div>
+      <div class="container">
+        <div
+          class="breadcrumb-banner d-flex flex-wrap align-items-center justify-content-end"
+        >
+          <div class="col-first">
+            <h1>Shopping Cart</h1>
+            <nav class="d-flex align-items-center">
+              <a href="index.html"
+                >Home<span class="lnr lnr-arrow-right"></span
+              ></a>
+              <a href="category.html">Cart</a>
+            </nav>
+          </div>
         </div>
+      </div>
     </section>
     <!-- End Banner Area -->
 
-<!--================Cart Area =================-->
-<section class="cart_area py-5">
-    <div class="container">
+    <!--================Cart Area =================-->
+    <section class="cart_area py-5">
+      <div class="container">
         <div class="cart_inner bg-white p-4 rounded shadow-sm">
-            <% if (cart && cart.length > 0) { %>
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead class="table-light">
-                        <tr>
-                            <th scope="col">Product</th>
-                            <th scope="col">Product Name</th>
-                            <th scope="col">Price</th>
-                            <th scope="col">Quantity</th>
-                            <th scope="col">Total</th>
-                            <th scope="col">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% cart.forEach((item) => { %>
-                            <% if (item.productId && item.productId.productName && item.productId.productImage) { %>
-                            <tr>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <img class="cartImg me-3" src="/uploads/product-images/<%= item.productId.productImage[0] %>" alt="<%= item.productId.name %>" style="width: 80px; height: 80px; object-fit: cover;">
-                                    </div>
-                                </td>
-                                <td>
-                                    <h5 class="mb-0"><%= item.productId.productName %></h5>
-                                </td>
-                                <td>
-                                    <h5 class="mb-0">₹<%= item.productId.salePrice %></h5>
-                                </td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <button onclick="decreaseQuantity('<%= item.productId._id %>', '<%= item.productId.quantity %>')" class="btn btn-sm btn-outline-secondary">
-                                            <i class="bi bi-dash"></i>
-                                        </button>
-                                        <input type="text" name="qty" id="sst-<%= item.productId._id %>" maxlength="12" value="<%= item.quantity %>" class="form-control form-control-sm mx-2 text-center" style="width: 50px;">
-                                        <button onclick="increaseQuantity('<%= item.productId._id %>', '<%= item.productId.quantity %>')" class="btn btn-sm btn-outline-secondary">
-                                            <i class="bi bi-plus"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                                <td>
-                                    <h5 class="mb-0">₹<%= item.totalPrice %></h5>
-                                </td>
-                                <td>
-                                    <a href="/deleteCart?id=<%= item.productId._id %>" onclick="return confirm('Are you sure you want to delete this item?')" class="btn btn-sm btn-danger">
-                                        <i class="bi bi-trash"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                            <% } %>
-                        <% }) %>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Coupon and Price Details Section -->
-
-                <div class="col-md-4">
-                    <!-- Price Details -->
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Price Details</h5>
-                            <ul class="list-group list-group-flush">
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    Total Price
-                                    <span>₹<%= totalPriceWithoutOffer.toLocaleString('en-IN') %></span>
-                                </li>
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    Total Discount
-                                    <span>-₹<%= totalDiscount.toLocaleString('en-IN') %></span>
-                                </li>
-                                <li class="list-group-item d-flex justify-content-between align-items-center fw-bold">
-                                    Total Amount
-                                    <span>₹<%= finalTotal.toLocaleString('en-IN') %></span>
-                                </li>
-                            </ul>
-                        </div>
+          <% if (cart && cart.length > 0) { %>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead class="table-light">
+                <tr>
+                  <th scope="col">Product</th>
+                  <th scope="col">Product Name</th>
+                  <th scope="col">Price</th>
+                  <th scope="col">Quantity</th>
+                  <th scope="col">Total</th>
+                  <th scope="col">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% cart.forEach((item) => { %> <% if (item.productId &&
+                item.productId.productName && item.productId.productImage) { %>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <img
+                        class="cartImg me-3"
+                        src="/uploads/product-images/<%= item.productId.productImage[0] %>"
+                        alt="<%= item.productId.productName %>"
+                        style="width: 80px; height: 80px; object-fit: cover"
+                      />
                     </div>
-                </div>
-            </div>
+                  </td>
+                  <td>
+                    <h5 class="mb-0"><%= item.productId.productName %></h5>
+                  </td>
+                  <td>
+                    <h5 class="mb-0">
+                      <span style="text-decoration: line-through; color: grey">
+                        ₹<%= item.productId.regularPrice %>
+                      </span>
+                      <span
+                        style="color: red; font-weight: bold; margin-left: 5px"
+                      >
+                        ₹<%= item.productId.salePrice %>
+                      </span>
+                    </h5>
+                  </td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <button
+                        onclick="decreaseQuantity('<%= item.productId._id %>', '<%= item.quantity %>', '<%= item.productId.salePrice %>')"
+                        class="btn btn-sm btn-outline-secondary"
+                      >
+                        <i class="bi bi-dash"></i>
+                      </button>
+                      <input
+                        type="text"
+                        name="qty"
+                        id="sst-<%= item.productId._id %>"
+                        value="<%= item.quantity %>"
+                        class="form-control form-control-sm mx-2 text-center"
+                        style="width: 50px"
+                        readonly
+                      />
+                      <button
+                        onclick="increaseQuantity('<%= item.productId._id %>', '<%= item.productId.quantity %>', '<%= item.productId.salePrice %>')"
+                        class="btn btn-sm btn-outline-secondary"
+                      >
+                        <i class="bi bi-plus"></i>
+                      </button>
+                    </div>
+                  </td>
+                  <td>
+                    <h5 class="mb-0" id="total-price-<%= item.productId._id %>">
+                      ₹<%= item.totalPrice %>
+                    </h5>
+                  </td>
+                  <td>
+                    <a
+                      href="/deleteCart?id=<%= item.productId._id %>"
+                      onclick="return confirm('Are you sure you want to delete this item?')"
+                      class="btn btn-sm btn-danger"
+                    >
+                      <i class="bi bi-trash"></i>
+                    </a>
+                    <a id="buy-now-<%= item.productId._id %>" href="/getCheckout?id=<%= item.productId._id %>&quantity=<%= item.quantity %>"
+                      class="btn btn-sm btn-success">
+                      Buy This Now
+                    </a>
+                  </td>
+                </tr>
+                <% } %> <% }) %>
+              </tbody>
+            </table>
+          </div>
 
-            <!-- Continue Shopping and Checkout Buttons -->
-            <div class="d-flex justify-content-between mt-4">
-                <a href="/shop" class="btn btn-outline-secondary">Continue Shopping</a>
-                <a href="/checkout" class="btn btn-primary">Place Order</a>
+          <!-- Price Details Section -->
+          <div class="col-md-4">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Price Details</h5>
+                <ul class="list-group list-group-flush">
+                  <li
+                    class="list-group-item d-flex justify-content-between align-items-center"
+                  >
+                    Total Price
+                    <h5 class="mb-0">
+                      <span
+                        id="totalRegularPrice"
+                        style="color: gray; text-decoration: line-through"
+                        >₹<%= totalPriceWithoutOffer.toLocaleString('en-IN')
+                        %></span
+                      >
+                      <span
+                        id="totalSalePrice"
+                        style="color: red; font-weight: bold"
+                        >₹<%= finalTotal.toLocaleString('en-IN') %></span
+                      >
+                    </h5>
+                  </li>
+
+                  <li
+                    class="list-group-item d-flex justify-content-between align-items-center"
+                  >
+                    Discount
+                    <span
+                      id="totalDiscount"
+                      style="color: green; font-weight: bold"
+                      >-₹<%= totalDiscount.toLocaleString('en-IN') %></span
+                    >
+                  </li>
+                  <li
+                    class="list-group-item d-flex justify-content-between align-items-center fw-bold"
+                  >
+                    Total Amount
+                    <span id="final-total"
+                      >₹<%= finalTotal.toLocaleString('en-IN') %></span
+                    >
+                  </li>
+                </ul>
+              </div>
             </div>
-            <% } else { %>
-                <div class="text-center py-5">
-                    <h3>Your cart is empty</h3>
-                    <p class="mb-4">Looks like you haven't added anything to your cart yet.</p>
-                    <a href="/shop" class="btn btn-primary">Continue Shopping</a>
-                </div>
-            <% } %>
+          </div>
+
+          <!-- Continue Shopping and Checkout Buttons -->
+          <div class="d-flex justify-content-between mt-4">
+            <a href="/shop" class="btn btn-outline-secondary"
+              >Continue Shopping</a
+            >
+            <a href="/checkout" class="btn btn-primary">Place Order</a>
+          </div>
+
+          <% } else { %>
+          <div class="text-center py-5">
+            <h3>Your cart is empty</h3>
+            <p class="mb-4">
+              Looks like you haven't added anything to your cart yet.
+            </p>
+            <a href="/shop" class="btn btn-primary">Continue Shopping</a>
+          </div>
+          <% } %>
         </div>
-    </div>
-</section>
-<% if (cart && cart.length > 0) { %>
-    <!-- Cart Items Table/Display Here -->
-  
-    <!-- Pagination Controls -->
+      </div>
+    </section>
+
+    <% if (cart && cart.length > 0) { %>
     <div class="pagination">
       <% if (currentPage > 1) { %>
-        <a href="?page=<%= currentPage - 1 %>">Previous</a>
+      <a href="?page=<%= currentPage - 1 %>">Previous</a>
       <% } %>
-  
       <span>Page <%= currentPage %> of <%= totalPages %></span>
-  
       <% if (currentPage < totalPages) { %>
-        <a href="?page=<%= currentPage + 1 %>">Next</a>
+      <a href="?page=<%= currentPage + 1 %>">Next</a>
       <% } %>
     </div>
-  <% } else { %>
+    <% } else { %>
     <p>Your cart is empty.</p>
-  <% } %>
-  
-    
+    <% } %>
+
     <!--================End Cart Area =================-->
 
     <!-- start footer Area -->
     <footer class="footer-area section_gap">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-3  col-md-6 col-sm-6">
-                    <div class="single-footer-widget">
-                        <h6>About Us</h6>
-                        <p>
-                            Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt
-                            ut labore dolore
-                            magna aliqua.
-                        </p>
-                    </div>
-                </div>
-                <div class="col-lg-4  col-md-6 col-sm-6">
-                    <div class="single-footer-widget">
-                        <h6>Newsletter</h6>
-                        <p>Stay update with our latest</p>
-                        <div class="" id="mc_embed_signup">
-
-                            <form target="_blank" novalidate="true" action="https://spondonit.us12.list-manage.com/subscribe/post?u=1462626880ade1ac87bd9c93a&amp;id=92a4423d01"
-                                method="get" class="form-inline">
-
-                                <div class="d-flex flex-row">
-
-                                    <input class="form-control" name="EMAIL" placeholder="Enter Email" onfocus="this.placeholder = ''"
-                                        onblur="this.placeholder = 'Enter Email '" required="" type="email">
-
-
-                                    <button class="click-btn btn btn-default"><i class="fa fa-long-arrow-right"
-                                            aria-hidden="true"></i></button>
-                                    <div style="position: absolute; left: -5000px;">
-                                        <input name="b_36c4fd991d266f23781ded980_aefe40901a" tabindex="-1" value=""
-                                            type="text">
-                                    </div>
-
-                                    <!-- <div class="col-lg-4 col-md-4">
-													<button class="bb-btn btn"><span class="lnr lnr-arrow-right"></span></button>
-												</div>  -->
-                                </div>
-                                <div class="info"></div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3  col-md-6 col-sm-6">
-                    <div class="single-footer-widget mail-chimp">
-                        <h6 class="mb-20">Instragram Feed</h6>
-                        <ul class="instafeed d-flex flex-wrap">
-                            <li><img src="img/i1.jpg" alt=""></li>
-                            <li><img src="img/i2.jpg" alt=""></li>
-                            <li><img src="img/i3.jpg" alt=""></li>
-                            <li><img src="img/i4.jpg" alt=""></li>
-                            <li><img src="img/i5.jpg" alt=""></li>
-                            <li><img src="img/i6.jpg" alt=""></li>
-                            <li><img src="img/i7.jpg" alt=""></li>
-                            <li><img src="img/i8.jpg" alt=""></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="col-lg-2 col-md-6 col-sm-6">
-                    <div class="single-footer-widget">
-                        <h6>Follow Us</h6>
-                        <p>Let us be social</p>
-                        <div class="footer-social d-flex align-items-center">
-                            <a href="#"><i class="fa fa-facebook"></i></a>
-                            <a href="#"><i class="fa fa-twitter"></i></a>
-                            <a href="#"><i class="fa fa-dribbble"></i></a>
-                            <a href="#"><i class="fa fa-behance"></i></a>
-                        </div>
-                    </div>
-                </div>
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-3 col-md-6 col-sm-6">
+            <div class="single-footer-widget">
+              <h6>About Us</h6>
+              <p>
+                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+                eiusmod tempor incididunt ut labore dolore magna aliqua.
+              </p>
             </div>
-            <div class="footer-bottom d-flex justify-content-center align-items-center flex-wrap">
-                <p class="footer-text m-0"><!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="fa fa-heart-o" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a>
-<!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-</p>
+          </div>
+          <div class="col-lg-4 col-md-6 col-sm-6">
+            <div class="single-footer-widget">
+              <h6>Newsletter</h6>
+              <p>Stay update with our latest</p>
+              <div class="" id="mc_embed_signup">
+                <form
+                  target="_blank"
+                  novalidate="true"
+                  action="https://spondonit.us12.list-manage.com/subscribe/post?u=1462626880ade1ac87bd9c93a&amp;id=92a4423d01"
+                  method="get"
+                  class="form-inline"
+                >
+                  <div class="d-flex flex-row">
+                    <input
+                      class="form-control"
+                      name="EMAIL"
+                      placeholder="Enter Email"
+                      onfocus="this.placeholder = ''"
+                      onblur="this.placeholder = 'Enter Email '"
+                      required=""
+                      type="email"
+                    />
+
+                    <button class="click-btn btn btn-default">
+                      <i class="fa fa-long-arrow-right" aria-hidden="true"></i>
+                    </button>
+                    <div style="position: absolute; left: -5000px">
+                      <input
+                        name="b_36c4fd991d266f23781ded980_aefe40901a"
+                        tabindex="-1"
+                        value=""
+                        type="text"
+                      />
+                    </div>
+                  </div>
+                  <div class="info"></div>
+                </form>
+              </div>
             </div>
+          </div>
+          <div class="col-lg-3 col-md-6 col-sm-6">
+            <div class="single-footer-widget mail-chimp">
+              <h6 class="mb-20">Instragram Feed</h6>
+              <ul class="instafeed d-flex flex-wrap">
+                <li><img src="img/i1.jpg" alt="" /></li>
+                <li><img src="img/i2.jpg" alt="" /></li>
+                <li><img src="img/i3.jpg" alt="" /></li>
+                <li><img src="img/i4.jpg" alt="" /></li>
+                <li><img src="img/i5.jpg" alt="" /></li>
+                <li><img src="img/i6.jpg" alt="" /></li>
+                <li><img src="img/i7.jpg" alt="" /></li>
+                <li><img src="img/i8.jpg" alt="" /></li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-lg-2 col-md-6 col-sm-6">
+            <div class="single-footer-widget">
+              <h6>Follow Us</h6>
+              <p>Let us be social</p>
+              <div class="footer-social d-flex align-items-center">
+                <a href="#"><i class="fa fa-facebook"></i></a>
+                <a href="#"><i class="fa fa-twitter"></i></a>
+                <a href="#"><i class="fa fa-dribbble"></i></a>
+                <a href="#"><i class="fa fa-behance"></i></a>
+              </div>
+            </div>
+          </div>
         </div>
+        <div
+          class="footer-bottom d-flex justify-content-center align-items-center flex-wrap"
+        >
+          <p class="footer-text m-0">
+            <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+            Copyright &copy;
+            <script>
+              document.write(new Date().getFullYear());
+            </script>
+            All rights reserved | This template is made with
+            <i class="fa fa-heart-o" aria-hidden="true"></i> by
+            <a href="https://colorlib.com" target="_blank">Colorlib</a>
+            <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+          </p>
+        </div>
+      </div>
     </footer>
     <!-- End footer Area -->
 
     <script src="js/vendor/jquery-2.2.4.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4"
-	 crossorigin="anonymous"></script>
-	<script src="js/vendor/bootstrap.min.js"></script>
-	<script src="js/jquery.ajaxchimp.min.js"></script>
-	<script src="js/jquery.nice-select.min.js"></script>
-	<script src="js/jquery.sticky.js"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"
+      integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4"
+      crossorigin="anonymous"
+    ></script>
+    <script src="js/vendor/bootstrap.min.js"></script>
+    <script src="js/jquery.ajaxchimp.min.js"></script>
+    <script src="js/jquery.nice-select.min.js"></script>
+    <script src="js/jquery.sticky.js"></script>
     <script src="js/nouislider.min.js"></script>
-	<script src="js/jquery.magnific-popup.min.js"></script>
-	<script src="js/owl.carousel.min.js"></script>
-	<!--gmaps Js-->
-	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCjCGmQ0Uq4exrzdcL6rvxywDDOvfAu6eE"></script>
-	<script src="js/gmaps.min.js"></script>
-	<script src="js/main.js"></script>
+    <script src="js/jquery.magnific-popup.min.js"></script>
+    <script src="js/owl.carousel.min.js"></script>
+    <!--gmaps Js-->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCjCGmQ0Uq4exrzdcL6rvxywDDOvfAu6eE"></script>
+    <script src="js/gmaps.min.js"></script>
+    <script src="js/main.js"></script>
     <script>
-        // Function to handle increasing the quantity
-        function increaseQuantity(productId, stock) {
-            const quantityField = document.getElementById(`sst-${productId}`);
-            let currentQuantity = parseInt(quantityField.value);
-            
-            if (currentQuantity < stock) {
-                quantityField.value = currentQuantity + 1; // Increment the quantity
-                updateCart(productId, quantityField.value); // Update the cart (You should call an API or make a request to update the cart)
-            } else {
-                // Use SweetAlert to notify the user about stock availability
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Out of Stock',
-                    text: 'Sorry, we\'ve run out of stock for this product.',
-                    confirmButtonText: 'OK'
-                });
-            }
-        }
-    
-        // Function to handle decreasing the quantity
-        function decreaseQuantity(productId, stock) {
-            const quantityField = document.getElementById(`sst-${productId}`);
-            let currentQuantity = parseInt(quantityField.value);
-            
-            if (currentQuantity > 1) {
-                quantityField.value = currentQuantity - 1; // Decrement the quantity
-                updateCart(productId, quantityField.value); // Update the cart (You should call an API or make a request to update the cart)
-            }
-        }
-    
-        // Function to update the cart with the new quantity (you can use AJAX or form submission)
-        function updateCart(productId, newQuantity) {
-            // You can send the updated cart quantity to the server through AJAX
-            console.log("Updated Cart:", productId, newQuantity);
-    
-            // For example, make an AJAX call to update the cart:
-            fetch('/update-cart', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    productId: productId,
-                    quantity: newQuantity
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    console.log("Cart updated successfully");
-                    // You can update the cart view here if necessary
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Failed to update cart',
-                        text: 'Something went wrong while updating the cart.',
-                        confirmButtonText: 'OK'
-                    });
-                }
-            });
-        }
-    </script>
-    <script>
-        document.querySelectorAll('.remove-btn').forEach(button => {
-                button.addEventListener('click', function() {
-                    this.closest('.address-card').remove();
-                });
-            });
-    </script>
-    
-    
-</body>
+      function increaseQuantity(productId, stock, salePrice) {
+        const quantityField = document.getElementById(`sst-${productId}`);
+        const totalPriceField = document.getElementById(
+          `total-price-${productId}`
+        );
 
+        let currentQuantity = parseInt(quantityField.value);
+
+        if (currentQuantity < stock) {
+          currentQuantity++;
+          quantityField.value = currentQuantity;
+
+          totalPriceField.textContent = `₹${(
+            currentQuantity * salePrice
+          ).toLocaleString("en-IN")}`;
+
+          updateCart(productId, currentQuantity);
+        } else {
+          Swal.fire({
+            icon: "warning",
+            title: "Out of Stock",
+            text: "Sorry, we've run out of stock for this product.",
+            confirmButtonText: "OK",
+          });
+
+          // Optional: Disable the plus button if stock is 0
+          document.getElementById(`increase-btn-${productId}`).disabled = true;
+        }
+      }
+
+      function decreaseQuantity(productId, stock, salePrice) {
+        const quantityField = document.getElementById(`sst-${productId}`);
+        const totalPriceField = document.getElementById(
+          `total-price-${productId}`
+        );
+
+        let currentQuantity = parseInt(quantityField.value);
+
+        if (currentQuantity > 1) {
+          currentQuantity--;
+          quantityField.value = currentQuantity;
+
+          totalPriceField.textContent = `₹${(
+            currentQuantity * salePrice
+          ).toLocaleString("en-IN")}`;
+
+          updateCart(productId, currentQuantity);
+        }
+      }
+
+      function updateCart(productId, newQuantity) {
+  fetch("/update-cart", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      productId: productId,
+      quantity: newQuantity,
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        // Update the total price dynamically
+        const totalPriceElement = document.getElementById(
+          `total-price-${productId}`
+        );
+        if (totalPriceElement) {
+          totalPriceElement.innerText = `₹${data.newTotalPrice}`;
+        }
+
+        // Update final total if the element exists
+        const finalTotalElement = document.getElementById("final-total");
+        const totalSalePrice = document.getElementById("totalSalePrice");
+        const totalRegularPrice = document.getElementById("totalRegularPrice");
+        const totalDiscount = document.getElementById("totalDiscount");
+
+        if (finalTotalElement) {
+          finalTotalElement.innerText = `₹${data.finalTotal}`;
+        }
+        if (totalSalePrice) {
+          totalSalePrice.innerText = `₹${data.finalTotal}`;
+        }
+        if (totalRegularPrice) {
+          totalRegularPrice.innerText = `₹${data.totalOriginalPrice}`;
+        }
+        if (totalDiscount) {
+          totalDiscount.innerText = `-₹${data.totalDiscount}`;
+        }
+
+        // 🔥 Update the "Buy This Now" link with the new quantity
+        const buyNowLink = document.getElementById(`buy-now-${productId}`);
+        if (buyNowLink) {
+          buyNowLink.href = `/getCheckout?id=${productId}&quantity=${newQuantity}`;
+        }
+
+        console.log("Cart updated successfully");
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Failed to update cart",
+          text: data.message || "Something went wrong while updating the cart.",
+          confirmButtonText: "OK",
+        });
+      }
+    })
+    .catch((error) => {
+      console.error("Error updating cart:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Network Error",
+        text: "Failed to connect to the server. Please try again later.",
+        confirmButtonText: "OK",
+      });
+    });
+}
+    </script>
+    <script>
+      document.querySelectorAll(".remove-btn").forEach((button) => {
+        button.addEventListener("click", function () {
+          this.closest(".address-card").remove();
+        });
+      });
+    </script>
+  </body>
 </html>

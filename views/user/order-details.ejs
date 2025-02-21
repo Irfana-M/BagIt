@@ -307,6 +307,8 @@ button:hover, a:hover {
         <p>Your order has been shipped. You can expect delivery soon.</p>
       <% } else if (order.status === 'Delivered') { %>
         <p>Your order has been delivered. Thank you for shopping with us!</p>
+        <button class="btn btn-danger" onclick="requestReturn('<%= order.orderGroupId %>')">Return Order</button>
+        <button class="btn btn-danger" onclick="requestReturnItem('<%= order.orderGroupId %>')">Return Order Item</button>
       <% } %>
 
       <!-- Order Tracking History (if available) -->
@@ -394,6 +396,88 @@ button:hover, a:hover {
             }
         });
     }
+
+
+
+   // return script
+   
+
+
+function requestReturn(orderId) {
+    Swal.fire({
+        title: 'Return Order',
+        text: 'Please select a reason for returning the order:',
+        input: 'select',
+        inputOptions: {
+            'Damaged Product': 'Damaged Product',
+            'Wrong Item Received': 'Wrong Item Received',
+            'Quality Issues': 'Quality Issues',
+            'Changed My Mind': 'Changed My Mind',
+            'Other': 'Other'
+        },
+        inputPlaceholder: 'Select a reason',
+        showCancelButton: true,
+        confirmButtonText: 'Next',
+        cancelButtonText: 'Cancel',
+        inputValidator: (value) => {
+            if (!value) {
+                return 'You need to select a reason!';
+            }
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            let selectedReason = result.value;
+
+            if (selectedReason === 'Other') {
+                
+                Swal.fire({
+                    title: 'Specify Your Reason',
+                    input: 'text',
+                    inputPlaceholder: 'Enter reason here...',
+                    showCancelButton: true,
+                    confirmButtonText: 'Submit',
+                    cancelButtonText: 'Cancel',
+                    inputValidator: (value) => {
+                        if (!value) {
+                            return 'You need to provide a reason!';
+                        }
+                    }
+                }).then((textResult) => {
+                    if (textResult.isConfirmed) {
+                        sendReturnRequest(orderId, textResult.value);
+                    }
+                });
+            } else {
+                sendReturnRequest(orderId, selectedReason);
+            }
+        }
+    });
+  }
+
+
+function sendReturnRequest(orderId, returnReason) {
+    fetch('/returnOrder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId, returnReason })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire('Return Requested', 'Your return request has been submitted.', 'success')
+            .then(() => {
+                location.reload(); 
+            });
+        } else {
+            Swal.fire('Error', 'Something went wrong. Please try again.', 'error');
+        }
+    })
+    .catch(error => {
+        Swal.fire('Error', 'Could not process the request.', 'error');
+    });
+}
+</script>
+
 </script>
 
 

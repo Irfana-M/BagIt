@@ -187,6 +187,33 @@
       .footer-area a:hover {
         text-decoration: underline;
       }
+      .product-info {
+          display: flex;
+          align-items: center;  /* Aligns all items vertically centered */
+          justify-content: flex-start; /* Aligns items to the left */
+          gap: 20px; /* Adds space between product name, quantity, and price */
+      }
+
+      .product-name {
+          font-weight: bold;
+      }
+
+      .quantity {
+          font-weight: normal;
+      }
+
+      .price {
+          font-weight: bold;
+          margin-left: auto; /* Pushes the price to the far right */
+      }
+      #couponMessage {
+          margin-top: 10px;
+          font-size: 18px;
+          color: red; /* Default color for error messages */
+}
+
+
+      
     </style>
   </head>
 
@@ -336,16 +363,18 @@
                   <a href="#">Product <span>Total</span></a>
                 </li>
                 <% cart.items.forEach(item => { %>
-                <li>
-                  <a href="#"
-                    ><%= item.productId.productName %> x <%= item.quantity %>
-                    <span class="last"
-                      >₹<%= (item.productId.salePrice *
-                      item.quantity).toFixed(2) %></span
-                    ></a
-                  >
-                </li>
-                <% }); %>
+                  <li class="cart-item" data-product-id="<%= item.productId._id %>">
+                      <div class="product-info">
+                          <span class="product-name"><%= item.productId.productName %></span>
+                          <span class="quantity">x <%= item.quantity %></span>
+                          <span class="price last">
+                              ₹<%= (item.productId.salePrice * item.quantity).toFixed(2) %>
+                          </span>
+                      </div>
+                  </li>
+              <% }); %>
+              
+              
               </ul>
               <ul class="list list_2">
                 <li>
@@ -361,14 +390,14 @@
                   <a href="#"
                     >Discount
                     <span id="productOffer"
-                      >-₹<%= totalProductOffer || 0 %></span
+                      >-₹<%= totalDiscount || 0 %></span
                     ></a
                   >
                 </li>
                 <li>
                   <a href="#"
                     >Coupon Discount
-                    <span id="couponDiscount"
+                    <span id="couponDiscountAmount"
                       >-₹<%= couponDiscount || 0 %></span
                     ></a
                   >
@@ -403,41 +432,39 @@
                   </button>
                 </li>
                 <% } %> <% if (cart.appliedCoupon) { %>
-                <li>
-                  <a href="#"
-                    >Discount (<%= cart.appliedCoupon.name %>)
-                    <span id="couponDiscount"
-                      >-₹<%= cart.appliedCoupon.discount %></span
-                    ></a
+                  <li id="appliedCoupon">
+                    <a href="#">Discount (<%= cart.appliedCoupon.name %>)
+                      <span id="couponDiscount">-₹<%= cart.appliedCoupon.discount %></span>
+                    </a>
+                  </li>
+                  <button
+                    id="removeCoupon"
+                    class="btn btn-danger btn-sm mt-2"
+                    style="display: block"
                   >
-                </li>
-                <button
-                  id="removeCoupon"
-                  class="btn btn-danger btn-sm mt-2"
-                  style="display: block"
-                >
-                  Remove Coupon
-                </button>
-                <% } else { %>
-                <button
-                  id="removeCoupon"
-                  class="btn btn-danger btn-sm mt-2"
-                  style="display: none"
-                >
-                  Remove Coupon
-                </button>
-                <% } %> <% if (typeof subTotal !== 'undefined') { %>
-                <li>
-                  <a href="#"
-                    >Total <span id="finalTotal">₹<%= finalTotal %></span></a
+                    Remove Coupon
+                  </button>
+              <% } else { %>
+                  <button
+                    id="removeCoupon"
+                    class="btn btn-danger btn-sm mt-2"
+                    style="display: none"
                   >
-                </li>
-                <% } %>
-              </ul>
-
+                    Remove Coupon
+                  </button>
+              <% } %>
+              
+              <% if (typeof subTotal !== 'undefined') { %>
+                  <li>
+                    <a href="#">Total <span id="finalTotal">₹<%= finalTotal %></span></a>
+                  </li>
+              <% } %>
+              
               <% } else { %>
               <p>Your cart is empty</p>
               <% } %>
+              <div id="couponMessage"></div>
+
 
               <h3><u>Payments</u></h3>
               <div class="payment_item active">
@@ -454,21 +481,7 @@
                   <div class="check"></div>
                 </div>
               </div>
-              <div class="payment_item active">
-                <div class="radion_btn">
-                  <input
-                    type="radio"
-                    id="f-option7"
-                    name="paymentMethod"
-                    value="Credit/Debit Card"
-                  />
-                  <label for="f-option7"
-                    ><i class="bi bi-credit-card"></i>Credit/Debit/ATM
-                    Card</label
-                  >
-                  <div class="check"></div>
-                </div>
-              </div>
+             
               <div class="payment_item active">
                 <div class="radion_btn">
                   <input
@@ -478,7 +491,7 @@
                     value="razorPay"
                   />
                   <label for="f-option8"
-                    ><i class="bi bi-bank"></i>Razorpay</label
+                    ><i class="bi bi-bank"></i>Online Paymnet</label
                   >
                   <div class="check"></div>
                 </div>
@@ -616,12 +629,16 @@ function updateCheckoutLink() {
     }
 
     if (!selectedAddress) {
-        showAlert("warning", "Address Required", "Please select an address before proceeding.");
-        return;
-    }
+    showAlert("warning", "Address Required", "Please select an address before proceeding.");
+    console.error("No address selected.");
+    return;
+}
+console.log("Selected Address ID:", selectedAddress.value);
+
 
     const addressId = selectedAddress.value;
-    const totalPrice = "<%= subTotal %>";
+    const totalPrice = document.getElementById("finalTotal").textContent.replace("₹", "").trim();
+    ;
     const paymentMethod = selectedPayment.value;
 
     console.log("Selected Payment Method:", paymentMethod);
@@ -658,73 +675,86 @@ function updateCheckoutLink() {
     }
 }
 
-function handleRazorpayPayment(amount, addressId, cartItems) {
+async function handleRazorpayPayment(amount, addressId, cartItems) {
+    console.log("1 - Initiating Razorpay payment");
 
-  console.log('1')
-    fetch("/razorpay-payment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ addressId, totalPrice: amount, cartItems }),
-    })
-    console.log('2')
-    .then((res) => {
-        if (!res.ok) {
-            throw new Error(`HTTP error! Status: ${res.status}`);
+    try {
+        const response = await fetch("/razorpay-payment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ addressId, totalPrice: amount, cartItems }),
+        });
+
+        const data = await response.json();
+        console.log("2 - Razorpay order response:", data);
+
+        if (!data.success) {
+            return swal.fire({
+                title: "Error",
+                text: data.message,
+                icon: "error",
+            });
         }
-        return res.json();
-    })
-    .then((data) => {
-      console.log('2')
-        if (data.success) {
-            const options = {
-                key: "<%= razorpayKey %>",
-                amount: amount * 100,
-                currency: "INR",
-                name: "BAG IT Shopping",
-                description: "Order Payment",
-                order_id: data.order.id,
-                handler: function (response) {
-                    fetch("/razorpay-verify", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            razorpay_payment_id: response.razorpay_payment_id,
-                            razorpay_order_id: response.razorpay_order_id,
-                            razorpay_signature: response.razorpay_signature,
-                            addressId, totalPrice: amount, cartItems
-                        }),
-                    })
-                    .then((res) => {
-                        if (!res.ok) {
-                            throw new Error(`HTTP error! Status: ${res.status}`);
-                        }
-                        return res.json();
-                    })
-                    .then((data) => {
-                        if (data.success) {
-                            window.location.href = `/confirmation?cartItems=${encodeURIComponent(JSON.stringify(cartItems))}&totalPrice=${amount}&addressId=${addressId}`;
-                        } else {
-                            alert("Payment verification failed!");
-                        }
-                    })
-                    .catch((err) => {
-                        console.error("Razorpay verification error:", err);
-                        alert("Something went wrong. Please try again later.");
+
+        const options = {
+            key: data.key, 
+            amount: data.amount,
+            currency: "INR",
+            name: "irfana",
+            description: "Test Payment",
+            order_id: data.razorpayOrderId, 
+            handler: async function (response) {
+                console.log("3 - Payment success response:", response);
+
+                const verifyResponse = await fetch("/razorpay-verify", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        payment_id: response.razorpay_payment_id,
+                        order_id: response.razorpay_order_id,
+                        signature: response.razorpay_signature,
+                        orderId: data.orderid,
+                        addressId: addressId, 
+                    }),
+                });
+
+                const verifyData = await verifyResponse.json();
+                console.log("4 - Payment verification response:", verifyData);
+
+                if (verifyData.success) {
+                    swal.fire({
+                        title: "Success",
+                        text: "Payment successfully completed",
+                        icon: "success",
                     });
-                },
-            };
-            const rzp1 = new Razorpay(options);
-            rzp1.open();
-            console.log('3')
-        } else {
-            alert("Failed to create Razorpay order!");
-        }
-        console.log('4')
-    })
-    .catch((err) => {
-        console.error("Razorpay payment error:", err);
-        alert("Something went wrong. Please try again later.");
-    });
+                    window.location.href = verifyData.redirectUrl ||  `/confirmation?cartItems=${encodeURIComponent(JSON.stringify(cartItems))}&totalPrice=${amount}&addressId=${addressId}&paymentMethod=Online Payment`;
+                } else {
+                    swal.fire({
+                        title: "Error",
+                        text: "Payment verification failed",
+                        icon: "error",
+                    });
+                }
+            },
+            prefill: {
+                name: "BAG IT",
+                email: "admin@bagit.com",
+                contact: "9078563467",
+            },
+            theme: { color: "#3399cc" },
+        };
+
+        console.log("5 - Razorpay options:", options);
+        const rzp = new Razorpay(options);
+        rzp.open();
+    } catch (error) {
+        console.error("Error in Razorpay payment process:", error);
+        swal.fire({
+            title: "Error",
+            text: "Something went wrong. Please try again later.",
+            icon: "error",
+        });
+    }
 }
 
 function handleCashOnDelivery(amount, addressId, cartItems) {
@@ -746,7 +776,7 @@ function handleCashOnDelivery(amount, addressId, cartItems) {
     })
     .then((data) => {
         if (data.success) {
-            window.location.href = `/confirmation?cartItems=${encodeURIComponent(JSON.stringify(cartItems))}&totalPrice=${amount}&addressId=${addressId}&paymentMethod=Cash on Delivery`;
+            window.location.href = `/confirmation?cartItems=${encodeURIComponent(JSON.stringify(cartItems))}&totalPrice=${amount}&addressId=${addressId}&paymentMethod=Online Payment`;
         } else {
             alert(data.message || "Failed to place COD order.");
         }
@@ -781,6 +811,76 @@ function handleWalletPayment(amount, addressId, cartItems) {
         alert("Something went wrong. Please try again later.");
     });
 }
+
+
+//coupon management
+$('#applyCoupon').click(function() {
+    let couponCode = $('#couponCode').val().trim();
+    let cartItems = []; 
+
+    $('.cart-item').each(function() { 
+        let productId = $(this).data('product-id'); 
+        let quantity = parseInt($(this).find('.quantity').text().replace(/\D/g, ''), 10);
+        let price = parseFloat($(this).find('.price').text().replace('₹', ''));
+
+        cartItems.push({ productId, quantity, price });
+    });
+
+    if (!couponCode) {
+        alert('Please enter a coupon code.');
+        return;
+    }
+
+    $.ajax({
+        url: '/apply-coupon',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ couponCode, cartItems }), 
+        success: function(response) {
+            if (response.success) {
+                $('#couponMessage').text(response.message).css('color', 'green');
+                $('#subTotal').text(`₹${response.subTotal}`);
+                $('#couponDiscountAmount').text(`-₹${response.couponDiscount}`);
+                $('#finalTotal').text(`₹${response.finalTotal}`);
+                
+                // Show the remove coupon button after applying
+                $('#removeCoupon').show();
+            } else {
+                $('#couponMessage').text(response.message).css('color', 'red');
+            }
+        },
+        error: function() {
+            alert('Something went wrong.');
+        }
+    });
+});
+
+
+
+$('#removeCoupon').click(function() {
+    $.ajax({
+        url: '/remove-coupon',
+        type: 'POST',
+        success: function(response) {
+                if (response.success) {
+                    $('#couponMessage').text(response.message).css('color', 'green');
+                    $('#discount').text('₹0');
+                    $('#finalTotal').text(`₹${response.finalTotal}`);
+                    $('#removeCoupon').hide(); 
+                    $('#appliedCoupon').hide();
+                    $('#couponDiscountAmount').text('₹0');
+                    $('#couponCode').val('');  // Clears the value
+                    $('#couponCode').attr('placeholder', 'Enter your coupon code'); 
+                } else {
+                    $('#couponMessage').text(response.message).css('color', 'red');
+                }
+            },
+        error: function() {
+            alert('Something went wrong.');
+        }
+    });
+});
+
 </script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   </body>
