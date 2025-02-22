@@ -776,7 +776,7 @@ function handleCashOnDelivery(amount, addressId, cartItems) {
     })
     .then((data) => {
         if (data.success) {
-            window.location.href = `/confirmation?cartItems=${encodeURIComponent(JSON.stringify(cartItems))}&totalPrice=${amount}&addressId=${addressId}&paymentMethod=Online Payment`;
+            window.location.href = `/confirmation?cartItems=${encodeURIComponent(JSON.stringify(cartItems))}&totalPrice=${amount}&addressId=${addressId}&paymentMethod=Cash on Delivery`;
         } else {
             alert(data.message || "Failed to place COD order.");
         }

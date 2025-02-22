@@ -174,6 +174,55 @@ strong {
 .tracking-step.completed::before {
   background-color: #28a745;
 }
+/* Highlight the current step */
+.tracking-step.current-step .circle {
+  background-color: #007bff; /* Blue for current step */
+  border: 2px solid #0056b3;
+  color: white;
+}
+
+.tracking-step.current-step p {
+  font-weight: bold;
+  color: #007bff;
+}
+
+/* Ensure the line before the current step is also green */
+.tracking-step.current-step::before {
+  background-color: #28a745;
+}
+/* Add border and color for the current step */
+.tracking-step.current-step .circle {
+  background-color: #f5f11d !important;  /* Make sure it's visible */
+  border: 3px solid #e4d718;
+  color: white;
+}
+
+.tracking-step.current-step p {
+  font-weight: bold;
+  color: #007bff !important;
+}
+
+/* Ensure the connector line before current step is green */
+.tracking-step.current-step::before {
+  background-color: #28a745 !important;
+}
+/* Make future steps look like completed steps */
+.tracking-step.future-step .circle {
+  background-color: #28a745;  /* Green like completed */
+  color: white;
+}
+
+.tracking-step.future-step p {
+  font-weight: bold;
+  color: #28a745;
+}
+
+.tracking-step.future-step::before {
+  background-color: #28a745;  /* Connector line also green */
+}
+
+
+
 
 
 /* Shipping Address Section */
@@ -259,7 +308,7 @@ button:hover, a:hover {
   <!-- Order Information Section -->
   <div class="order-details">
     <h2>Order ID: <%= order.orderId %></h2>
-    <p><strong>Status:</strong> <%= order.status %></p>
+    <p><strong>Status:</strong> <%= productItem.status %></p>
     <p><strong>Invoice Date:</strong> <%= order.invoiceDate.toDateString() %></p>
     <p><strong>Final Amount:</strong> ₹<%= order.finalAmount %></p>
 
@@ -267,63 +316,71 @@ button:hover, a:hover {
     <div class="product-details">
       <h3>Product Details</h3>
       <div class="product">
-        <img src="/uploads/product-images/<%= order.productId.productImage[0] %>" alt="Product Image">
+        <img src="/uploads/product-images/<%= productItem.product.productImage[0] %>" alt="Product Image">
         <div class="product-info">
-          <h4><%= order.productId.productName %></h4>
-          <p><strong>Category:</strong> <%= order.productId.category.name %></p>
-          <p><strong>Description:</strong> <%= order.productId.description %></p>
-          <p><strong>Color:</strong> <%= order.productId.color %></p>
-          <p class="quantity"><strong>Quantity:</strong> <%= order.quantity %></p>
-          <p class="price"><strong>Price per Item:</strong> ₹<%= order.price %></p>
+          <h4><%= productItem.productName %></h4>
+          <p><strong>Category:</strong> <%= productItem.product.category.name%></p>
+          <p><strong>Description:</strong> <%= productItem.product.description %></p>
+          <p><strong>Color:</strong> <%= productItem.product.color %></p>
+          <p class="quantity"><strong>Quantity:</strong> <%= productItem.quantity %></p>
+          <p class="price"><strong>Price per Item:</strong> ₹<%=productItem.price %></p>
           <p><strong>Total Price:</strong> ₹<%= order.totalPrice %></p>
         </div>
       </div>
     </div>
 
+    <% if (productItem.status === 'Pending') { %>
+      <p>Your order is still being processed. Please check back later for updates.</p>
+    <% } else if (productItem.status === 'Shipped') { %>
+      <p>Your order has been shipped. You can expect delivery soon.</p>
+    <% } else if (productItem.status === 'Delivered') { %>
+      <p>Your order has been delivered. Thank you for shopping with us!</p>
+      <!-- <button class="btn btn-danger" onclick="requestReturn('<%= order.orderId %>')">Return Order</button> -->
+      <button class="btn btn-danger" onclick="requestReturnItem('<%= order.orderId %>','<%=productItem.product._id%>')">Return Order Item</button>
+    <% } %>
+
     <!-- Other Items in the Same Order Section -->
-    <div class="other-items">
-      <h3>Other Items in the Same Order</h3>
-      <% otherItems.forEach(item => { %>
-        <div class="product" >
-          <img style="height: 10%; width: 10%;" src="/uploads/product-images/<%= item.image[0] %>" alt="Product Image">
-          <div class="product-info">
-            <h4><%= item.name %></h4>
-            <p><strong>Status:</strong> <%= item.status %></p> 
+    <% if (otherItems && otherItems.length > 0) { %>
+      <div class="other-items">
+        <h3>Other Items in the Same Order</h3>
+        <% otherItems.forEach(item => { %>
+          <div class="product">
+            <img style="height: 10%; width: 10%;" src="/uploads/product-images/<%= item.image[0] %>" alt="Product Image">
+            <div class="product-info">
+              <h4><%= item.name %></h4>
+              <p><strong>Status:</strong> <%= item.status %></p>
+            </div>
           </div>
-        </div>
-      <% }); %>
-    </div>
-    <button class="btn btn-warning" onclick="cancelOrder('<%= order.orderGroupId %>')">Cancel Order</button>
+        <% }); %>
+      </div>
+      <button class="btn btn-warning" onclick="cancelOrder('<%= order.orderId %>')">Cancel Order</button>
+    <% } %>
+   
 
 
     <!-- Tracking Information Section -->
     <div class="tracking-info">
       <h3>Track Your Order</h3>
-      <p><strong class="status">Current Status:</strong> <%= order.status %></p>
+      <!-- <p><strong class="status">Current Status:</strong> <%= order.status %></p> -->
 
-      <% if (order.status === 'Pending') { %>
-        <p>Your order is still being processed. Please check back later for updates.</p>
-      <% } else if (order.status === 'Shipped') { %>
-        <p>Your order has been shipped. You can expect delivery soon.</p>
-      <% } else if (order.status === 'Delivered') { %>
-        <p>Your order has been delivered. Thank you for shopping with us!</p>
-        <button class="btn btn-danger" onclick="requestReturn('<%= order.orderGroupId %>')">Return Order</button>
-        <button class="btn btn-danger" onclick="requestReturnItem('<%= order.orderGroupId %>')">Return Order Item</button>
-      <% } %>
+      
 
       <!-- Order Tracking History (if available) -->
      <!-- Order Tracking Progress -->
      <div class="tracking-progress">
-      <% const statuses = ["Order Placed", "Processing", "Shipped", "Out for Delivery", "Delivered"]; %>
-      <% let currentIndex = order.trackingHistory.findIndex(entry => entry.status === order.status); %>
-      
-      <% statuses.forEach((step, index) => { %>
-          <div class="tracking-step <%= index <= currentIndex ? 'completed' : '' %>">
-              <div class="circle"><%= index + 1 %></div>
-              <p><%= step %></p>
-          </div>
-      <% }); %>
-  </div>
+    <% const statuses = ["Order Placed", "Processing", "Shipped", "Out for Delivery", "Delivered", "Return Requested", "Returned"]; %>
+    <% let currentIndex = order.trackingHistory.findIndex(entry => entry.status === productItem.status); %>
+    
+
+    <% statuses.forEach((step, index) => { %>
+        <div class="tracking-step <%= index <= currentIndex ? 'completed' : '' %> <%= index === currentIndex ? 'current-step' : '' %>
+          <%= index > currentIndex ? 'future-step' : '' %>">
+          
+            <div class="circle"><%= index + 1 %></div>
+            <p><%= step %></p>
+        </div>
+    <% }); %>
+</div>
   
 
 
@@ -357,7 +414,7 @@ button:hover, a:hover {
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <script>
-    function cancelOrder(orderGroupId) {
+    function cancelOrder(orderId) {
         Swal.fire({
             title: "Are you sure?",
             text: "Do you want to cancel this order?",
@@ -399,14 +456,10 @@ button:hover, a:hover {
 
 
 
-   // return script
-   
-
-
-function requestReturn(orderId) {
+   function requestReturnItem(orderId, productId) {
     Swal.fire({
-        title: 'Return Order',
-        text: 'Please select a reason for returning the order:',
+        title: 'Return Order Item',
+        text: 'Please select a reason for returning this item:',
         input: 'select',
         inputOptions: {
             'Damaged Product': 'Damaged Product',
@@ -429,7 +482,7 @@ function requestReturn(orderId) {
             let selectedReason = result.value;
 
             if (selectedReason === 'Other') {
-                
+                // If the user selects "Other," prompt them to specify the reason
                 Swal.fire({
                     title: 'Specify Your Reason',
                     input: 'text',
@@ -444,40 +497,39 @@ function requestReturn(orderId) {
                     }
                 }).then((textResult) => {
                     if (textResult.isConfirmed) {
-                        sendReturnRequest(orderId, textResult.value);
+                        // Send the return request with the custom reason
+                        sendReturnItemRequest(orderId, productId, textResult.value);
                     }
                 });
             } else {
-                sendReturnRequest(orderId, selectedReason);
+                // Send the return request with the selected reason
+                sendReturnItemRequest(orderId, productId, selectedReason);
             }
         }
     });
-  }
+}
 
-
-function sendReturnRequest(orderId, returnReason) {
-    fetch('/returnOrder', {
+function sendReturnItemRequest(orderId, productId, returnReason) {
+    fetch('/returnOrderItem', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId, returnReason })
+        body: JSON.stringify({ orderId, productId, returnReason })
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            Swal.fire('Return Requested', 'Your return request has been submitted.', 'success')
+            Swal.fire('Return Requested', 'Your return request for this item has been submitted.', 'success')
             .then(() => {
-                location.reload(); 
+                location.reload(); // Refresh the page to update the status
             });
         } else {
-            Swal.fire('Error', 'Something went wrong. Please try again.', 'error');
+            Swal.fire('Error', data.message || 'Something went wrong. Please try again.', 'error');
         }
     })
     .catch(error => {
         Swal.fire('Error', 'Could not process the request.', 'error');
     });
 }
-</script>
-
 </script>
 
 

@@ -202,48 +202,54 @@
 	<!-- End Banner Area -->
 
   
-    <body class="bg-light">
-        <div class="container mt-5">
-            <h2 class="mb-4">MY ORDERS</h2>
-            
-            <div class="orders-table">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-6">
-                        <thead class="table-header">
-                            <tr>
-                                <th scope="col">Order Id</th>
-                                <th scope="col">Product Name</th>
-                                <th scope="col">Price</th>
-                                <th scope="col">Delivery Date</th>
-                                <th scope="col">Status</th>
-                                <th scope="col">Product</th>
-                                <th scope="col">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+	<body class="bg-light">
+		<div class="container mt-5">
+			<h2 class="mb-4">MY ORDERS</h2>
+			
+			<div class="orders-table">
+				<div class="table-responsive">
+					<table class="table table-hover mb-6">
+						<thead class="table-header">
+							<tr>
+								<th scope="col">Order Id</th>
+								<th scope="col">Product Name</th>
+								<th scope="col">Price</th>
+								<th scope="col">Delivery Date</th>
+								<th scope="col">Status</th>
+								<th scope="col">Product</th>
+								<th scope="col">Action</th>
+							</tr>
+						</thead>
+						<tbody>
 							<% if (orders.length === 0) { %>
 								<tr>
 									<td colspan="7" class="text-center">No orders found.</td>
 								</tr>
 							<% } else { %>
 								<% orders.forEach(order => { %>
+									<% order.orderItems.forEach(item => { %>
 										<tr>
-											<td><%= order.orderId %></td>
-											<td><%= order.productId.productName %></td> <!-- Assuming 'name' is a field in Product schema -->
-											<td>₹<%= order.price.toFixed(2) %></td>
-											<td> <!-- Delivery Date -->
-												<%= order.deliveryDate %>
-											</td>
-											<td><%= order.status %></td>
+											<!-- Show Order ID for each product -->
+											<td><%= order._id %></td>
+											<!-- Product Name -->
+											<td><%= item.product.productName %></td>
+											<!-- Product Price -->
+											<td>₹<%= item.price.toFixed(2) %></td>
+											<!-- Delivery Date -->
+											<td><%= order.deliveryDate %></td>
+											<!-- Order Status -->
+											<td><%= item.status %></td>
+											<!-- Product Image -->
 											<td>
-												<img src="uploads/product-images/<%= order.productId.productImage %>" alt="Product Image" width="50" height="50">
+												<img src="uploads/product-images/<%= item.product.productImage[0] %>" alt="Product Image" width="50" height="50">
 											</td>
+											<!-- Action Buttons -->
 											<td>
-												<a href="/orderDetails/<%= order.orderId %>" class="btn btn-primary btn-sm">View</a>
-
-												<a onclick="confirmCancelOrder('<%= order.orderId %>')" class="btn btn-danger btn-sm">Cancel</a>
+												<a href="/orderDetails/<%= order._id %>/<%= item.product._id %>" class="btn btn-primary btn-sm">View</a>
+												<a onclick="confirmCancelOrder('<%= order._id %>', '<%= item.product._id %>')" class="btn btn-danger btn-sm">Cancel</a>
 											</td>
 										</tr>
+									<% }) %>
 								<% }) %>
 							<% } %>
 						</tbody>
@@ -252,7 +258,6 @@
 			</div>
 		</div>
 	</body>
-
 	<!-- pagiantion -->
 
 	<div class="pagination-container">
@@ -368,7 +373,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
    <script> 
-    function confirmCancelOrder(orderId) { 
+    function confirmCancelOrder(orderId, productId) { 
         console.log("Order ID to cancel:", orderId);  
         Swal.fire({
             title: "Are you sure?",
@@ -396,7 +401,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         }).then((result) => {
             if (result.isConfirmed) {
                
-                fetch(`/cancelOrder/${orderId}`, {  
+                fetch(`/cancelOrder/${orderId}/${productId}`, {  
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"

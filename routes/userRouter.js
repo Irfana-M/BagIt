@@ -8,7 +8,8 @@ const productController = require("../controllers/user/productController");
 const profileController = require("../controllers/user/profileController");
 const cartController = require("../controllers/user/cartController");
 const orderController = require("../controllers/user/orderController");
-const wishlistController = require("../controllers/user/wishlistController")
+const wishlistController = require("../controllers/user/wishlistController");
+const walletController = require("../controllers/user/walletController");
 const {userAuth,adminAuth} = require("../middlewares/auth");
 
 const razorpay = new Razorpay({
@@ -82,9 +83,9 @@ router.post("/remove-coupon",userAuth,cartController.removeCoupon );
 
 //order management
 router.get("/orders",userAuth,orderController.getOrder);
-router.post("/cancelOrder/:orderId",userAuth,orderController.cancelOrderItem);
-router.get("/orderDetails/:orderId",userAuth,orderController.orderDetails);
-router.put("/cancel-order/:orderGroupId",userAuth,orderController.cancelOrder);
+router.post("/cancelOrder/:orderId/:productId",userAuth,orderController.cancelOrderItem);
+router.get("/orderDetails/:orderId/:productId",userAuth,orderController.orderDetails);
+router.put("/cancel-order/:orderId",userAuth,orderController.cancelOrder);
 router.get("/getCheckout",userAuth,cartController.getSingleProductCheckout);
 
 //payment management
@@ -95,7 +96,13 @@ router.post('/wallet-payment',userAuth,orderController.walletPayment);
 router.get('/payment-failure',userAuth,orderController.paymentFailure);
 
 //return management
-router.post('/returnOrder',userAuth,orderController.returnOrder);
+router.post('/returnOrderItem',userAuth,orderController.returnOrder);
+
+//Wallet MAnagement
+router.get('/wallet',userAuth,walletController.getUserWallet);
+router.post('/add-money',userAuth,walletController.addMoneytoWallet);
+router.post('/withdraw',userAuth,walletController.withdrawMoneyfromWallet);
+0
 
 //logout
 router.get('/logout',userController.logout);

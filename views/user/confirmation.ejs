@@ -263,7 +263,7 @@
                 <div class="col-lg-6">
                     <% cartItems.forEach(item => { %>
                         <div class="details_item">
-                            <img src="uploads/product-images/<%= item.productId.productImage %>" class="img-fluid" alt="Product Image">
+                            <img class="img-fluid" style="height: 30%; width: 30%;" src="uploads/product-images/<%= item.productId.productImage[0] %>" class="img-fluid" alt="Product Image">
                         </div>
                     <% }); %>
                 </div>

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wallet - E-Commerce</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Custom CSS -->
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Arial', sans-serif;
+    }
+
+    .wallet-container {
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .wallet-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .wallet-header h2 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #333;
+    }
+
+    .wallet-balance {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .wallet-balance h3 {
+      font-size: 24px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .wallet-balance p {
+      font-size: 36px;
+      font-weight: 700;
+      color: #28a745;
+      margin: 10px 0;
+    }
+
+    .wallet-actions {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .wallet-actions .btn {
+      padding: 10px 20px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 5px;
+    }
+
+    .transaction-history {
+      margin-top: 30px;
+    }
+
+    .transaction-history h4 {
+      font-size: 22px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .transaction-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      margin-bottom: 10px;
+      background: #f8f9fa;
+      border-radius: 5px;
+      transition: background 0.3s ease;
+    }
+
+    .transaction-item:hover {
+      background: #e9ecef;
+    }
+
+    .transaction-item .transaction-details {
+      flex: 1;
+    }
+
+    .transaction-item .transaction-details h5 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+      margin: 0;
+    }
+
+    .transaction-item .transaction-details p {
+      font-size: 14px;
+      color: #666;
+      margin: 5px 0 0;
+    }
+
+    .transaction-item .transaction-amount {
+      font-size: 18px;
+      font-weight: 600;
+      color: #28a745;
+    }
+
+    .transaction-item .transaction-amount.negative {
+      color: #dc3545;
+    }
+
+    @media (max-width: 768px) {
+      .wallet-container {
+        margin: 20px;
+        padding: 15px;
+      }
+
+      .wallet-balance p {
+        font-size: 28px;
+      }
+
+      .wallet-actions {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .wallet-actions .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+    <div class="wallet-container">
+      <!-- Wallet Header -->
+      <div class="wallet-header">
+        <h2>My Wallet</h2>
+      </div>
+  
+      <!-- Wallet Balance -->
+      <div class="wallet-balance">
+        <h3>Available Balance</h3>
+        <p id="walletBalance">₹0.00</p>
+      </div>
+  
+      <!-- Wallet Actions -->
+      <div class="wallet-actions">
+        <button class="btn btn-primary" onclick="addMoney()">Add Money</button>
+        <button class="btn btn-success" onclick="withdrawMoney()">Withdraw</button>
+      </div>
+  
+      <!-- Transaction History -->
+      <div class="transaction-history">
+        <h4>Transaction History</h4>
+        <div id="transactionList">
+          <!-- Transactions will be dynamically added here -->
+        </div>
+      </div>
+    </div>
+  
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+      // Fetch Wallet Data on Page Load
+      document.addEventListener('DOMContentLoaded', async () => {
+        await fetchWalletData();
+      });
+  
+      // Fetch Wallet Data
+      async function fetchWalletData() {
+        try {
+          const response = await fetch('getWallet', {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`, // Add authentication token
+            },
+          });
+          const data = await response.json();
+          if (data.success) {
+            updateWalletUI(data.wallet);
+          } else {
+            alert(data.message);
+          }
+        } catch (error) {
+          console.error('Error fetching wallet data:', error);
+        }
+      }
+  
+      // Update Wallet UI
+      function updateWalletUI(wallet) {
+        // Update Balance
+        document.getElementById('walletBalance').textContent = `₹${wallet.balance.toFixed(2)}`;
+  
+        // Update Transaction History
+        const transactionList = document.getElementById('transactionList');
+        transactionList.innerHTML = ''; // Clear existing transactions
+        wallet.transactions.forEach(transaction => {
+          const transactionItem = document.createElement('div');
+          transactionItem.className = 'transaction-item';
+          transactionItem.innerHTML = `
+            <div class="transaction-details">
+              <h5>${transaction.description}</h5>
+              <p>${new Date(transaction.date).toLocaleDateString()}</p>
+            </div>
+            <div class="transaction-amount ${transaction.type === 'debit' ? 'negative' : ''}">
+              ${transaction.type === 'credit' ? '+' : '-'}₹${transaction.amount.toFixed(2)}
+            </div>
+          `;
+          transactionList.appendChild(transactionItem);
+        });
+      }
+  
+      // Add Money
+      async function addMoney() {
+        const amount = parseFloat(prompt('Enter the amount to add:'));
+        if (isNaN(amount)) {
+          alert('Please enter a valid amount.');
+          return;
+        }
+        try {
+          const response = await fetch('/add-money', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            },
+            body: JSON.stringify({ amount }),
+          });
+          const data = await response.json();
+          if (data.success) {
+            await fetchWalletData(); // Refresh wallet data
+          } else {
+            alert(data.message);
+          }
+        } catch (error) {
+          console.error('Error adding money:', error);
+        }
+      }
+  
+      // Withdraw Money
+      async function withdrawMoney() {
+        const amount = parseFloat(prompt('Enter the amount to withdraw:'));
+        if (isNaN(amount)) {
+          alert('Please enter a valid amount.');
+          return;
+        }
+        try {
+          const response = await fetch('/withdraw', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            },
+            body: JSON.stringify({ amount }),
+          });
+          const data = await response.json();
+          if (data.success) {
+            await fetchWalletData(); // Refresh wallet data
+          } else {
+            alert(data.message);
+          }
+        } catch (error) {
+          console.error('Error withdrawing money:', error);
+        }
+      }
+    </script>
+  </body>
+  </html>

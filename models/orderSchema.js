@@ -29,14 +29,34 @@ const orderSchema = new Schema(
         price: {
           type: Number,
           required: true
-        }
+        },
+        status: {
+          type: String,
+          enum: ['Order Placed', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled', 'Return Requested', 'Returned'],
+          default: 'Order Placed'
+        },
+        cancellationReason: { type: String, default: null },
+        returnReason:{
+          type:String,
+          default:""
+      },
+      returnStatus:{
+          type:String,
+          enum:["None","Requested","Approved","Rejected"],
+          default:"None"
+      },
+      refundAmount:{
+          type:Number,
+          default:0
+      },
+      isReplaced:{
+          type:Boolean,
+          default:false
+      }
+        
       }
     ],
-    status: {
-      type: String,
-      enum: ['Order Placed', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled', 'Return Requested', 'Returned'],
-      default: 'Order Placed'
-    },
+    
     totalPrice: {
       type: Number,
       required: true
