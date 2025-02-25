@@ -46,8 +46,8 @@ const userSchema = new Schema({
         ref:"Cart"
     }],
     wallet:[{
-        type:Number,
-        default:0
+        type:Schema.Types.ObjectId,
+        ref:"Wallet"
     }],
     wishlist :[{
         type:Schema.Types.ObjectId,
@@ -61,9 +61,12 @@ const userSchema = new Schema({
         type:Date,
         default:Date.now,
     },
-    referalCode:{
-        type:String
+    referralCode:{
+        type:String,
+        unique:true
     },
+    referredBy:
+     { type: String, default: null },
     redeemed :{
         type:Boolean
     },
@@ -91,6 +94,12 @@ const userSchema = new Schema({
     
     
 })
+userSchema.pre("save", function (next) {
+    if (!this.referralCode) {
+        this.referralCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+    }
+    next();
+});
 
 const User = mongoose.model("User",userSchema);
 module.exports = User;

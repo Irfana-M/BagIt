@@ -45,6 +45,7 @@ const login = async(req,res)=>{
             return res.render("login",{message:"Incorrect Password"});
         }
         req.session.user = findUser._id;
+        console.log( req.session.user)
         req.session.name=findUser.name || false;
 
         if(findUser){
@@ -62,7 +63,7 @@ const login = async(req,res)=>{
 
 const loadSignUp = async (req,res)=>{
     try{
-       return res.render('signup');
+       return res.render('signup', { referralCode: req.query.ref || "" });
 
     }catch(error){
         console.log('Signup page not loading:',error);
@@ -104,7 +105,7 @@ async function sendVerificationEmail(email,otp){
 
 const signUp = async (req,res)=>{
     try{
-        const{name,email,phone,password,confirmPassword} = req.body;
+        const{name,email,phone,password,confirmPassword, referralCode} = req.body;
         if(password!==confirmPassword){
             return res.render("signup",{message:"Passwords do not match"});
         }
@@ -114,15 +115,21 @@ const signUp = async (req,res)=>{
             return res.render("signup",{message:"User with this email already exist"});
         }
 
+        let inviter = null;
+        if (referralCode) {
+            inviter = await User.findOne({ referralCode });
+            if (!inviter) return res.status(400).send("Invalid referral code");
+        }
+
         const otp = generateOtp();
         const emailSent = await sendVerificationEmail(email,otp);
 
         if(!emailSent){
             return res.json("email-error")
         }
+       
+        req.session.userData = {name,email,phone,password,inviter: inviter ? inviter.referralCode : null};
         req.session.userOtp = otp;
-        req.session.userData = {name,email,phone,password};
-
         res.render("verify_otp");
         console.log("OTP sent",otp);
         
@@ -144,39 +151,56 @@ const securePassword = async (password)=>{
 }
 
 
-const verifyOtp = async(req,res)=>{
-    
+const verifyOtp = async (req, res) => {
     try {
-        const {otp} = req.body;
+        const { otp } = req.body;
         console.log(req.body);
-        
-        if(otp===req.session.userOtp){
-            const user = req.session.userData
+
+        if (otp === req.session.userOtp) {
+            const user = req.session.userData;
             const passwordHash = await securePassword(user.password);
+
+            let inviter = null;
+            if (user.inviter) {  // `user.inviter` now stores referralCode
+                inviter = await User.findOne({ referralCode: user.inviter });
+            }
+
             const saveUserData = new User({
-                name:user.name,
-                email:user.email,
-                phone:user.phone,
-                password:passwordHash,
-                // googleId:user.googleId || undefined
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                password: passwordHash,
+                referredBy: inviter ? inviter._id : null
             });
-         
-            
+
             await saveUserData.save();
-             req.session.user = saveUserData._id;
-             
-              res.json({ success: true, redirectUrl: "/" });
-            
 
-        } else { res.status(400).json({ success: false, message: "Invalid OTP, please try again" });
-             } 
+            if (inviter) {
+                inviter.redeemedUsers.push(saveUserData._id);
+                await inviter.save();
 
-    } catch (error)
-             { 
-                 console.log("Error verifying OTP", error);
-                 res.status(500).json({ success: false, message: "An error occurred" }); 
-                } 
-                };
+                // Reward referrer by adding 50 to wallet (if wallet field exists)
+                await User.findByIdAndUpdate(inviter._id, {
+                    $inc: { wallet: 50 }  
+                });
+
+                console.log(`Referrer ${inviter._id} rewarded with 50 credits`);
+            }
+
+            // Store full user session
+            req.session.user = saveUserData;
+
+            res.json({ success: true, redirectUrl: "/login" });
+
+        } else { 
+            res.status(400).json({ success: false, message: "Invalid OTP, please try again" });
+        }
+
+    } catch (error) { 
+        console.log("Error verifying OTP", error);
+        res.status(500).json({ success: false, message: "An error occurred" }); 
+    }
+};
 
 const resendOtp = async(req,res)=>{
     try {

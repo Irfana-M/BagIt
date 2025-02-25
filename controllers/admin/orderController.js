@@ -8,53 +8,77 @@ const { v4: uuidv4 } = require("uuid");
 const getOrder = async (req, res) => {
   try {
     const { page = 1, limit = 5, search = "" } = req.query;
-
     const sanitizedSearch = search.trim().replace(/[^a-zA-Z0-9 ]/g, "");
+    const limitNum = Number(limit) || 5;
+
+    // Fetch orders and populate necessary fields
     let orders = await Order.find({})
-      .populate("userId")
+      .populate("user", "name email")
       .populate({
-        path: "productId",
+        path: "orderItems.product",
+        select: "productName productImage salePrice",
         populate: { path: "category", select: "name" },
       })
-      .sort({ createdOn: -1 });
+      .sort({ createdAt: -1 });
+
+    // Filter orders based on search query
     if (sanitizedSearch) {
       orders = orders.filter((order) => {
-        const userName = order.userId?.name || "";
-        const productName = order.productId?.productName || "";
-
+        const userName = order.user?.name || "Unknown User";
+        const productNames = order.orderItems
+          .map((item) => item.product?.productName || "Unknown Product")
+          .join(" ");
         return (
           userName.toLowerCase().includes(sanitizedSearch.toLowerCase()) ||
-          productName.toLowerCase().includes(sanitizedSearch.toLowerCase())
+          productNames.toLowerCase().includes(sanitizedSearch.toLowerCase())
         );
       });
     }
 
-    const totalOrders = orders.length;
-    const totalPages = Math.ceil(totalOrders / limit);
+    // Manually fetch shipping addresses
+    const ordersWithAddresses = await Promise.all(
+      orders.map(async (order) => {
+        if (order.shippingAddress) {
+          console.log("Fetching address for user:", order.user._id);
+          const addressDetails = await Address.findOne({ userId: order.user._id }).exec();
 
-    const paginatedOrders = orders.slice(
-      (Number(page) - 1) * Number(limit),
-      Number(page) * Number(limit)
+          if (addressDetails) {
+            console.log("Address Details Found:", addressDetails);
+            const address = addressDetails.address.find(
+              (addr) => addr._id.toString() === order.shippingAddress.toString()
+            );
+
+            if (address) {
+              console.log("Matching Address Found:", address);
+              return { ...order.toObject(), shippingAddress: address };
+            } else {
+              console.log("No matching address found for shippingAddress ID:", order.shippingAddress);
+              return { ...order.toObject(), shippingAddress: null };
+            }
+          } else {
+            console.log("No address details found for user:", order.user._id);
+            return { ...order.toObject(), shippingAddress: null };
+          }
+        }
+        return order.toObject();
+      })
     );
 
+    // Pagination logic
+    const totalOrders = ordersWithAddresses.length;
+    const totalPages = Math.ceil(totalOrders / limitNum);
+    const paginatedOrders = ordersWithAddresses.slice(
+      (Number(page) - 1) * limitNum,
+      Number(page) * limitNum
+    );
+
+    // Formatting dates
     for (let order of paginatedOrders) {
-      order.formattedCreatedOn = new Date(order.createdOn).toLocaleDateString("en-GB"); 
-      order.formattedExpireDate = new Date(order.expireDate).toLocaleDateString("en-GB"); 
-      const addressDetails = await Address.findOne({
-        userId: order.userId,
-      }).exec();
-
-      if (addressDetails) {
-        const address = addressDetails.address.find(
-          (addr) => addr._id.toString() === order.address.toString()
-        );
-
-        order.shippingAddress = address || null;
-      } else {
-        order.shippingAddress = null;
-      }
+      order.formattedCreatedAt = new Date(order.createdAt).toLocaleDateString("en-GB");
+      order.formattedInvoiceDate = new Date(order.invoiceDate).toLocaleDateString("en-GB");
     }
 
+    // Render the admin order page
     res.render("admin-order", {
       activePage: "order",
       orders: paginatedOrders,
@@ -64,7 +88,7 @@ const getOrder = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching orders:", error);
-    return res.redirect("/admin/pageerror");;
+    return res.redirect("/admin/pageerror");
   }
 };
 
@@ -73,54 +97,66 @@ const getOrder = async (req, res) => {
 
 const updateOrderStatus = async (req, res) => {
   try {
-    console.log("Received request to update order status:", req.body);
+      console.log("Received request to update order status:", req.body);
 
-    const { orderId, status } = req.body;
-    if (!orderId || !status) {
-      return res.json({ success: false, message: "Invalid request data" });
-    }
+      const { orderId, productId, status } = req.body;
 
-    const order = await Order.findById(orderId).populate("productId");
-
-    if (!order) {
-      return res.json({ success: false, message: "Order not found" });
-    }
-
-    if (order.status === "Delivered" || order.status === "Cancelled") {
-      return res.json({
-        success: false,
-        message: "Cannot modify Delivered or Cancelled orders",
-      });
-    }
-
-    if (status === "Cancelled" && order.productId) {
-      order.productId.quantity += order.quantity;
-      await order.productId.save();
-    }
-
-    if (status === "Delivered" && order.productId) {
-      if (order.productId.quantity >= order.quantity) {
-        order.productId.quantity -= order.quantity;
-        await order.productId.save();
-      } else {
-        return res.json({
-          success: false,
-          message: `Not enough stock for ${order.productId.productName}`,
-        });
+      if (!orderId || !productId || !status) {
+          return res.json({ success: false, message: "Invalid request data" });
       }
-    }
 
-    order.status = status;
-    await order.save();
+      // Find the order
+      const order = await Order.findOne({ orderId });
 
-    res.json({ success: true, message: "Order status updated successfully" });
+      if (!order) {
+          return res.json({ success: false, message: "Order not found" });
+      }
+
+      // Find the specific product inside orderItems
+      const orderItem = order.orderItems.find(item => item.product.toString() === productId);
+
+      if (!orderItem) {
+          return res.json({ success: false, message: "Product not found in the order" });
+      }
+
+      // Prevent modification if already Delivered or Cancelled
+      if (orderItem.status === "Delivered" || orderItem.status === "Cancelled") {
+          return res.json({ success: false, message: "Cannot modify Delivered or Cancelled items" });
+      }
+
+      // Handle stock restoration on cancellation
+      if (status === "Cancelled") {
+          const product = await Product.findById(productId);
+          if (product) {
+              product.quantity += orderItem.quantity; // Restore stock
+              await product.save();
+          }
+      }
+
+      // Handle stock deduction on delivery
+      if (status === "Delivered") {
+          const product = await Product.findById(productId);
+          if (product) {
+              if (product.quantity >= orderItem.quantity) {
+                  product.quantity -= orderItem.quantity;
+                  await product.save();
+              } else {
+                  return res.json({ success: false, message: `Not enough stock for ${product.productName}` });
+              }
+          }
+      }
+
+      // Update the product's status in the order
+      orderItem.status = status;
+      await order.save();
+
+      res.json({ success: true, message: "Product status updated successfully" });
   } catch (error) {
-    console.error("Error updating order:", error);
-   //
-   //  res.json({ success: false, message: "Internal server error" });
-   return res.redirect("/admin/pageerror");
+      console.error("Error updating order:", error);
+      return res.redirect("/admin/pageerror");
   }
 };
+
 
 const deleteOrder = async (req, res) => {
   try {
@@ -144,32 +180,33 @@ const deleteOrder = async (req, res) => {
 
 const viewOrder = async (req, res) => {
   try {
-    const { orderId } = req.params;
-    console.log("Fetching order details for:", orderId);
+    const { orderId, productId } = req.params;
+    console.log("Fetching order details for:", orderId, "and product:", productId);
 
-    const order = await Order.findOne({ _id: orderId })
-      .populate("userId", "name email phone")
-      .populate({
-        path: "productId",
-        populate: { path: "category", select: "name" },
-      })
-      .exec();
+    // Find the order by orderId and populate necessary fields
+    const order = await Order.findOne({ orderId: orderId})
+            .populate("user")
+            .populate({
+                path: 'orderItems.product',
+                populate: { path: 'category', select: 'name' }
+            })
+            .exec();
 
     if (!order) {
       return res.redirect("/pageNotFound");
     }
 
-    const addressDetails = await Address.findOne({
-      userId: order.userId,
-    }).exec();
+    // Fetch only the product matching the given productId
+    const productDetails = order.orderItems.find(item => item.product._id.toString() === productId);
 
-    const address = addressDetails?.address.find(
-      (addr) => addr._id.toString() === order.address.toString()
-    );
+    if (!productDetails) {
+      return res.redirect("/pageNotFound");
+    }
 
-    if (!address) {
-      console.error("Address not found for the given addressId");
-      return res.redirect("/pageerror");
+    // Fetch shipping address
+    let address = null;
+    if (order.shippingAddress) {
+      address = await Address.findById(order.shippingAddress);
     }
 
     // Get the invoice date or default to today
@@ -179,7 +216,7 @@ const viewOrder = async (req, res) => {
     const addDays = (date, days) => {
       let newDate = new Date(date);
       newDate.setDate(newDate.getDate() + days);
-      return newDate.toLocaleDateString("en-GB"); // Format: DD/MM/YYYY
+      return newDate.toLocaleDateString("en-GB");
     };
 
     // Generate tracking history dynamically
@@ -192,14 +229,15 @@ const viewOrder = async (req, res) => {
     ];
 
     console.log("Order details:", order);
+    console.log("Product details:", productDetails);
 
-    res.render("orderDetails", { order, activePage: "order", address });
+    res.render("orderDetails", { order, productDetails, activePage: "order", address });
   } catch (error) {
     console.error("Error fetching order details:", error);
-    
     return res.redirect("/admin/pageerror");
   }
 };
+
 
 
 module.exports = {

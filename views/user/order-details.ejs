@@ -353,8 +353,13 @@ button:hover, a:hover {
           </div>
         <% }); %>
       </div>
-      <button class="btn btn-warning" onclick="cancelOrder('<%= order.orderId %>')">Cancel Order</button>
+      <button id="cancelOrderButton" class="btn btn-warning" onclick="cancelOrder('<%= order.orderId %>')">Cancel Order</button>
     <% } %>
+
+    
+      <p id="refundAmount"></p>
+ 
+    
    
 
 
@@ -368,7 +373,7 @@ button:hover, a:hover {
       <!-- Order Tracking History (if available) -->
      <!-- Order Tracking Progress -->
      <div class="tracking-progress">
-    <% const statuses = ["Order Placed", "Processing", "Shipped", "Out for Delivery", "Delivered", "Return Requested", "Returned"]; %>
+    <% const statuses = ["Order Placed", "Processing","Cancelled", "Shipped", "Out for Delivery", "Delivered", "Return Requested", "Returned"]; %>
     <% let currentIndex = order.trackingHistory.findIndex(entry => entry.status === productItem.status); %>
     
 
@@ -425,7 +430,7 @@ button:hover, a:hover {
             confirmButtonText: "Yes, cancel it!"
         }).then((result) => {
             if (result.isConfirmed) {
-                fetch(`/cancel-order/${orderGroupId}`, {
+                fetch(`/cancel-order/${orderId}`, {
                     method: "PUT",
                     headers: {
                         "Content-Type": "application/json"
@@ -439,6 +444,11 @@ button:hover, a:hover {
                         icon: "success",
                         confirmButtonText: "OK"
                     }).then(() => {
+                      document.getElementById('cancelOrderButton').style.display = 'none';
+                      if (data.refundAmount !== undefined) {
+            document.getElementById('refundAmount').innerHTML = `<strong>Refunded Amount:</strong> ₹${data.refundAmount}`;
+        }
+ 
                         window.location.reload(); // Refresh to update status
                     });
                 })
@@ -518,7 +528,18 @@ function sendReturnItemRequest(orderId, productId, returnReason) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            Swal.fire('Return Requested', 'Your return request for this item has been submitted.', 'success')
+          let message = 'Your return request for this item has been submitted.';
+            
+            // Check if a refund was processed and add it to the message
+            if (data.refundAmount) {
+                message += ` A refund of ₹${data.refundAmount} has been credited to your wallet.`;
+            }
+            const refundElement = document.getElementById('refundAmount');
+                if (refundElement) {
+                    refundElement.innerHTML = `<strong>Refunded Amount:</strong> ₹${data.refundAmount}`;
+                }
+
+            Swal.fire('Return Requested', message, 'success')
             .then(() => {
                 location.reload(); // Refresh the page to update the status
             });
@@ -526,6 +547,7 @@ function sendReturnItemRequest(orderId, productId, returnReason) {
             Swal.fire('Error', data.message || 'Something went wrong. Please try again.', 'error');
         }
     })
+    
     .catch(error => {
         Swal.fire('Error', 'Could not process the request.', 'error');
     });

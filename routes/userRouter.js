@@ -100,9 +100,13 @@ router.post('/returnOrderItem',userAuth,orderController.returnOrder);
 
 //Wallet MAnagement
 router.get('/wallet',userAuth,walletController.getUserWallet);
-router.post('/add-money',userAuth,walletController.addMoneytoWallet);
-router.post('/withdraw',userAuth,walletController.withdrawMoneyfromWallet);
-0
+router.post('/add-money',userAuth,walletController.addtoWallet);
+router.post('/withdraw-money',userAuth,walletController.withdrawfromWallet);
+
+//referral management
+router.get('/referral',userAuth,profileController.getReferral);
+router.post('/send-referral',userAuth,profileController.sendReferral);
+
 
 //logout
 router.get('/logout',userController.logout);

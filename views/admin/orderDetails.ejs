@@ -94,127 +94,120 @@
 </head>
 
 <body>
-
     <div class="container mt-5">
         <h2 class="mb-4 text-center">Order Details</h2>
 
         <div class="card mb-4">
             <div class="card-header">
-                <h4>Order ID: <%= order._id %></h4>
-                <p><strong class="text-light">Status: <%= order.status %></strong></p>
+                <h4>Order ID: <%= order.orderId %></h4>
+                <p><strong>Status: <%= order.orderItems[0].status %></strong></p>
             </div>
 
             <div class="card-body">
                 <!-- User Details -->
                 <div class="order-summary mb-4">
                     <h5>User Details</h5>
-                    <p><strong>Name:</strong> <%= order.userId.name %></p>
-                    <p><strong>Email:</strong> <%= order.userId.email %></p>
-                    <p><strong>Phone:</strong> <%= order.userId.phone %></p>
+                    <p><strong>Name:</strong> <%= order.user.name %></p>
+                    <p><strong>Email:</strong> <%= order.user.email %></p>
+                    <p><strong>Phone:</strong> <%= order.user.phone %></p>
                 </div>
 
                 <hr>
 
-               <!-- Address Details -->
-<% if (address) { %>
-    <div class="order-summary mb-4">
-        <h5>Address:</h5>
-        <div class="tracking-step">
-            <div>
-                <strong>Address Type:</strong> <%= address.addressType %><br>
-                <strong>Name:</strong> <%= address.name %><br>
-                <strong>City:</strong> <%= address.city %><br>
-                <strong>Landmark:</strong> <%= address.landMark %><br>
-                <strong>State:</strong> <%= address.state %><br>
-                <strong>Pincode:</strong> <%= address.pincode %><br>
-                <strong>Phone:</strong> <%= address.phone %><br>
-                <strong>Alternate Phone:</strong> <%= address.altPhone %><br>
-            </div>
-        </div>
-    </div>
-<% } else { %>
-    <p>No address available for this order.</p>
-<% } %>
-
+                <!-- Address Details -->
+                <% if (address) { %>
+                    <div class="order-summary mb-4">
+                        <h5>Shipping Address</h5>
+                        <p><strong>Name:</strong> <%= address.name %></p>
+                        <p><strong>City:</strong> <%= address.city %></p>
+                        <p><strong>State:</strong> <%= address.state %></p>
+                        <p><strong>Pincode:</strong> <%= address.pincode %></p>
+                        <p><strong>Phone:</strong> <%= address.phone %></p>
+                    </div>
+                <% } else { %>
+                    <p>No address available for this order.</p>
+                <% } %>
 
                 <hr>
 
-                <!-- Product Details -->
-                <div class="order-summary mb-4">
-                    <h5>Ordered Products</h5>
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Product Name</th>
-                                <th>Category</th>
-                                <th>Description</th>
-                                <th>Color</th>
-                                <th>Quantity</th>
-                                <th>Price</th>
-                                <th>Toatal Price</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><%= order.productId.productName %><img class="img-fluid" src="/uploads/product-images/<%= order.productId.productImage[0] %>" alt="Product Image"></td>
-                                <td><%= order.productId.category.name %></td>
-                                <td><%= order.productId.description %> %></td>
-                                <td><%=order.productId.color %></td>
-                                <td> <%= order.quantity %></td>
-                                <td><%= order.price %></td>
-                                <td>₹<%= order.totalPrice %></td>
-                                <td>
-                                    <select class="order-status-dropdown" data-order-id="<%= order._id %>" data-current-status="<%= order.status %>">
-                                        <option value="Order Placed" <%= order.status === 'Order Placed' ? 'selected' : '' %>>Pending</option>
-                                        <option value="Processing" <%= order.status === 'Processing' ? 'selected' : '' %>>Processing</option>
-                                        <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
-                                        <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
-                                        <option value="Out for Delivery" <%= order.status === 'Out for Delivery' ? 'selected' : '' %>>Out for Delivery</option>
-                                        <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
-                                    </select>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <!-- Ordered Products -->
+             <!-- Product Details -->
+<div class="order-summary mb-4">
+    <h5>Ordered Product</h5>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Category</th>
+                <th>Description</th>
+                <th>Color</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Total Price</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <%= productDetails.product.productName %> 
+                    <img class="img-fluid" src="/uploads/product-images/<%= productDetails.product.productImage[0] %>" alt="Product Image">
+                </td>
+                <td><%= productDetails.product.category.name %></td>
+                <td><%= productDetails.product.description %></td>
+                <td><%= productDetails.product.color %></td>
+                <td> <%= productDetails.quantity %></td>
+                <td>₹<%= productDetails.price %></td>
+                <td>₹<%= productDetails.quantity * productDetails.price %></td>
+                <td>
+                    <select class="order-status-dropdown" data-order-id="<%= order._id %>" data-product-id="<%= productDetails.product._id %>" data-current-status="<%= productDetails.status %>">
+                        <option value="Order Placed" <%= productDetails.status === 'Order Placed' ? 'selected' : '' %>>Order Placed</option>
+                        <option value="Processing" <%= productDetails.status === 'Processing' ? 'selected' : '' %>>Processing</option>
+                        <option value="Shipped" <%= productDetails.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+                        <option value="Cancelled" <%= productDetails.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                        <option value="Out for Delivery" <%= productDetails.status === 'Out for Delivery' ? 'selected' : '' %>>Out for Delivery</option>
+                        <option value="Delivered" <%= productDetails.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                    </select>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
 
                 <hr>
 
                 <!-- Payment Details -->
                 <div class="order-summary mb-4">
                     <h5>Payment Details</h5>
-                    <p><strong>Payment Method:</strong> <%= order.orderMethod %></p>
+                    <p><strong>Payment Method:</strong> <%= order.paymentInfo.method %></p>
+                    <p><strong>Paid:</strong> <%= order.paymentInfo.isPaid ? "Yes" : "No" %></p>
                     <p><strong>Total Amount:</strong> ₹<%= order.finalAmount %></p>
                 </div>
 
                 <hr>
 
-                <!-- Tracking History -->
                 <!-- Order Tracking -->
-
                 <h5>Order Tracking</h5>
-                    <div class="tracking-progress">
-                        <% let currentStatusReached = false; %>
-                        <% order.trackingHistory.forEach((track, index) => { %>
-                            <div class="progress-step <%= track.status === order.status ? 'active' : '' %>">
-                                <div class="step-circle"><%= index + 1 %></div>
-                                <p class="status-text"><%= track.status %></p>
+                <div class="tracking-progress">
+                    <% let currentStatusReached = false; %>
+                    <% order.trackingHistory.forEach(track => { %>
+                        <div class="progress-step <%= track.status === order.orderItems[0].status ? 'active' : '' %>">
+                            <div class="step-circle"></div>
+                            <p class="status-text"><%= track.status %></p>
 
-                                <% if (track.status === order.status) { 
-                                    currentStatusReached = true; 
-                                } %>
+                            <% if (track.status === order.orderItems[0].status) { 
+                                currentStatusReached = true; 
+                            } %>
 
-                                <% if (track.status === order.status) { %>
-                                    <!-- Show date normally for current status -->
-                                    <p class="date"><%= track.date %></p>
-                                <% } else if (currentStatusReached) { %>
-                                    <!-- Show "Expected: DD/MM/YYYY" for future statuses -->
-                                    <p class="expected-date">Expected: <%= track.date %></p>
-                                <% } %>
-                            </div>
-                        <% }); %>
-                    </div>
+                            <% if (track.status === order.orderItems[0].status) { %>
+                                <p class="date"><%= track.date %></p>
+                            <% } else if (!currentStatusReached) { %>
+                                <p class="expected-date">Expected: <%= track.date %></p>
+                            <% } %>
+                        </div>
+                    <% }); %>
+                </div>
             </div>
 
             <div class="card-footer">
@@ -223,59 +216,70 @@
         </div>
     </div>
 
+   
+
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             document.querySelectorAll(".order-status-dropdown").forEach(dropdown => {
                 dropdown.addEventListener("change", function () {
-                    const orderId = this.getAttribute("data-order-id");
-                    const currentStatus = this.getAttribute("data-current-status"); // Get the current status
+                    const orderId = "<%= order.orderId %>"; 
+                    const productId = this.getAttribute("data-product-id"); // Get productId
+                    const currentStatus = this.getAttribute("data-current-status"); // Current status
                     const newStatus = this.value;
-        
+    
                     // Prevent changing from Delivered or Cancelled
                     if (currentStatus === "Delivered" || currentStatus === "Cancelled") {
                         Swal.fire({
                             title: "Action Not Allowed",
-                            text: "You cannot change the status of a Delivered or Cancelled order.",
+                            text: "You cannot change the status of a Delivered or Cancelled order item.",
                             icon: "error"
                         });
                         this.value = currentStatus; // Reset dropdown to previous value
                         return;
                     }
-        
+    
                     // Show confirmation SweetAlert
                     Swal.fire({
                         title: "Are you sure?",
-                        text: `Do you want to change the order status to ${newStatus}?`,
+                        text: `Do you want to change the product status to ${newStatus}?`,
                         icon: "warning",
                         showCancelButton: true,
                         confirmButtonText: "Yes, change it!",
                         cancelButtonText: "No, cancel!"
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            // Send a request to update the order status
+                            // Send request with orderId + productId
                             fetch("/admin/update-order-status", {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ orderId, status: newStatus })
-                            }).then(response => response.json()).then(data => {
+                                body: JSON.stringify({ orderId, productId, status: newStatus })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
                                 if (data.success) {
-                                    Swal.fire("Updated!", "Order status has been changed.", "success")
-                                        .then(() => window.location.reload()); // Reload the page after success
+                                    Swal.fire("Updated!", "Product status has been changed.", "success")
+                                        .then(() => window.location.reload()); // Reload on success
                                 } else {
-                                    Swal.fire("Error", "Failed to update order status.", "error");
-                                    this.value = currentStatus; // Reset dropdown to previous value
+                                    Swal.fire("Error", data.message || "Failed to update status.", "error");
+                                    this.value = currentStatus; // Reset dropdown
                                 }
+                            })
+                            .catch(error => {
+                                Swal.fire("Error", "Something went wrong!", "error");
+                                this.value = currentStatus;
                             });
                         } else {
-                            this.value = currentStatus; // Reset dropdown to previous value
+                            this.value = currentStatus; // Reset dropdown if cancelled
                         }
                     });
                 });
             });
-        });   
-    </script> 
+        });
+    </script>
+    
 
 </body>
 

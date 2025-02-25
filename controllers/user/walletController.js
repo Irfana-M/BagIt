@@ -1,58 +1,87 @@
+const Wallet = require("../../models/walletSchema");
+const User = require("../../models/userSchema")
+
 const getUserWallet = async (req,res)=>{
-    try {
-        const wallet = await Wallet.findOne({ userId: req.user._id }).populate('transactions.orderId');
-        res.render("wallet");
-        if (!wallet) {
-          return res.status(404).json({ success: false, message: 'Wallet not found' });
+    
+        try {
+            const userId = req.session.user
+            const wallet = await Wallet.findOne({ userId: userId });
+            console.log(wallet)
+            if (!wallet) {
+                return res.render('wallet', { wallet: { balance: 0, transactions: [] } });
+            }
+            res.render('wallet', { wallet });
+        } catch (error) {
+            console.error(error)
+            res.status(500).send("Server Error");
         }
-        res.json({ success: true, wallet });
-      } catch (error) {
-        res.status(500).json({ success: false, message: 'Server error' });
-      }
     };
+    
 
 
-    const addMoneytoWallet = async (req,res)=>{
+    const addtoWallet = async (req,res)=>{
+        const { amount } = req.body;
+        
+        if (!amount || amount <= 0) {
+          return res.status(400).json({ success: false, message: 'Invalid amount' });
+        }
+      
         try {
-            const { amount } = req.body;
-            const wallet = await Wallet.findOne({ userId: req.user._id });
-            if (!wallet) {
-              return res.status(404).json({ success: false, message: 'Wallet not found' });
-            }
-            wallet.transactions.push({
-              type: 'credit',
-              amount,
-              description: 'Added Money to Wallet',
-            });
+            const userId = req.session.user
+          let wallet = await Wallet.findOne({ userId: userId });
+      
+          if (!wallet) {
+            wallet = new Wallet({ userId: userId, balance: amount, transactions: [] });
+          } else {
             wallet.balance += amount;
-            await wallet.save();
-            res.json({ success: true, wallet });
-          } catch (error) {
-            res.status(500).json({ success: false, message: 'Server error' });
           }
-        };
+      
+          wallet.transactions.push({
+            amount,
+            type: 'credit',
+            description: 'Money added to wallet'
+          });
+      
+          await wallet.save();
+          res.json({ success: true, wallet });
+        } catch (error) {
+            console.error(error);
+          res.status(500).json({ success: false, message: 'Server Error' });
+        }
+      };
 
-    const withdrawMoneyfromWallet = async (req,res)=>{
+      const withdrawfromWallet = async (req, res) => {
+        const { amount } = req.body;
+    
+        if (!amount || amount <= 0) {
+            return res.status(400).json({ success: false, message: 'Invalid amount' });
+        }
+    
         try {
-            const { amount } = req.body;
-            const wallet = await Wallet.findOne({ userId: req.user._id });
+            const userId = req.session.user
+            let wallet = await Wallet.findOne({ userId: userId });
+    console.log(wallet)
             if (!wallet) {
-              return res.status(404).json({ success: false, message: 'Wallet not found' });
+                return res.status(404).json({ success: false, message: 'Wallet not found' });
             }
+    
             if (wallet.balance < amount) {
-              return res.status(400).json({ success: false, message: 'Insufficient balance' });
+                return res.status(400).json({ success: false, message: 'Insufficient balance' });
             }
-            wallet.transactions.push({
-              type: 'debit',
-              amount,
-              description: 'Withdrawal to Bank Account',
-            });
+    
             wallet.balance -= amount;
+            wallet.transactions.push({
+                amount,
+                type: 'debit',
+                description: 'Money withdrawn from wallet'
+            });
+    
             await wallet.save();
             res.json({ success: true, wallet });
-          } catch (error) {
-            res.status(500).json({ success: false, message: 'Server error' });
-          }
-        };
-
-module.exports = {getUserWallet,addMoneytoWallet,withdrawMoneyfromWallet}
+        } catch (error) {
+            console.error('Withdraw Error:', error);
+            res.status(500).json({ success: false, message: 'Server Error' });
+        }
+    };
+    
+module.exports = {getUserWallet,addtoWallet,withdrawfromWallet}

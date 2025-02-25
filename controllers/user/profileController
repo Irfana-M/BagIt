@@ -466,8 +466,68 @@ const deleteAddress = async (req,res)=>{
 }
 
 
+
+
+
+const getReferral = async (req, res) => {
+    const userId = req.session.user;
+    console.log(userId)
+    
+
+    try {
+        
+        const user = await User.findById(userId);
+        console.log("user",user);
+
+        if (!user) {
+            return res.redirect('/login'); 
+        }
+
+        const referralLink = `https://localhost:3005/signup?ref=${user.referralCode}`;
+
+       
+        const referrals = await User.find({ referredBy: user._id }) || null;
+
+        res.render('referral', { referralLink, referrals });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Error loading referrals");
+    }
+};
+
+
+
+const sendReferral = async (req, res) => {
+    try {
+        const { friendEmail } = req.body;
+
+        if (!req.session.user) {
+            return res.redirect('/login'); 
+        }
+
+       
+        const user = await User.findById(req.session.user._id);
+
+        if (!user || !user.referralCode) {
+            return res.redirect('/referral?error=Invalid Referral Code');
+        }
+
+        
+        await sendReferralEmail(friendEmail, user.referralCode);
+
+        res.redirect('/referral?success=Email Sent!');
+    } catch (err) {
+        console.error("Error sending referral email:", err);
+        res.redirect('/referral?error=Failed to send email');
+    }
+};
+
+
+
+
 module.exports = {userProfile,getForgotPassPage,forgotEmailValid,changeEmail,changeEmailValid,
     verifyForgotPassOtp,getResetPassPage,resendOtp,postNewPassword,verifyEmailOtp,updateEmail,
     changePassword,changePasswordValid,verifyChangePassOtp,getMyAddress,addAddress,postAddAddress,
-    editAddress,postEditAddress,deleteAddress
+    editAddress,postEditAddress,deleteAddress,getReferral,sendReferral
 }

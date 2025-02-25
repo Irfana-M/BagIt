@@ -787,30 +787,41 @@ function handleCashOnDelivery(amount, addressId, cartItems) {
     });
 }
 
+
+
+
 function handleWalletPayment(amount, addressId, cartItems) {
     fetch("/wallet-payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ addressId, totalPrice: amount, cartItems }),
     })
-    .then((res) => {
+    .then(res => {
         if (!res.ok) {
-            throw new Error(`HTTP error! Status: ${res.status}`);
+            return res.json().then(errorData => { throw new Error(errorData.message || "Wallet payment failed."); });
         }
         return res.json();
     })
-    .then((data) => {
+    .then(data => {
         if (data.success) {
-            window.location.href = `/confirmation?cartItems=${encodeURIComponent(JSON.stringify(cartItems))}&totalPrice=${amount}&addressId=${addressId}`;
+            Swal.fire({
+                title: "Payment Successful!",
+                text: "Your order has been placed using Wallet.",
+                icon: "success",
+                confirmButtonText: "OK"
+            }).then(() => {
+                window.location.href = `/confirmation?cartItems=${encodeURIComponent(JSON.stringify(cartItems))}&totalPrice=${amount}&addressId=${addressId}`;
+            });
         } else {
-            alert(data.message || "Failed to place order using Wallet.");
+            Swal.fire("Error", data.message || "Wallet payment failed.", "error");
         }
     })
-    .catch((err) => {
+    .catch(err => {
         console.error("Wallet payment error:", err);
-        alert("Something went wrong. Please try again later.");
+        Swal.fire("Error", err.message || "Something went wrong. Please try again later.", "error");
     });
 }
+
 
 
 //coupon management

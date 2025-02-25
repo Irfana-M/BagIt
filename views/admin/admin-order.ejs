@@ -94,6 +94,12 @@
         .page-link:hover {
             background-color: #7a708b;
         }
+        .product-image {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -123,6 +129,7 @@
                         <tr>
                             <th>User Name</th>
                             <th>Order ID</th>
+                            <th>Product Image</th>
                             <th>Product Name</th>
                             <th>Product Category</th>
                             <th>Address</th>
@@ -133,54 +140,61 @@
                         </tr>
                     </thead>
                     <tbody>
+                        
                         <% orders.forEach(order => { %>
+                            <% order.orderItems.forEach(item => { %>
+                                <% console.log("Order:", order) %>
+<% if (order.shippingAddress) { %>
+  <% console.log("Shipping Address:", order.shippingAddress) %>
+<% } %>
                             <tr>
-                                <td><%=order.userId ?order.userId.name : 'Unknown User' %></td>
-                                <td>#<%=order.orderId %></td>
-                                <td><%=order.productId.productName%></td>
-                                <td><%=order.productId.category.name%></td>
+
+                                <td><%= order.user ? order.user.name : 'Unknown User' %></td>
+                                <td>#<%= order.orderId %></td>
                                 <td>
-                                    <% if (order.shippingAddress) { %>
-                                      <%= order.shippingAddress.addressType %>,
-                                      <%= order.shippingAddress.landMark %>,
-                                      <%= order.shippingAddress.city %>
+                                    <% if (item.product.productImage && item.product.productImage.length > 0) { %>
+                                        <img src="/uploads/product-images/<%= item.product.productImage[0] %>" alt="Product Image" class="product-image">
                                     <% } else { %>
-                                      <span style="color: red;">Address not found</span>
+                                        <span>No Image</span>
                                     <% } %>
-                                  </td>
-                                  
-                                <td>₹<%=order.price %></td>
-                                <td><%=order.formattedCreatedOn %></td>
-                                
-                                <td><%=order.status%>
-                                    
                                 </td>
+                                <td><%= item.product.productName %></td>
+                                <td><%= item.product.category ? item.product.category.name : 'Unknown Category' %></td>
                                 <td>
-                                    <a href="/admin/order-details/<%= order._id %>">
-                                        <button class="btn btn-primary delete-order mb-2" 
-                                            <%= (order.status === 'Delivered' || order.status === 'Cancelled') ? 'disabled' : '' %>>
-                                            View
-                                        </button>
+                                    <% if (order.shippingAddress) { %>  <!-- FIXED: Used order.shippingAddress -->
+                                        <%= order.shippingAddress.addressType %>,
+                                        <%= order.shippingAddress.landMark %>,
+                                        <%= order.shippingAddress.city %>
+                                    <% } else { %>
+                                        <span style="color: red;">Address not found</span>
+                                    <% } %>
+                                </td>
+                                <td>₹<%= item.product.salePrice %></td>
+                                <td><%= order.formattedCreatedAt %></td>
+                                <td><%= item.status %></td>
+                                <td>
+                                    <a href="/admin/order-details/<%= order.orderId%>/<%= item.product._id %>">
+                                        <button class="btn btn-primary">View</button>
                                     </a>
-                                   
                                 </td>
                             </tr>
+                            <% }) %>
                         <% }); %>
                     </tbody>
                 </table>
             </div>
-
+        
             <nav>
                 <ul class="pagination">
-                    <%for(let i=1;i<=totalPages;i++){%>
-                        <li class="page-item <%=(i===currentPage) ? 'active' : '' %>">
+                    <% for(let i = 1; i <= totalPages; i++) { %>
+                        <li class="page-item <% if (i == currentPage) { %> active <% } %>">
                             <a class="page-link" href="?page=<%= i %>"><%= i %></a>
                         </li>
-                    <%}%>
+                    <% } %>
                 </ul>
             </nav>
         </div>
-    </div>
+     
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>

@@ -72,7 +72,7 @@ const orderSchema = new Schema(
     paymentInfo: {
       method: { 
         type: String,
-        enum: ['Cash on Delivery', 'Online Payment'],
+        enum: ['Cash on Delivery', 'Online Payment','Wallet'],
         default: 'Cash on Delivery',
         required: true 
       },
