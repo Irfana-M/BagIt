@@ -7,6 +7,8 @@ const { v4: uuidv4 } = require("uuid");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const Wallet = require("../../models/walletSchema");
+const fs = require('fs');
+
 
 const getOrder = async (req, res) => {
     try {
@@ -48,7 +50,8 @@ const getOrder = async (req, res) => {
 
 const cancelOrderItem = async (req, res) => {
     try {
-        const { orderId, productId } = req.params; 
+        console.log("cancel order1")
+        const { orderId, productId } = req.params;
         const { reason } = req.body;
 
         if (!reason) {
@@ -66,7 +69,7 @@ const cancelOrderItem = async (req, res) => {
         // Find the product in the order
         const productItem = order.orderItems.find(item => item.product._id.toString() === productId);
 
-        console.log("productItem",productItem)
+        console.log("Product Item:", productItem);
         if (!productItem) {
             return res.status(404).json({ success: false, message: "Product not found in order" });
         }
@@ -83,7 +86,26 @@ const cancelOrderItem = async (req, res) => {
             await product.save();
         }
 
-        // Check payment method: No refund for Cash on Delivery orders
+        
+
+        // Calculate refund amount for Online Payment orders
+        let refundAmount = productItem.price * productItem.quantity;
+        console.log("Initial Refund Amount:", refundAmount);
+
+        // Check if a coupon was applied and deduct a proportional amount
+        if (order.couponApplied && order.discount > 0) {
+            const totalOrderPrice = order.totalPrice;
+            const productContribution = (productItem.price * productItem.quantity) / totalOrderPrice;
+            const discountToDeduct = order.discount * productContribution;
+            refundAmount -= discountToDeduct;
+            console.log("Discount Deducted:", discountToDeduct);
+        }
+
+        // Ensure refundAmount is not negative
+        refundAmount = Math.max(refundAmount, 0);
+        console.log("Final Refund Amount:", refundAmount);
+
+        // Update order item status
         if (order.paymentInfo.method === "Cash on Delivery") {
             productItem.status = 'Cancelled';
             productItem.cancellationReason = reason;
@@ -93,28 +115,14 @@ const cancelOrderItem = async (req, res) => {
                 success: true, 
                 message: "Order item cancelled successfully. No refund for Cash on Delivery orders."
             });
-        }
-
-        // Calculate refund amount for Online Payment orders
-        let refundAmount = productItem.price * productItem.quantity;
-       
-
-        // Check if a coupon was applied and deduct a proportional amount
-        if (order.couponApplied && order.discount > 0) {
-            const totalOrderPrice = order.totalPrice;
-            const productContribution = (productItem.price * productItem.quantity) / totalOrderPrice;
-            const discountToDeduct = order.discount * productContribution;
-            refundAmount -= discountToDeduct;
-        }
-
-        // Ensure refundAmount is not negative
-        refundAmount = Math.max(refundAmount, 0);
-        console.log("refundAmount",refundAmount)
-        // Update order item status
+        }else{
         productItem.status = 'Cancelled';
         productItem.cancellationReason = reason;
         productItem.refundAmount = refundAmount;
+        console.log("ProductItem after refund",productItem.refundAmount)
         await order.save();
+        
+
 
         // Find and update user's wallet
         const updatedWallet = await Wallet.findOneAndUpdate(
@@ -132,22 +140,22 @@ const cancelOrderItem = async (req, res) => {
             },
             { new: true, upsert: true } // Creates a new wallet if it doesn't exist
         );
-        console.log("updated Wallet",updatedWallet)
+
+        console.log("Updated Wallet:", updatedWallet);
 
         res.json({ 
             success: true, 
             message: "Order item cancelled successfully and amount refunded to wallet",
-            refundedAmount: refundAmount,
+            refundAmount: refundAmount,
             walletBalance: updatedWallet.balance
         });
+    }
 
     } catch (error) {
         console.error("Error cancelling order item:", error);
         res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 };
-
-
 
 
 
@@ -209,7 +217,7 @@ const orderDetails = async (req, res) => {
         ];
 
         
-        res.render("order-details", { order, productItem, address, otherItems });
+        res.render("order-details", { order, productItem, address, otherItems ,refundAmount:  null});
 
     } catch (error) {
         console.error("Error fetching order details:", error);
@@ -220,6 +228,7 @@ const orderDetails = async (req, res) => {
 
 const cancelOrder = async (req, res) => {
     try {
+        console.log("cancelOrder2")
         const { orderId } = req.params;
         console.log(orderId)
         console.log("orderId", orderId);
@@ -690,7 +699,7 @@ const codPayment = async (req, res) => {
         const formattedExpireDate = expireDate.toISOString();
      
 
-        // Create a single order with all items in the cart
+        
         const newOrder = new Order({
             user: userId,
             orderItems: cartItems.map(item => ({
@@ -766,56 +775,16 @@ const returnOrder = async (req, res) => {
         if (productItem.status === 'Return Requested' || productItem.status === 'Returned') {
             return res.status(400).json({ success: false, message: 'Return already requested or completed' });
         }
-
-        
-        let refundAmount = productItem.price * productItem.quantity;
-        
-        if (order.couponDiscount) {
-            const totalOrderPrice = order.orderItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-
-            if (order.orderItems.length === 1) {
-            
-                refundAmount -= order.discount;
-            } else {
-                
-                const productShare = refundAmount / totalOrderPrice;
-                const proportionalDiscount = order.discount * productShare;
-                refundAmount -= proportionalDiscount;
-            }
-        }
-
-        
         productItem.status = 'Return Requested';
         productItem.returnReason = returnReason;
-
-        
-        if (order.paymentMethod === 'online') {
-            const userId = order.user._id;
-            let wallet = await Wallet.findOne({ userId });
-
-            if (!wallet) {
-                
-                wallet = new Wallet({ userId, balance: 0, transactions: [] });
-            }
-
-            
-            wallet.balance += refundAmount;
-            wallet.transactions.push({
-                amount: refundAmount,
-                type: 'refund',
-                description: `Refund for order ${orderId}, product ${productId}`
-            });
-
-            await wallet.save(); 
-        }
 
         
         await order.save();
 
         res.status(200).json({ 
             success: true, 
-            message: 'Return request processed successfully', 
-            refundAmount 
+            message: 'Return request submitted for admin approval', 
+           
         });
 
     } catch (error) {
@@ -825,4 +794,63 @@ const returnOrder = async (req, res) => {
 };
 
 
-module.exports = {getOrder,cancelOrderItem,orderDetails,cancelOrder,razorpayPayment,verifyRazorpay,walletPayment,codPayment,paymentFailure,returnOrder}
+const downloadInvoice = async (req,res)=>{
+    try {
+        const orderId = req.params.id;
+
+        
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).send("Order not found");
+        }
+
+        
+        const invoicePath = path.join(__dirname, `../invoices/invoice-${orderId}.pdf`);
+        
+        
+        
+        const doc = new PDFDocument();
+        const stream = fs.createWriteStream(invoicePath);
+        doc.pipe(stream);
+
+        
+        doc.fontSize(18).text("Invoice", { align: "center" });
+        doc.moveDown();
+        doc.fontSize(14).text(`Order ID: ${order._id}`);
+        doc.text(`Date: ${order.createdAt.toDateString()}`);
+        doc.moveDown();
+
+        
+        doc.fontSize(12).text(`Customer: ${order.customerName}`);
+        doc.text(`Email: ${order.customerEmail}`);
+        doc.text(`Address: ${order.shippingAddress}`);
+        doc.moveDown();
+
+        
+        doc.text("Order Items:");
+        order.items.forEach((item, index) => {
+            doc.text(`${index + 1}. ${item.name} - ₹${item.price} x ${item.quantity}`);
+        });
+        doc.moveDown();
+
+        
+        doc.fontSize(14).text(`Total Amount: ₹${order.totalAmount}`, { bold: true });
+
+        
+        doc.end();
+
+        
+        stream.on("finish", () => {
+            res.download(invoicePath, `invoice-${orderId}.pdf`);
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal Server Error");
+    }
+};
+
+
+
+module.exports = {getOrder,cancelOrderItem,orderDetails,cancelOrder,razorpayPayment,verifyRazorpay,walletPayment,codPayment,
+    paymentFailure,returnOrder,downloadInvoice}

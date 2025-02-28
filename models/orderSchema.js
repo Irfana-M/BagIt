@@ -32,7 +32,7 @@ const orderSchema = new Schema(
         },
         status: {
           type: String,
-          enum: ['Order Placed', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled', 'Return Requested', 'Returned'],
+          enum: ['Order Placed', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled', 'Return Requested', 'Returned','Return Rejected'],
           default: 'Order Placed'
         },
         cancellationReason: { type: String, default: null },

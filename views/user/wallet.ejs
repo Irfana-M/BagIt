@@ -178,7 +178,7 @@
                 <p><%= new Date(transaction.date).toLocaleDateString() %></p>
               </div>
               <div class="transaction-amount <%= transaction.type === 'debit' ? 'negative' : 'positive' %>">
-                <%= transaction.type === 'credit' ? '+' : '-' %>₹<%= transaction.amount.toFixed(2) %>
+                <%= transaction.type === 'credit' || transaction.type === 'refund' ? '+' : '-' %>₹<%= transaction.amount.toFixed(2) %>
               </div>
             </div>
           <% }); %>

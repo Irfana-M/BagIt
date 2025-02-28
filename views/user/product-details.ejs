@@ -32,7 +32,35 @@
 
 	<link rel="stylesheet" href="https://unpkg.com/panzoom/dist/panzoom.min.css">
 
-	  
+<style>
+	/* Zoom Container */
+
+
+.single-prd-item.active {
+  display: block; /* Show the active image */
+}
+
+/* Zoom Lens */
+.zoomContainer {
+  z-index: 1000; /* Ensure the zoom lens is above other elements */
+}
+
+/* Zoom Window */
+.zoomWindow {
+  border: 1px solid #ccc;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+#zoomC {
+  /* (A) DIMENSIONS */
+  width: 600px;
+  height: 360px;
+ 
+  /* (B) BACKGROUND IMAGE */
+  background: url("demo.webp");
+  background-position: center;
+  background-size: cover;
+}
+</style>	  
 </head>
 
 <body>
@@ -121,7 +149,7 @@
                
 				<div class="col-lg-6">
 					<div class="s_Product_carousel">
-					  <div class="single-prd-item zoom-container">
+					  <div class="single-prd-item zoom-container zoomC active">
 						<img class="img-fluid zoom-img" src="/uploads/product-images/<%=product.productImage[0]%>" alt="product image">
 					  </div>
 					  <div class="single-prd-item zoom-container">
@@ -717,6 +745,50 @@ prevBtn.addEventListener('click', () => {
     }
 
     </script>
+
+	<script>
+	// CREDITS : https://www.cssscript.com/image-zoom-pan-hover-detail-view/
+	var addZoom = target => {
+	  // (A) GET CONTAINER + IMAGE SOURCE
+	  let container = document.getElementById(target),
+		  imgsrc = container.currentStyle || window.getComputedStyle(container, false);
+		  imgsrc = imgsrc.backgroundImage.slice(4, -1).replace(/"/g, "");
+	 
+	  // (B) LOAD IMAGE + ATTACH ZOOM
+	  let img = new Image();
+	  img.src = imgsrc;
+	  img.onload = () => {
+		// (B1) CALCULATE ZOOM RATIO
+		let ratio = img.naturalHeight / img.naturalWidth,
+			percentage = ratio * 100 + "%";
+	 
+		// (B2) ATTACH ZOOM ON MOUSE MOVE
+		container.onmousemove = e => {
+		  let rect = e.target.getBoundingClientRect(),
+			  xPos = e.clientX - rect.left,
+			  yPos = e.clientY - rect.top,
+			  xPercent = xPos / (container.clientWidth / 100) + "%",
+			  yPercent = yPos / ((container.clientWidth * ratio) / 100) + "%";
+	 
+		  Object.assign(container.style, {
+			backgroundPosition: xPercent + " " + yPercent,
+			backgroundSize: img.naturalWidth + "px"
+		  });
+		};
+	 
+		// (B3) RESET ZOOM ON MOUSE LEAVE
+		container.onmouseleave = e => {
+		  Object.assign(container.style, {
+			backgroundPosition: "center",
+			backgroundSize: "cover"
+		  });
+		};
+	  }
+	};
+	 
+	// (C) ATTACH FOLLOW ZOOM
+	window.onload = () => addZoom("zoomC");
+</script>
 
 </body>
 

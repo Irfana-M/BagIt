@@ -55,6 +55,7 @@ router.get('/orders',adminAuth,orderController.getOrder);
 router.post('/update-order-status',adminAuth,orderController.updateOrderStatus);
 router.get('/delete-order',adminAuth,orderController.deleteOrder);
 router.get('/order-details/:orderId/:productId',adminAuth,orderController.viewOrder);
+router.post('/update-return-status',adminAuth,orderController.updateReturnStatus);
 
 //Coupen Management
 router.get("/coupon",adminAuth,couponController.loadCoupon);
@@ -62,5 +63,10 @@ router.post("/createCoupon",adminAuth,couponController.createCoupon);
 router.get("/editCoupon",adminAuth,couponController.editCoupon);
 router.post("/updateCoupon",adminAuth,couponController.updateCoupon);
 router.get("/deleteCoupon",adminAuth,couponController.deleteCoupon);
+
+//Sales Report
+router.get("/sales",adminAuth,adminController.generateReport);
+router.get("/sales/download-pdf", adminAuth, adminController.downloadPDF);
+router.get("/sales/download-excel", adminAuth, adminController.downloadExcel);
 
 module.exports = router;

@@ -100,6 +100,18 @@
             object-fit: cover;
             border-radius: 5px;
         }
+        .status-return-requested { 
+            background-color: #9c27b0; /* Purple for Return Requested */
+            color: #fff; 
+        }
+        .status-approved { 
+            background-color: #4caf50; /* Green for Approved */
+            color: #fff; 
+        }
+        .status-rejected { 
+            background-color: #f44336; /* Red for Rejected */
+            color: #fff; 
+        }
     </style>
 </head>
 <body>
@@ -171,7 +183,23 @@
                                 </td>
                                 <td>₹<%= item.product.salePrice %></td>
                                 <td><%= order.formattedCreatedAt %></td>
-                                <td><%= item.status %></td>
+                                <td>
+                                    <span class="status-badge 
+                                        <% if (item.status === 'Return Requested') { %> status-return-requested 
+                                        <% } else if (item.status === 'Approved') { %> status-approved 
+                                        <% } else if (item.status === 'Rejected') { %> status-rejected 
+                                        <% } %>">
+                                        <%= item.status %>
+                                    </span>
+                                
+                                    <% if (item.status === 'Return Requested') { %>
+                                        <button class="btn btn-warning handle-return-btn" 
+                                                data-order-id="<%= order.orderId %>" 
+                                                data-product-id="<%= item.product._id %>">
+                                            Handle Return
+                                        </button>
+                                    <% } %>
+                                </td>
                                 <td>
                                     <a href="/admin/order-details/<%= order.orderId%>/<%= item.product._id %>">
                                         <button class="btn btn-primary">View</button>
@@ -207,18 +235,18 @@
                 const currentStatus = this.getAttribute("data-current-status"); // Get the current status
                 const newStatus = this.value;
     
-                // Prevent changing from Delivered or Cancelled
+                
                 if (currentStatus === "Delivered" || currentStatus === "Cancelled") {
                     Swal.fire({
                         title: "Action Not Allowed",
                         text: "You cannot change the status of a Delivered or Cancelled order.",
                         icon: "error"
                     });
-                    this.value = currentStatus; // Reset dropdown to previous value
+                    this.value = currentStatus; 
                     return;
                 }
     
-                // Show confirmation SweetAlert
+                
                 Swal.fire({
                     title: "Are you sure?",
                     text: `Do you want to change the order status to ${newStatus}?`,
@@ -228,7 +256,7 @@
                     cancelButtonText: "No, cancel!"
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Send a request to update the order status
+                        
                         fetch("/admin/update-order-status", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
@@ -236,19 +264,62 @@
                         }).then(response => response.json()).then(data => {
                             if (data.success) {
                                 Swal.fire("Updated!", "Order status has been changed.", "success")
-                                    .then(() => window.location.reload()); // Reload the page after success
+                                    .then(() => window.location.reload()); 
                             } else {
                                 Swal.fire("Error", "Failed to update order status.", "error");
-                                this.value = currentStatus; // Reset dropdown to previous value
+                                this.value = currentStatus; 
                             }
                         });
                     } else {
-                        this.value = currentStatus; // Reset dropdown to previous value
+                        this.value = currentStatus; 
                     }
                 });
             });
         });
-    });   
+    });  
+    
+    
+    
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".handle-return-btn").forEach(button => {
+        button.addEventListener("click", function () {
+            const orderId = this.getAttribute("data-order-id");
+            const productId = this.getAttribute("data-product-id");
+
+            Swal.fire({
+                title: "Handle Return Request",
+                text: "Do you want to approve or reject this return request?",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: "Approve",
+                cancelButtonText: "Reject",
+                showDenyButton: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    updateReturnStatus(orderId, productId, "Approved");
+                } else if (result.isDismissed && result.dismiss === Swal.DismissReason.cancel) {
+                    updateReturnStatus(orderId, productId, "Rejected");
+                }
+            });
+        });
+    });
+
+    // Function to update return status
+    function updateReturnStatus(orderId, productId, status) {
+        fetch("update-return-status", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ orderId, productId, status })
+        }).then(response => response.json()).then(data => {
+            if (data.success) {
+                Swal.fire("Updated!", `Return request has been ${status.toLowerCase()}.`, "success")
+                    .then(() => window.location.reload()); 
+            } else {
+                Swal.fire("Error", "Failed to update return status.", "error");
+            }
+        });
+    }
+});
 </script> 
 </body>
 </html>

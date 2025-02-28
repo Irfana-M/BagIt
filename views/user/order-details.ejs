@@ -5,299 +5,283 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Order Details</title>
   <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.6/dist/sweetalert2.min.css">
   <style>
-  /* General Reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+    /* General Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-body {
-  font-family: 'Arial', sans-serif;
-  line-height: 1.6;
-  background-color: #f4f7fc;
-  color: #333;
-  padding: 20px;
-}
+    body {
+      font-family: 'Poppins', sans-serif;
+      line-height: 1.6;
+      background-color: #f8fafc;
+      color: #333;
+      padding: 20px;
+    }
 
-header {
-  background-color: #0056b3;
-  color: white;
-  padding: 20px 0;
-  text-align: center;
-  margin-bottom: 30px;
-}
+    header {
+      background-color: #1e3a8a;
+      color: white;
+      padding: 20px 0;
+      text-align: center;
+      margin-bottom: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
 
-header h1 {
-  font-size: 28px;
-  font-weight: 600;
-}
+    header h1 {
+      font-size: 28px;
+      font-weight: 600;
+    }
 
-.order-details {
-  background-color: #ffffff;
-  padding: 30px;
-  max-width: 1200px;
-  margin: 0 auto;
-  border-radius: 8px;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-}
+    .order-details {
+      background-color: #ffffff;
+      padding: 30px;
+      max-width: 1200px;
+      margin: 0 auto;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
 
-h2 {
-  font-size: 24px;
-  margin-bottom: 20px;
-  color: #333;
-}
+    h2 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #1e3a8a;
+    }
 
-h3 {
-  font-size: 20px;
-  color: #0056b3;
-  margin-bottom: 15px;
-}
+    h3 {
+      font-size: 20px;
+      color: #1e3a8a;
+      margin-bottom: 15px;
+    }
 
-p {
-  font-size: 16px;
-  color: #555;
-  margin-bottom: 10px;
-}
+    p {
+      font-size: 16px;
+      color: #555;
+      margin-bottom: 10px;
+    }
 
-strong {
-  color: #333;
-}
+    strong {
+      color: #333;
+    }
 
-/* Product Information Section */
-.product-details {
-  display: flex;
-  flex-wrap: wrap;
-  margin-bottom: 30px;
-}
+    /* Product Information Section */
+    .product-details {
+      display: flex;
+      flex-wrap: wrap;
+      margin-bottom: 30px;
+    }
 
-.product-details .product {
-  display: flex;
-  align-items: center;
-  margin-right: 40px;
-  margin-bottom: 20px;
-}
+    .product-details .product {
+      display: flex;
+      align-items: center;
+      margin-right: 40px;
+      margin-bottom: 20px;
+    }
 
-.product-details img {
-  width: 150px;
-  height: 150px;
-  border-radius: 8px;
-  object-fit: cover;
-  margin-right: 20px;
-}
+    .product-details img {
+      width: 150px;
+      height: 150px;
+      border-radius: 8px;
+      object-fit: cover;
+      margin-right: 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
 
-.product-info {
-  max-width: 600px;
-}
+    .product-info {
+      max-width: 600px;
+    }
 
-.product-info h4 {
-  font-size: 20px;
-  margin-bottom: 10px;
-  color: #333;
-}
+    .product-info h4 {
+      font-size: 20px;
+      margin-bottom: 10px;
+      color: #1e3a8a;
+    }
 
-.product-info p {
-  margin: 5px 0;
-}
+    .product-info p {
+      margin: 5px 0;
+    }
 
-.product-info .price {
-  font-size: 18px;
-  color: #0056b3;
-  font-weight: 600;
-}
+    .product-info .price {
+      font-size: 18px;
+      color: #1e3a8a;
+      font-weight: 600;
+    }
 
-.product-info .quantity {
-  font-size: 16px;
-  margin-top: 10px;
-}
+    .product-info .quantity {
+      font-size: 16px;
+      margin-top: 10px;
+    }
 
-/* Tracking Information Section */
-.tracking-progress {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: relative;
-  margin: 30px 0;
-  padding: 20px;
-  width: 80%;
-  margin: auto;
-}
+    /* Tracking Information Section */
+    .tracking-progress {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      margin: 30px 0;
+      padding: 20px;
+      width: 80%;
+      margin: auto;
+    }
 
-.tracking-step {
-  text-align: center;
-  flex: 1;
-  position: relative;
-}
+    .tracking-step {
+      text-align: center;
+      flex: 1;
+      position: relative;
+    }
 
-.tracking-step .circle {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background-color: #ccc;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  margin: 0 auto;
-  position: relative;
-  z-index: 2;
-}
+    .tracking-step .circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: #ccc;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      margin: 0 auto;
+      position: relative;
+      z-index: 2;
+    }
 
-/* Connector Line */
-.tracking-step::before {
-  content: "";
-  position: absolute;
-  width: 100%;
-  height: 4px;
-  background-color: #ccc;
-  top: 50%;
-  left: -50%;
-  z-index: 1;
-}
+    /* Connector Line */
+    .tracking-step::before {
+      content: "";
+      position: absolute;
+      width: 100%;
+      height: 4px;
+      background-color: #ccc;
+      top: 50%;
+      left: -50%;
+      z-index: 1;
+    }
 
-.tracking-step:first-child::before {
-  display: none;
-}
+    .tracking-step:first-child::before {
+      display: none;
+    }
 
-/* Highlight Completed Steps */
-.tracking-step.completed .circle {
-  background-color: #28a745;
-}
+    /* Highlight Completed Steps */
+    .tracking-step.completed .circle {
+      background-color: #28a745;
+    }
 
-.tracking-step.completed p {
-  font-weight: bold;
-  color: #28a745;
-}
+    .tracking-step.completed p {
+      font-weight: bold;
+      color: #28a745;
+    }
 
-.tracking-step.completed::before {
-  background-color: #28a745;
-}
-/* Highlight the current step */
-.tracking-step.current-step .circle {
-  background-color: #007bff; /* Blue for current step */
-  border: 2px solid #0056b3;
-  color: white;
-}
+    .tracking-step.completed::before {
+      background-color: #28a745;
+    }
 
-.tracking-step.current-step p {
-  font-weight: bold;
-  color: #007bff;
-}
+    /* Highlight the current step */
+    .tracking-step.current-step .circle {
+      background-color: #007bff;
+      border: 2px solid #0056b3;
+      color: white;
+    }
 
-/* Ensure the line before the current step is also green */
-.tracking-step.current-step::before {
-  background-color: #28a745;
-}
-/* Add border and color for the current step */
-.tracking-step.current-step .circle {
-  background-color: #f5f11d !important;  /* Make sure it's visible */
-  border: 3px solid #e4d718;
-  color: white;
-}
+    .tracking-step.current-step p {
+      font-weight: bold;
+      color: #007bff;
+    }
 
-.tracking-step.current-step p {
-  font-weight: bold;
-  color: #007bff !important;
-}
+    /* Ensure the line before the current step is also green */
+    .tracking-step.current-step::before {
+      background-color: #28a745;
+    }
 
-/* Ensure the connector line before current step is green */
-.tracking-step.current-step::before {
-  background-color: #28a745 !important;
-}
-/* Make future steps look like completed steps */
-.tracking-step.future-step .circle {
-  background-color: #28a745;  /* Green like completed */
-  color: white;
-}
+    /* Shipping Address Section */
+    .shipping-address {
+      background-color: #f8f9fa;
+      padding: 20px;
+      border-radius: 6px;
+      margin-top: 30px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
 
-.tracking-step.future-step p {
-  font-weight: bold;
-  color: #28a745;
-}
+    .shipping-address h3 {
+      color: #1e3a8a;
+    }
 
-.tracking-step.future-step::before {
-  background-color: #28a745;  /* Connector line also green */
-}
+    .shipping-address p {
+      font-size: 16px;
+      color: #555;
+    }
 
+    footer {
+      text-align: center;
+      padding: 20px;
+      background-color: #1e3a8a;
+      color: white;
+      font-size: 14px;
+      margin-top: 40px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
 
+    footer p {
+      margin: 0;
+    }
 
+    /* Buttons and Links */
+    button, a {
+      background-color: #1e3a8a;
+      color: white;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
 
+    button:hover, a:hover {
+      background-color: #1c2e5a;
+    }
 
-/* Shipping Address Section */
-.shipping-address {
-  background-color: #f8f9fa;
-  padding: 20px;
-  border-radius: 6px;
-  margin-top: 30px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
+    /* Refunded Orders Highlight */
+    .refunded {
+      background-color: #fee2e2;
+      color: #dc2626;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
 
-.shipping-address h3 {
-  color: #0056b3;
-}
+    /* Responsive Layout */
+    @media (max-width: 768px) {
+      .product-details {
+        flex-direction: column;
+        align-items: center;
+      }
 
-.shipping-address p {
-  font-size: 16px;
-  color: #555;
-}
+      .product-details .product {
+        flex-direction: column;
+        align-items: center;
+      }
 
-footer {
-  text-align: center;
-  padding: 20px;
-  background-color: #333;
-  color: white;
-  font-size: 14px;
-  margin-top: 40px;
-}
+      .product-details img {
+        margin-bottom: 15px;
+      }
 
-footer p {
-  margin: 0;
-}
+      .product-info {
+        text-align: center;
+      }
 
-/* Buttons and Links */
-button, a {
-  background-color: #0056b3;
-  color: white;
-  padding: 10px 20px;
-  font-size: 16px;
-  border: none;
-  border-radius: 6px;
-  text-decoration: none;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-button:hover, a:hover {
-  background-color: #004299;
-}
-
-/* Responsive Layout */
-@media (max-width: 768px) {
-  .product-details {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .product-details .product {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .product-details img {
-    margin-bottom: 15px;
-  }
-
-  .product-info {
-    text-align: center;
-  }
-
-  footer {
-    font-size: 12px;
-  }
-}
-</style>
+      footer {
+        font-size: 12px;
+      }
+    }
+  </style>
 </head>
 <body>
   <!-- Header Section -->
@@ -311,6 +295,7 @@ button:hover, a:hover {
     <p><strong>Status:</strong> <%= productItem.status %></p>
     <p><strong>Invoice Date:</strong> <%= order.invoiceDate.toDateString() %></p>
     <p><strong>Final Amount:</strong> ₹<%= order.finalAmount %></p>
+    <p><strong>Payment Method:</strong> <%= order.paymentInfo.method %></p>
 
     <!-- Product Information Section -->
     <div class="product-details">
@@ -319,12 +304,18 @@ button:hover, a:hover {
         <img src="/uploads/product-images/<%= productItem.product.productImage[0] %>" alt="Product Image">
         <div class="product-info">
           <h4><%= productItem.productName %></h4>
-          <p><strong>Category:</strong> <%= productItem.product.category.name%></p>
+          <p><strong>Category:</strong> <%= productItem.product.category.name %></p>
           <p><strong>Description:</strong> <%= productItem.product.description %></p>
           <p><strong>Color:</strong> <%= productItem.product.color %></p>
           <p class="quantity"><strong>Quantity:</strong> <%= productItem.quantity %></p>
-          <p class="price"><strong>Price per Item:</strong> ₹<%=productItem.price %></p>
+          <p class="price"><strong>Price per Item:</strong> ₹<%= productItem.price %></p>
           <p><strong>Total Price:</strong> ₹<%= order.totalPrice %></p>
+           <!-- Refunded Amount Section -->
+    <% if (productItem.refundAmount) { %>
+      <p id="refundAmount" class="price"><strong>Refunded Amount:</strong> ₹<%= productItem.refundAmount %></p>
+    <% } else { %>
+      <p id="refundAmount" class="price" style="display: none;"><strong>Refunded Amount:</strong> ₹0.00</p>
+    <% } %>
         </div>
       </div>
     </div>
@@ -335,8 +326,7 @@ button:hover, a:hover {
       <p>Your order has been shipped. You can expect delivery soon.</p>
     <% } else if (productItem.status === 'Delivered') { %>
       <p>Your order has been delivered. Thank you for shopping with us!</p>
-      <!-- <button class="btn btn-danger" onclick="requestReturn('<%= order.orderId %>')">Return Order</button> -->
-      <button class="btn btn-danger" onclick="requestReturnItem('<%= order.orderId %>','<%=productItem.product._id%>')">Return Order Item</button>
+      <button class="btn btn-danger" onclick="requestReturnItem('<%= order.orderId %>','<%= productItem.product._id %>')">Return Order Item</button>
     <% } %>
 
     <!-- Other Items in the Same Order Section -->
@@ -356,38 +346,22 @@ button:hover, a:hover {
       <button id="cancelOrderButton" class="btn btn-warning" onclick="cancelOrder('<%= order.orderId %>')">Cancel Order</button>
     <% } %>
 
-    
-      <p id="refundAmount"></p>
- 
-    
    
-
 
     <!-- Tracking Information Section -->
     <div class="tracking-info">
       <h3>Track Your Order</h3>
-      <!-- <p><strong class="status">Current Status:</strong> <%= order.status %></p> -->
-
-      
-
-      <!-- Order Tracking History (if available) -->
-     <!-- Order Tracking Progress -->
-     <div class="tracking-progress">
-    <% const statuses = ["Order Placed", "Processing","Cancelled", "Shipped", "Out for Delivery", "Delivered", "Return Requested", "Returned"]; %>
-    <% let currentIndex = order.trackingHistory.findIndex(entry => entry.status === productItem.status); %>
-    
-
-    <% statuses.forEach((step, index) => { %>
-        <div class="tracking-step <%= index <= currentIndex ? 'completed' : '' %> <%= index === currentIndex ? 'current-step' : '' %>
-          <%= index > currentIndex ? 'future-step' : '' %>">
-          
+      <div class="tracking-progress">
+        <% const statuses = ["Order Placed", "Processing", "Cancelled", "Shipped", "Out for Delivery", "Delivered", "Return Requested", "Returned"]; %>
+        <% let currentIndex = order.trackingHistory.findIndex(entry => entry.status === productItem.status); %>
+        <% statuses.forEach((step, index) => { %>
+          <div class="tracking-step <%= index <= currentIndex ? 'completed' : '' %> <%= index === currentIndex ? 'current-step' : '' %> <%= index > currentIndex ? 'future-step' : '' %>">
             <div class="circle"><%= index + 1 %></div>
             <p><%= step %></p>
-        </div>
-    <% }); %>
-</div>
-  
-
+          </div>
+        <% }); %>
+      </div>
+    </div>
 
     <!-- Shipping Address Section -->
     <% if (address) { %>
@@ -402,7 +376,7 @@ button:hover, a:hover {
           <strong>Pincode:</strong> <%= address.pincode %><br>
           <strong>Phone:</strong> <%= address.phone %><br>
           <strong>Alternate Phone:</strong> <%= address.altPhone %><br>
-      </div>
+        </div>
       </div>
     <% } else { %>
       <div class="shipping-address">
@@ -412,149 +386,141 @@ button:hover, a:hover {
     <% } %>
   </div>
 
+  
+
   <!-- Footer Section -->
   <footer>
     <p>&copy; 2025 Your Company Name. All Rights Reserved.</p>
   </footer>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
     function cancelOrder(orderId) {
-        Swal.fire({
-            title: "Are you sure?",
-            text: "Do you want to cancel this order?",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#d33",
-            cancelButtonColor: "#3085d6",
-            confirmButtonText: "Yes, cancel it!"
-        }).then((result) => {
-            if (result.isConfirmed) {
-                fetch(`/cancel-order/${orderId}`, {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json"
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    Swal.fire({
-                        title: "Cancelled!",
-                        text: data.message,
-                        icon: "success",
-                        confirmButtonText: "OK"
-                    }).then(() => {
-                      document.getElementById('cancelOrderButton').style.display = 'none';
-                      if (data.refundAmount !== undefined) {
-            document.getElementById('refundAmount').innerHTML = `<strong>Refunded Amount:</strong> ₹${data.refundAmount}`;
-        }
- 
-                        window.location.reload(); // Refresh to update status
-                    });
-                })
-                .catch(error => {
-                    Swal.fire({
-                        title: "Error!",
-                        text: "Something went wrong. Please try again.",
-                        icon: "error",
-                        confirmButtonText: "OK"
-                    });
-                });
+      Swal.fire({
+        title: "Are you sure?",
+        text: "Do you want to cancel this order?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, cancel it!"
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetch(`/cancel-order/${orderId}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json"
             }
-        });
+          })
+          .then(response => response.json())
+          .then(data => {
+            Swal.fire({
+              title: "Cancelled!",
+              text: data.message,
+              icon: "success",
+              confirmButtonText: "OK"
+            }).then(() => {
+              document.getElementById('cancelOrderButton').style.display = 'none';
+              if (data.refundAmount !== undefined) {
+            const refundElement = document.getElementById('refundAmount');
+            refundElement.innerHTML = `<strong>Refunded Amount:</strong> ₹${data.refundAmount.toFixed(2)}`;
+            refundElement.style.display = 'block'; 
+          }
+              window.location.reload(); 
+            });
+          })
+          .catch(error => {
+            Swal.fire({
+              title: "Error!",
+              text: "Something went wrong. Please try again.",
+              icon: "error",
+              confirmButtonText: "OK"
+            });
+          });
+        }
+      });
     }
 
-
-
-   function requestReturnItem(orderId, productId) {
-    Swal.fire({
+    function requestReturnItem(orderId, productId) {
+      Swal.fire({
         title: 'Return Order Item',
         text: 'Please select a reason for returning this item:',
         input: 'select',
         inputOptions: {
-            'Damaged Product': 'Damaged Product',
-            'Wrong Item Received': 'Wrong Item Received',
-            'Quality Issues': 'Quality Issues',
-            'Changed My Mind': 'Changed My Mind',
-            'Other': 'Other'
+          'Damaged Product': 'Damaged Product',
+          'Wrong Item Received': 'Wrong Item Received',
+          'Quality Issues': 'Quality Issues',
+          'Changed My Mind': 'Changed My Mind',
+          'Other': 'Other'
         },
         inputPlaceholder: 'Select a reason',
         showCancelButton: true,
         confirmButtonText: 'Next',
         cancelButtonText: 'Cancel',
         inputValidator: (value) => {
-            if (!value) {
-                return 'You need to select a reason!';
-            }
+          if (!value) {
+            return 'You need to select a reason!';
+          }
         }
-    }).then((result) => {
+      }).then((result) => {
         if (result.isConfirmed) {
-            let selectedReason = result.value;
+          let selectedReason = result.value;
 
-            if (selectedReason === 'Other') {
-                // If the user selects "Other," prompt them to specify the reason
-                Swal.fire({
-                    title: 'Specify Your Reason',
-                    input: 'text',
-                    inputPlaceholder: 'Enter reason here...',
-                    showCancelButton: true,
-                    confirmButtonText: 'Submit',
-                    cancelButtonText: 'Cancel',
-                    inputValidator: (value) => {
-                        if (!value) {
-                            return 'You need to provide a reason!';
-                        }
-                    }
-                }).then((textResult) => {
-                    if (textResult.isConfirmed) {
-                        // Send the return request with the custom reason
-                        sendReturnItemRequest(orderId, productId, textResult.value);
-                    }
-                });
-            } else {
-                // Send the return request with the selected reason
-                sendReturnItemRequest(orderId, productId, selectedReason);
-            }
+          if (selectedReason === 'Other') {
+            Swal.fire({
+              title: 'Specify Your Reason',
+              input: 'text',
+              inputPlaceholder: 'Enter reason here...',
+              showCancelButton: true,
+              confirmButtonText: 'Submit',
+              cancelButtonText: 'Cancel',
+              inputValidator: (value) => {
+                if (!value) {
+                  return 'You need to provide a reason!';
+                }
+              }
+            }).then((textResult) => {
+              if (textResult.isConfirmed) {
+                sendReturnItemRequest(orderId, productId, textResult.value);
+              }
+            });
+          } else {
+            sendReturnItemRequest(orderId, productId, selectedReason);
+          }
         }
-    });
-}
+      });
+    }
 
-function sendReturnItemRequest(orderId, productId, returnReason) {
-    fetch('/returnOrderItem', {
+    function sendReturnItemRequest(orderId, productId, returnReason) {
+      fetch('/returnOrderItem', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orderId, productId, returnReason })
-    })
-    .then(response => response.json())
-    .then(data => {
+      })
+      .then(response => response.json())
+      .then(data => {
         if (data.success) {
           let message = 'Your return request for this item has been submitted.';
-            
-            // Check if a refund was processed and add it to the message
-            if (data.refundAmount) {
-                message += ` A refund of ₹${data.refundAmount} has been credited to your wallet.`;
-            }
-            const refundElement = document.getElementById('refundAmount');
-                if (refundElement) {
-                    refundElement.innerHTML = `<strong>Refunded Amount:</strong> ₹${data.refundAmount}`;
-                }
-
-            Swal.fire('Return Requested', message, 'success')
-            .then(() => {
-                location.reload(); // Refresh the page to update the status
-            });
+          if (data.refundAmount) {
+            message += ` A refund of ₹${data.refundAmount} has been credited to your wallet.`;
+          }
+          const refundElement = document.getElementById('refundAmount');
+      if (refundElement && data.refundAmount !== undefined) {
+        refundElement.innerHTML = `<strong>Refunded Amount:</strong> ₹${data.refundAmount.toFixed(2)}`;
+        refundElement.style.display = 'block'; 
+      }
+          Swal.fire('Return Requested', message, 'success')
+          .then(() => {
+            location.reload(); 
+          });
         } else {
-            Swal.fire('Error', data.message || 'Something went wrong. Please try again.', 'error');
+          Swal.fire('Error', data.message || 'Something went wrong. Please try again.', 'error');
         }
-    })
-    
-    .catch(error => {
+      })
+      .catch(error => {
         Swal.fire('Error', 'Could not process the request.', 'error');
-    });
-}
-</script>
-
-
-
+      });
+    }
+  </script>
 </body>
 </html>

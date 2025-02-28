@@ -2,6 +2,7 @@ const Order = require("../../models/orderSchema");
 const Cart = require("../../models/cartSchema");
 const Product = require("../../models/productSchema");
 const Address = require("../../models/addressSchema");
+const Wallet = require("../../models/walletSchema");
 const User = require("../../models/userSchema");
 const { v4: uuidv4 } = require("uuid");
 
@@ -11,7 +12,7 @@ const getOrder = async (req, res) => {
     const sanitizedSearch = search.trim().replace(/[^a-zA-Z0-9 ]/g, "");
     const limitNum = Number(limit) || 5;
 
-    // Fetch orders and populate necessary fields
+    
     let orders = await Order.find({})
       .populate("user", "name email")
       .populate({
@@ -21,7 +22,7 @@ const getOrder = async (req, res) => {
       })
       .sort({ createdAt: -1 });
 
-    // Filter orders based on search query
+    
     if (sanitizedSearch) {
       orders = orders.filter((order) => {
         const userName = order.user?.name || "Unknown User";
@@ -35,7 +36,7 @@ const getOrder = async (req, res) => {
       });
     }
 
-    // Manually fetch shipping addresses
+    
     const ordersWithAddresses = await Promise.all(
       orders.map(async (order) => {
         if (order.shippingAddress) {
@@ -43,13 +44,13 @@ const getOrder = async (req, res) => {
           const addressDetails = await Address.findOne({ userId: order.user._id }).exec();
 
           if (addressDetails) {
-            console.log("Address Details Found:", addressDetails);
+            
             const address = addressDetails.address.find(
               (addr) => addr._id.toString() === order.shippingAddress.toString()
             );
 
             if (address) {
-              console.log("Matching Address Found:", address);
+              
               return { ...order.toObject(), shippingAddress: address };
             } else {
               console.log("No matching address found for shippingAddress ID:", order.shippingAddress);
@@ -64,7 +65,7 @@ const getOrder = async (req, res) => {
       })
     );
 
-    // Pagination logic
+    
     const totalOrders = ordersWithAddresses.length;
     const totalPages = Math.ceil(totalOrders / limitNum);
     const paginatedOrders = ordersWithAddresses.slice(
@@ -72,13 +73,12 @@ const getOrder = async (req, res) => {
       Number(page) * limitNum
     );
 
-    // Formatting dates
     for (let order of paginatedOrders) {
       order.formattedCreatedAt = new Date(order.createdAt).toLocaleDateString("en-GB");
       order.formattedInvoiceDate = new Date(order.invoiceDate).toLocaleDateString("en-GB");
     }
 
-    // Render the admin order page
+   
     res.render("admin-order", {
       activePage: "order",
       orders: paginatedOrders,
@@ -105,35 +105,35 @@ const updateOrderStatus = async (req, res) => {
           return res.json({ success: false, message: "Invalid request data" });
       }
 
-      // Find the order
+      
       const order = await Order.findOne({ orderId });
 
       if (!order) {
           return res.json({ success: false, message: "Order not found" });
       }
 
-      // Find the specific product inside orderItems
+    
       const orderItem = order.orderItems.find(item => item.product.toString() === productId);
 
       if (!orderItem) {
           return res.json({ success: false, message: "Product not found in the order" });
       }
 
-      // Prevent modification if already Delivered or Cancelled
+      
       if (orderItem.status === "Delivered" || orderItem.status === "Cancelled") {
           return res.json({ success: false, message: "Cannot modify Delivered or Cancelled items" });
       }
 
-      // Handle stock restoration on cancellation
+      
       if (status === "Cancelled") {
           const product = await Product.findById(productId);
           if (product) {
-              product.quantity += orderItem.quantity; // Restore stock
+              product.quantity += orderItem.quantity; 
               await product.save();
           }
       }
 
-      // Handle stock deduction on delivery
+      
       if (status === "Delivered") {
           const product = await Product.findById(productId);
           if (product) {
@@ -146,7 +146,7 @@ const updateOrderStatus = async (req, res) => {
           }
       }
 
-      // Update the product's status in the order
+     
       orderItem.status = status;
       await order.save();
 
@@ -173,7 +173,7 @@ const deleteOrder = async (req, res) => {
     res.status(200).json({ message: "Order deleted successfully" });
   } catch (error) {
     console.error("Error deleting order:", error);
-    //res.status(500).json({ message: "Internal server error" });
+    
     return res.redirect("/admin/pageerror");
   }
 };
@@ -183,7 +183,7 @@ const viewOrder = async (req, res) => {
     const { orderId, productId } = req.params;
     console.log("Fetching order details for:", orderId, "and product:", productId);
 
-    // Find the order by orderId and populate necessary fields
+    
     const order = await Order.findOne({ orderId: orderId})
             .populate("user")
             .populate({
@@ -196,36 +196,38 @@ const viewOrder = async (req, res) => {
       return res.redirect("/pageNotFound");
     }
 
-    // Fetch only the product matching the given productId
+    
     const productDetails = order.orderItems.find(item => item.product._id.toString() === productId);
 
     if (!productDetails) {
       return res.redirect("/pageNotFound");
     }
 
-    // Fetch shipping address
+  
     let address = null;
     if (order.shippingAddress) {
       address = await Address.findById(order.shippingAddress);
     }
 
-    // Get the invoice date or default to today
     const invoiceDate = order.invoiceDate ? new Date(order.invoiceDate) : new Date();
 
-    // Function to add days and format date as DD/MM/YYYY
+    
     const addDays = (date, days) => {
       let newDate = new Date(date);
       newDate.setDate(newDate.getDate() + days);
       return newDate.toLocaleDateString("en-GB");
     };
 
-    // Generate tracking history dynamically
+
     order.trackingHistory = [
       { date: addDays(invoiceDate, 0), status: "Order Placed" },
       { date: addDays(invoiceDate, 1), status: "Processing" },
-      { date: addDays(invoiceDate, 2), status: "Shipped" },
-      { date: addDays(invoiceDate, 3), status: "Out for Delivery" },
-      { date: addDays(invoiceDate, 4), status: "Delivered" },
+      { date: addDays(invoiceDate, 2), status: "Cancelled" },
+      { date: addDays(invoiceDate, 3), status: "Shipped" },
+      { date: addDays(invoiceDate, 4), status: "Out for Delivery" },
+      { date: addDays(invoiceDate, 5), status: "Delivered" },
+      { date: addDays(invoiceDate, 6), status: "Return Requested" },
+      { date: addDays(invoiceDate, 7), status: "Returned" },
     ];
 
     console.log("Order details:", order);
@@ -240,9 +242,84 @@ const viewOrder = async (req, res) => {
 
 
 
+const updateReturnStatus = async (req,res)=>{
+  const { orderId, productId, status } = req.body;
+  console.log("rquest body contains",req.body);
+
+  try {
+    const order = await Order.findOne({ orderId: orderId });
+    if (!order) {
+        return res.status(404).json({ success: false, message: "Order not found" });
+    }
+      const item = order.orderItems.find(item => item.product.toString() === productId);
+      console.log("item found",item);
+      if (status === "Approved") {
+        item.status = "Returned";
+    } else {
+        item.status = "Return Rejected";
+    }
+    item.returnStatus = status;
+      await order.save();
+
+      if (status === "Approved") {
+        let refundAmount = item.price* item.quantity;
+        console.log(refundAmount);
+
+        if (order.couponDiscount) {
+            const totalOrderPrice = order.orderItems.reduce((acc, item) => acc + (item.product.salePrice * item.quantity), 0);
+
+            if (order.orderItems.length === 1) {
+                refundAmount -= order.discount;
+            } else {
+                const productShare = refundAmount / totalOrderPrice;
+                const proportionalDiscount = order.discount * productShare;
+                refundAmount -= proportionalDiscount;
+            }
+        }
+
+        console.log("Refund amount calculated:", refundAmount);
+        item.refundAmount = refundAmount;
+        await order.save();
+        const userId = order.user;
+        let wallet = await Wallet.findOne({ userId });
+
+        if (!wallet) {
+            wallet = new Wallet({ userId, balance: 0, transactions: [] });
+        }
+
+        wallet.balance += refundAmount;
+        wallet.transactions.push({
+            amount: refundAmount,
+            type: 'refund',
+            description: `Refund for order ${orderId}, product ${productId}`
+        });
+
+        await wallet.save();
+        console.log("Wallet updated successfully");
+
+        
+        const product = await Product.findById(productId);
+        if (product) {
+            product.quantity += item.quantity;
+            await product.save();
+            console.log("Product quantity updated successfully");
+        }
+    }
+
+    res.json({ success: true });
+} catch (error) {
+    console.error("Error updating return status:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+}
+};
+
+
+
+
 module.exports = {
   getOrder,
   updateOrderStatus,
   deleteOrder,
   viewOrder,
+  updateReturnStatus
 };

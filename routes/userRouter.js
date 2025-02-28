@@ -25,8 +25,7 @@ router.get('/',userController.loadHomepage);
 //Product management
 router.get("/shop",userController.loadShoppingPage);
 router.get('/filter',userController.filterProduct);
-router.get('/filterPrice',userController.filterByPrice);
-router.get('/search',userController.searchProducts);
+
 router.get("/productDetails",productController.productDetails);
 //Wishlist Management
 router.get("/wishlist",userAuth,wishlistController.loadWishlist);
@@ -34,7 +33,7 @@ router.post("/addToWishlist",userAuth,wishlistController.addToWishlist);
 router.get("/removeFromWishlist",userAuth,wishlistController.removeProducts);
 //sortProduct
 //router.get("/sortProduct",userController.getSortProduct);
-router.get("/sortProducts",userController.sortProduct);
+
 //user management
 router.get('/signup',userController.loadSignUp);
 router.get('/login',userController.loadLogin);
@@ -107,6 +106,8 @@ router.post('/withdraw-money',userAuth,walletController.withdrawfromWallet);
 router.get('/referral',userAuth,profileController.getReferral);
 router.post('/send-referral',userAuth,profileController.sendReferral);
 
+
+router.get('/download-invoice/:orderId',userAuth,orderController.downloadInvoice);
 
 //logout
 router.get('/logout',userController.logout);

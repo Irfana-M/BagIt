@@ -230,7 +230,7 @@
 									<% order.orderItems.forEach(item => { %>
 										<tr>
 											<!-- Show Order ID for each product -->
-											<td><%= order._id %></td>
+											<td><%= order.orderId %></td>
 											<!-- Product Name -->
 											<td><%= item.product.productName %></td>
 											<!-- Product Price -->
@@ -415,9 +415,11 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                             .then(() => {
                                 location.reload(); // Refresh page to show updated status
                             });
-                    } else {
-                        Swal.fire("Error", "Failed to cancel the order.", "error");
-                    }
+						} else {
+    let jsonResponse = JSON.parse(response);
+    Swal.fire("Error", jsonResponse.message || "Failed to cancel the order.", "error");
+}
+
                 })
                 .catch(error => {
                     console.error("Error cancelling order:", error);
