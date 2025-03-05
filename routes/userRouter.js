@@ -93,6 +93,8 @@ router.post('/razorpay-verify',userAuth,orderController.verifyRazorpay);
 router.post('/cod-payment',userAuth,orderController.codPayment);
 router.post('/wallet-payment',userAuth,orderController.walletPayment);
 router.get('/payment-failure',userAuth,orderController.paymentFailure);
+router.post('/retry-razorpay-payment',userAuth,orderController.retryRazorpayPayment);
+router.post('/create-order',userAuth,orderController.createOrder)
 
 //return management
 router.post('/returnOrderItem',userAuth,orderController.returnOrder);

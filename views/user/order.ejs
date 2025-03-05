@@ -119,6 +119,50 @@
 				font-weight: bold;
 				margin: 0 10px;
 			}
+			.order-list {
+    width: 80%;
+    margin: auto;
+    text-align: center;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  th, td {
+    padding: 10px;
+    border: 1px solid #ddd;
+  }
+  th {
+    background-color: #f4f4f4;
+  }
+  .order-status, .payment-status {
+    padding: 5px 10px;
+    border-radius: 5px;
+    color: rgb(8, 8, 8);
+    font-weight: bold;
+  }
+  .pending {
+    background-color: orange;
+  }
+  .delivered {
+    background-color: green;
+  }
+  .failed {
+    background-color: red;
+  }
+  
+  .retry-btn {
+    background-color: #3498db;
+    color: rgb(6, 6, 6);
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  .retry-btn:hover {
+    background-color: #2980b9;
+  }
 
     </style>
 </head>
@@ -216,6 +260,7 @@
 								<th scope="col">Price</th>
 								<th scope="col">Delivery Date</th>
 								<th scope="col">Status</th>
+								<th scope="col">Payment Status</th>
 								<th scope="col">Product</th>
 								<th scope="col">Action</th>
 							</tr>
@@ -238,8 +283,25 @@
 											<!-- Delivery Date -->
 											<td><%= order.deliveryDate %></td>
 											<!-- Order Status -->
-											<td><%= item.status %></td>
-											<!-- Product Image -->
+											<td>
+												<span class="order-status <%= item.status.toLowerCase() %>">
+												  <%= item.status %>
+												</span>
+											  </td>
+											  <td>
+												<span class="payment-status <%= order.paymentInfo.status ? order.paymentInfo.status.toLowerCase() : '' %>">
+												  <%= order.paymentInfo.status || 'Unknown' %>
+												</span>
+												<span>
+													<% if (order.paymentInfo.status === 'Pending') { %>
+														<a href="#" class="retry-btn" data-order-id="<%= order._id %>">
+															Retry Payment
+														</a>
+													<% } %>
+												</span>
+											  </td>
+											  
+											  
 											<td>
 												<img src="uploads/product-images/<%= item.product.productImage[0] %>" alt="Product Image" width="50" height="50">
 											</td>
@@ -372,6 +434,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	<script src="js/main.js"></script> <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
    <script> 
     function confirmCancelOrder(orderId, productId) { 
         console.log("Order ID to cancel:", orderId);  
@@ -413,7 +476,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                     if (data.success) {
                         Swal.fire("Cancelled!", "Your order has been cancelled.", "success")
                             .then(() => {
-                                location.reload(); // Refresh page to show updated status
+                                location.reload(); 
                             });
 						} else {
     let jsonResponse = JSON.parse(response);
@@ -428,6 +491,88 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
             }
         });
     }
+
+
+
+	document.querySelectorAll('.retry-btn').forEach(button => {
+    button.addEventListener('click', async (event) => {
+        event.preventDefault();
+        const orderId = button.getAttribute('data-order-id');
+        console.log("Retry payment initiated for orderId:", orderId);
+
+        try {
+            const response = await fetch('/retry-razorpay-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orderId }),
+            });
+
+            const data = await response.json();
+            console.log("Retry payment response:", data);
+
+            if (!data.success) {
+                return swal.fire({
+                    title: "Error",
+                    text: data.message,
+                    icon: "error",
+                });
+            }
+
+            const options = {
+                key: data.key,
+                amount: data.amount,
+                currency: "INR",
+                name: "irfana",
+                description: "Test Payment",
+                order_id: data.razorpayOrderId,
+                handler: async function (response) {
+                    console.log("Payment success response:", response);
+
+                    const verifyResponse = await fetch("/razorpay-verify", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            payment_id: response.razorpay_payment_id,
+                            order_id: response.razorpay_order_id,
+                            signature: response.razorpay_signature,
+                            orderId, 
+                        }),
+                    });
+
+                    const verifyData = await verifyResponse.json();
+                    console.log("Payment verification response:", verifyData);
+
+                    if (verifyData.success) {
+						window.location.href = `/confirmation?orderId=${verifyData.orderId}`;
+					} else {
+                        swal.fire({
+                            title: "Error",
+                            text: verifyData.message || "Payment verification failed",
+                            icon: "error",
+                        });
+                    }
+                },
+                prefill: {
+                    name: "BAG IT",
+                    email: "admin@bagit.com",
+                    contact: "9078563467",
+                },
+                theme: { color: "#3399cc" },
+            };
+
+            const rzp = new Razorpay(options);
+            rzp.open();
+
+        } catch (error) {
+            console.error("Error in retrying Razorpay payment process:", error);
+            swal.fire({
+                title: "Error",
+                text: "Something went wrong. Please try again later.",
+                icon: "error",
+            });
+        }
+    });
+});
 </script>    
     
     

@@ -68,5 +68,8 @@ router.get("/deleteCoupon",adminAuth,couponController.deleteCoupon);
 router.get("/sales",adminAuth,adminController.generateReport);
 router.get("/sales/download-pdf", adminAuth, adminController.downloadPDF);
 router.get("/sales/download-excel", adminAuth, adminController.downloadExcel);
+router.get("/sales-report",adminAuth,adminController.salesReport);
+router.get("/best-selling-products",adminAuth,adminController.bestSellingProducts);
+router.get("/best-selling-categories",adminAuth,adminController.getTopSellingCategories)
 
 module.exports = router;

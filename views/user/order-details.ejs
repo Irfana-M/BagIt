@@ -310,6 +310,7 @@
           <p class="quantity"><strong>Quantity:</strong> <%= productItem.quantity %></p>
           <p class="price"><strong>Price per Item:</strong> ₹<%= productItem.price %></p>
           <p><strong>Total Price:</strong> ₹<%= order.totalPrice %></p>
+          <p><strong>Payment Status:</strong> ₹<%= order.paymentInfo.status %></p>
            <!-- Refunded Amount Section -->
     <% if (productItem.refundAmount) { %>
       <p id="refundAmount" class="price"><strong>Refunded Amount:</strong> ₹<%= productItem.refundAmount %></p>
@@ -362,6 +363,9 @@
         <% }); %>
       </div>
     </div>
+<!-- Download Invoice Button -->
+<button id="downloadInvoice">Download Invoice</button>
+
 
     <!-- Shipping Address Section -->
     <% if (address) { %>
@@ -521,6 +525,13 @@
         Swal.fire('Error', 'Could not process the request.', 'error');
       });
     }
+
+
+    document.getElementById('downloadInvoice').addEventListener('click', () => {
+    const orderId = "<%= order.orderId %>"; // Ensure this is passed dynamically
+    window.location.href = `/download-invoice/${orderId}`;
+});
+
   </script>
 </body>
 </html>

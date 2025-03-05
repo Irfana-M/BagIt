@@ -21,6 +21,14 @@ const orderSchema = new Schema(
           ref: "Product",
           required: true
         },
+        productName: { 
+          type: String,
+          required: true
+        },
+        productImage: { 
+          type: String,
+          required: true
+        },
         quantity: {
           type: Number,
           required: true,
@@ -79,6 +87,11 @@ const orderSchema = new Schema(
       isPaid: {
         type: Boolean,
         default: false
+      },
+      status:{
+        type: String,
+        enum: ["Pending","Success","Failed"],
+        default: "Pending"
       },
       paidAt: {
         type: Date

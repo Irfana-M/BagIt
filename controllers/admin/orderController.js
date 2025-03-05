@@ -279,6 +279,7 @@ const updateReturnStatus = async (req,res)=>{
 
         console.log("Refund amount calculated:", refundAmount);
         item.refundAmount = refundAmount;
+        
         await order.save();
         const userId = order.user;
         let wallet = await Wallet.findOne({ userId });

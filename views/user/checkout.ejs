@@ -675,14 +675,14 @@ console.log("Selected Address ID:", selectedAddress.value);
     }
 }
 
-async function handleRazorpayPayment(amount, addressId, cartItems) {
+async function handleRazorpayPayment(amount, addressId, cartItems, withPayment = true) {
     console.log("1 - Initiating Razorpay payment");
 
     try {
         const response = await fetch("/razorpay-payment", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ addressId, totalPrice: amount, cartItems }),
+            body: JSON.stringify({ addressId, totalPrice: amount, cartItems, withPayment, initiateOnly: true }),
         });
 
         const data = await response.json();
@@ -696,13 +696,18 @@ async function handleRazorpayPayment(amount, addressId, cartItems) {
             });
         }
 
+        if (!withPayment) {
+            window.location.href = `/confirmation?cartItems=${encodeURIComponent(JSON.stringify(cartItems))}&totalPrice=${amount}&addressId=${addressId}&paymentMethod=Online Payment&paymentStatus=Pending&isPaid=false`;
+            return;
+        }
+
         const options = {
-            key: data.key, 
+            key: data.key,
             amount: data.amount,
             currency: "INR",
-            name: "irfana",
+            name: "Irfana",
             description: "Test Payment",
-            order_id: data.razorpayOrderId, 
+            order_id: data.razorpayOrderId,
             handler: async function (response) {
                 console.log("3 - Payment success response:", response);
 
@@ -713,8 +718,9 @@ async function handleRazorpayPayment(amount, addressId, cartItems) {
                         payment_id: response.razorpay_payment_id,
                         order_id: response.razorpay_order_id,
                         signature: response.razorpay_signature,
-                        orderId: data.orderid,
-                        addressId: addressId, 
+                        addressId: addressId,
+                        cartItems: cartItems,
+                        totalPrice: amount,
                     }),
                 });
 
@@ -727,7 +733,7 @@ async function handleRazorpayPayment(amount, addressId, cartItems) {
                         text: "Payment successfully completed",
                         icon: "success",
                     });
-                    window.location.href = verifyData.redirectUrl ||  `/confirmation?cartItems=${encodeURIComponent(JSON.stringify(cartItems))}&totalPrice=${amount}&addressId=${addressId}&paymentMethod=Online Payment`;
+                    window.location.href = verifyData.redirectUrl || `/confirmation?cartItems=${encodeURIComponent(JSON.stringify(cartItems))}&totalPrice=${amount}&addressId=${addressId}&paymentMethod=Online Payment&paymentStatus=Success&isPaid=true&orderId=${verifyData.orderId}`;
                 } else {
                     swal.fire({
                         title: "Error",
@@ -742,6 +748,64 @@ async function handleRazorpayPayment(amount, addressId, cartItems) {
                 contact: "9078563467",
             },
             theme: { color: "#3399cc" },
+            modal: {
+                ondismiss: function () {
+                    console.log("6 - Razorpay payment window closed by user");
+
+                    swal.fire({
+                        title: "Payment Incomplete",
+                        text: "You closed the payment window. What would you like to do?",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonText: "Continue Payment",
+                        cancelButtonText: "Cancel Order",
+                        showDenyButton: true,
+                        denyButtonText: "Place Order",
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            console.log("User chose to continue payment");
+                            handleRazorpayPayment(amount, addressId, cartItems);
+                        } else if (result.isDenied) {
+                            console.log("User marked order as placed without payment");
+                            fetch("/create-order", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                    addressId,
+                                    totalPrice: amount,
+                                    cartItems,
+                                    paymentMethod: "Online Payment",
+                                    paymentStatus: "Pending",
+                                    
+                                }),
+                            })
+                                .then((response) => response.json())
+                                .then((data) => {
+                                    if (data.success) {
+                                        window.location.href = `/orders`;
+                                    } else {
+                                        swal.fire({
+                                            title: "Error",
+                                            text: data.message || "Failed to place order",
+                                            icon: "error",
+                                        });
+                                    }
+                                })
+                                .catch((error) => {
+                                    console.error("Error creating order:", error);
+                                    swal.fire({
+                                        title: "Error",
+                                        text: "Something went wrong while placing the order.",
+                                        icon: "error",
+                                    });
+                                });
+                        } else {
+                            console.log("User canceled the order");
+                            window.location.href = "/checkout"; 
+                        }
+                    });
+                },
+            },
         };
 
         console.log("5 - Razorpay options:", options);
@@ -757,9 +821,16 @@ async function handleRazorpayPayment(amount, addressId, cartItems) {
     }
 }
 
+
+
+
 function handleCashOnDelivery(amount, addressId, cartItems) {
     if (!amount || !addressId || !cartItems || cartItems.length === 0) {
-        alert("Invalid order details. Please check your cart and address.");
+        Swal.fire({
+            icon: "error",
+            title: "Invalid Order Details",
+            text: "Please check your cart and address.",
+        });
         return;
     }
 
@@ -769,22 +840,41 @@ function handleCashOnDelivery(amount, addressId, cartItems) {
         body: JSON.stringify({ addressId, totalPrice: amount, cartItems }),
     })
     .then((res) => {
-        if (!res.ok) {
-            throw new Error(`HTTP error! Status: ${res.status}`);
-        }
-        return res.json();
-    })
+    if (!res.ok) {
+        return res.json().then((errData) => {
+            throw new Error(errData.message || `HTTP error! Status: ${res.status}`);
+        });
+    }
+    return res.json();
+})
+
     .then((data) => {
         if (data.success) {
-            window.location.href = `/confirmation?cartItems=${encodeURIComponent(JSON.stringify(cartItems))}&totalPrice=${amount}&addressId=${addressId}&paymentMethod=Cash on Delivery`;
+            Swal.fire({
+                icon: "success",
+                title: "Order Placed Successfully!",
+                text: "Your cash-on-delivery order has been placed.",
+                confirmButtonText: "OK",
+            }).then(() => {
+                window.location.href = `/confirmation?cartItems=${encodeURIComponent(JSON.stringify(cartItems))}&totalPrice=${amount}&addressId=${addressId}&paymentMethod=Cash on Delivery&paymentStatus=Success`;
+            });
         } else {
-            alert(data.message || "Failed to place COD order.");
+            Swal.fire({
+                icon: "error",
+                title: "Order Failed",
+                text: data.message || "Failed to place COD order.",
+            });
         }
     })
     .catch((err) => {
-        console.error("COD Payment Error:", err);
-        alert("Something went wrong. Please try again later.");
+    console.error("COD Payment Error:", err);
+    Swal.fire({
+        icon: "error",
+        title: "Order Failed",
+        text: err.message || "Something went wrong. Please try again.",
     });
+});
+
 }
 
 
@@ -810,7 +900,7 @@ function handleWalletPayment(amount, addressId, cartItems) {
                 icon: "success",
                 confirmButtonText: "OK"
             }).then(() => {
-                window.location.href = `/confirmation?cartItems=${encodeURIComponent(JSON.stringify(cartItems))}&totalPrice=${amount}&addressId=${addressId}`;
+                window.location.href = `/confirmation?cartItems=${encodeURIComponent(JSON.stringify(cartItems))}&totalPrice=${amount}&addressId=${addressId}&paymentMethod=Wallet&paymentStatus=Success`;
             });
         } else {
             Swal.fire("Error", data.message || "Wallet payment failed.", "error");
