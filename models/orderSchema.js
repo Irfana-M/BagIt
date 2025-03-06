@@ -23,11 +23,11 @@ const orderSchema = new Schema(
         },
         productName: { 
           type: String,
-          required: true
+          
         },
         productImage: { 
           type: String,
-          required: true
+          
         },
         quantity: {
           type: Number,

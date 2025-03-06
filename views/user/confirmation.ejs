@@ -248,6 +248,7 @@
             <div class="row order_d_inner">
                 <div class="col-lg-6 display-flex align-content-center ">
                     <div class="details_item">
+                        <% if (selectedAddress) { %>
                         <h4 style="color: #00bcd4;">Shipping Address</h4>
                         <ul class="list">
                             <li><a href="#"><span>Address Type</span>: <%= selectedAddress.addressType %></a></li>
@@ -258,6 +259,9 @@
                             <li><a href="#"><span>Phone</span>: <%= selectedAddress.phone %></a></li>
                             <li><a href="#"><span>Alternate Phone</span>: <%= selectedAddress.altPhone %></a></li>
                         </ul>
+                        <% } else { %>
+                            <p>No shipping address available.</p>
+                        <% } %>
                     </div>
                 </div>
                 <div class="col-lg-6">

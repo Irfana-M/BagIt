@@ -29,7 +29,7 @@ const addProducts = async (req, res) => {
         if (!productExists) {
             const images = [];
 
-            //crop image
+            
 
             if (req.files && req.files.length > 0) {
                 ensureUploadDirExists(path.join(__dirname, "..", "..", "public", "uploads", "product-images"));
@@ -38,24 +38,24 @@ const addProducts = async (req, res) => {
                     const originalImagePath = req.files[i].path;
                     const resizedImagePath = path.join("public", "uploads", "product-images", req.files[i].filename);
                     
-                    // Check if the image has a wider aspect (fix height and crop width) or a taller aspect (fix width and crop height)
+                    
                     const image = sharp(originalImagePath);
                     const metadata = await image.metadata();
             
-                    // Conditionally apply resizing and cropping based on the aspect ratio
+                    
                     if (metadata.width > metadata.height) {
-                        // Fix width to 440px, crop height
+                        
                         await image.resize({
-                            width: 440, // Fix width to 440px
-                            fit: 'cover', // Crop height
-                            position: 'center' // Crop vertically from the center
+                            width: 440, 
+                            fit: 'cover', 
+                            position: 'center' 
                         }).toFile(resizedImagePath);
                     } else {
-                        // Fix height to 440px, crop width
+                        
                         await image.resize({
-                            height: 440, // Fix height to 440px
-                            fit: 'cover', // Crop width
-                            position: 'center' // Crop horizontally from the center
+                            height: 440, 
+                            fit: 'cover', 
+                            position: 'center' 
                         }).toFile(resizedImagePath);
                     }
             

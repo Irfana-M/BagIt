@@ -31,12 +31,20 @@ const getOrder = async (req, res) => {
         const ordersWithDeliveryDate = orders.map(order => {
             const deliveryDate = new Date(order.createdAt); 
             deliveryDate.setDate(deliveryDate.getDate() + deliveryDays);
+
+          
+            const day = String(deliveryDate.getDate()).padStart(2, '0'); 
+            const month = String(deliveryDate.getMonth() + 1).padStart(2, '0'); 
+            const year = deliveryDate.getFullYear();
+
+            
+            const formattedDeliveryDate = `${day}/${month}/${year}`;
+
             return {
                 ...order.toObject(), 
-                deliveryDate: deliveryDate.toISOString().split('T')[0] 
+                deliveryDate: formattedDeliveryDate 
             };
         });
-
         res.render('order', {
             orders: ordersWithDeliveryDate,
             currentPage: page,
@@ -48,6 +56,8 @@ const getOrder = async (req, res) => {
         res.redirect("/pageNotFound");
     }
 };
+
+
 
 const cancelOrderItem = async (req, res) => {
     try {
@@ -406,8 +416,8 @@ const razorpayPayment = async (req, res) => {
 
             return {
                 product: item.productId._id,
-                productName: product.productName, 
-                productImage: product.productImage,
+                productName: product.productName || null, 
+                productImage: product.productImage?.[0] || null,
                 quantity: item.quantity,
                 price: item.productId.salePrice,
             };
@@ -565,8 +575,8 @@ const verifyRazorpay = async (req, res) => {
     
                 return {
                     product: item.productId._id,
-                    productName: product.productName, 
-                    productImage: product.productImage,
+                    productName: product.productName || null, 
+                    productImage: product.productImage?.[0] || null,
                     quantity: item.quantity,
                     price: item.productId.salePrice,
                     status: "Processing"
@@ -684,8 +694,8 @@ const createOrder = async (req, res) => {
 
             return {
                 product: item.productId._id,
-                productName: product.productName, 
-                productImage: product.productImage,
+                productName : product.productName || null,
+                productImage : product.productImage?.[0] || null,
                 quantity: item.quantity,
                 price: item.productId.salePrice,
             };
@@ -816,8 +826,8 @@ const walletPayment = async (req, res) => {
 
             return {
                 product: item.productId._id,
-                productName: product.name, // Add product name
-                productImage: product.imageUrl, // Add product image URL
+                productName: product.productName || null, 
+                productImage: product.productImage?.[0] || null,
                 quantity: item.quantity,
                 price: item.productId.salePrice,
                 status: "Processing",
@@ -927,8 +937,8 @@ const codPayment = async (req, res) => {
 
             return {
                 product: item.productId._id,
-                productName: product.name, 
-                productImage: product.imageUrl, 
+                productName: product.productName || null, 
+                productImage: product.productImage?.[0] || null, 
                 quantity: item.quantity,
                 price: item.productId.salePrice,
                 status: "Order Placed",

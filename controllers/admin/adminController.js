@@ -41,40 +41,42 @@ const login = async (req, res) => {
   }
 };
 
+
+
 const loadDashboard = async (req, res) => {
   if (!req.session.admin) {
     return res.redirect("/admin/login");
   }
 
   try {
-    // 1. Get total counts for Users, Products, and Orders
+    
     const [totalUsers, totalProducts, totalOrders] = await Promise.all([
       User.countDocuments(),
       Product.countDocuments(),
       Order.countDocuments(),
     ]);
 
-    // 2. Aggregate sales metrics for items that are not Cancelled or Returned
+    
     const salesMetrics = await Order.aggregate([
-      // Unwind orderItems to process each item individually
+      
       { $unwind: "$orderItems" },
-      // Exclude Cancelled or Returned items
+     
       { $match: { "orderItems.status": { $nin: ["Cancelled", "Returned"] } } },
-      // Group to calculate all metrics
+      
       {
         $group: {
           _id: null,
-          salesCount: { $sum: 1 }, // Count of non-cancelled/non-returned items
-          overallRevenue: { $sum: "$finalAmount" }, // Sum of finalAmount (adjusted below)
-          overallDiscount: { $sum: "$discount" }, // Sum of discount (adjusted below)
+          salesCount: { $sum: 1 }, 
+          overallRevenue: { $sum: "$finalAmount" }, 
+          overallDiscount: { $sum: "$discount" }, 
           overallOrderAmount: {
-            $sum: { $multiply: ["$orderItems.price", "$orderItems.quantity"] }, // Sum of price * quantity
+            $sum: { $multiply: ["$orderItems.price", "$orderItems.quantity"] }, 
           },
         },
       },
     ]);
 
-    // Extract values from aggregation, default to 0 if no data
+    
     const {
       salesCount = 0,
       overallRevenue = 0,
@@ -82,12 +84,13 @@ const loadDashboard = async (req, res) => {
       overallOrderAmount = 0,
     } = salesMetrics.length > 0 ? salesMetrics[0] : {};
 
-    // 3. Fetch sales data for the table (all orders, not filtered here)
+    
     const salesData = await Order.find()
-      .select("orderId totalPrice discount couponApplied finalAmount")
+      .select("orderId totalPrice discount couponApplied finalAmount createdAt")
       .populate("user", "name");
+      
 
-    // 4. Render the dashboard
+    
     res.render("dashboard", {
       activePage: "dashboard",
       totalUsers,
@@ -185,159 +188,229 @@ const generateReport = async (req, res) => {
 
 
 const downloadPDF = async (req, res) => {
-    try {
-        const { filter, start, end } = req.query;
-        let query = { "orderItems.status": { $nin: ["Delivered", "Cancelled"] } };
-        if (filter === "today") {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            query.createdAt = { $gte: today };
-        } else if (filter === "week") {
-            const lastWeek = new Date();
-            lastWeek.setDate(lastWeek.getDate() - 7);
-            query.createdAt = { $gte: lastWeek };
-        } else if (filter === "month") {
-            const lastMonth = new Date();
-            lastMonth.setMonth(lastMonth.getMonth() - 1);
-            query.createdAt = { $gte: lastMonth };
-        } else if (filter === "custom" && start && end) {
-            query.createdAt = { $gte: new Date(start), $lte: new Date(end) };
-        }
+  try {
+      const { filter, start, end } = req.query;
+      let query = { "orderItems.status": { $nin: ["Delivered", "Cancelled"] } };
 
-        const salesData = await Order.find(query)
-            .select("orderId totalPrice discount couponApplied finalAmount")
-            .populate("user", "name");
+      if (filter === "today") {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          query.createdAt = { $gte: today };
+      } else if (filter === "week") {
+          const lastWeek = new Date();
+          lastWeek.setDate(lastWeek.getDate() - 7);
+          query.createdAt = { $gte: lastWeek };
+      } else if (filter === "month") {
+          const lastMonth = new Date();
+          lastMonth.setMonth(lastMonth.getMonth() - 1);
+          query.createdAt = { $gte: lastMonth };
+      } else if (filter === "custom" && start && end) {
+          query.createdAt = { $gte: new Date(start), $lte: new Date(end) };
+      }
 
-        const doc = new PDFDocument({ margin: 50 });
+      const salesData = await Order.find(query)
+          .select("orderId totalPrice discount couponApplied finalAmount")
+          .populate("user", "name");
 
-        let buffers = [];
-        doc.on('data', buffers.push.bind(buffers));
-        doc.on('end', () => {
-            let pdfData = Buffer.concat(buffers);
-            res.setHeader('Content-disposition', 'attachment; filename=sales-report.pdf');
-            res.setHeader('Content-type', 'application/pdf');
-            res.end(pdfData);
-        });
+      const { totalUsers, totalProducts, totalOrders, salesCount, overallRevenue, overallDiscount } = await loadDashboardData();
 
-        
-        doc.fontSize(22).text('Sales Report', { align: 'center', underline: true });
-        doc.moveDown();
-        doc.fontSize(12).text(`Date: ${new Date().toLocaleDateString()}`, { align: 'left' });
-        doc.moveDown(1);
+      const doc = new PDFDocument({ margin: 50 });
+      let buffers = [];
+      doc.on('data', buffers.push.bind(buffers));
+      doc.on('end', () => {
+          let pdfData = Buffer.concat(buffers);
+          res.setHeader('Content-disposition', 'attachment; filename=sales-report.pdf');
+          res.setHeader('Content-type', 'application/pdf');
+          res.end(pdfData);
+      });
 
-        
-       
-        const columnWidths = {
-            orderId: 200,  
-            customer: 100, 
-            total: 80,
-            discount: 80,
-            final: 80
-        };
+      const drawTableHeaders = (doc, headers, columnWidths, startX, startY) => {
+          doc.font("Helvetica-Bold").fontSize(10);
+          headers.forEach((header, i) => {
+              doc.text(header, startX + columnWidths.slice(0, i).reduce((a, b) => a + b, 0), startY, {
+                  width: columnWidths[i],
+                  align: 'center'
+              });
+          });
+          doc.moveDown(0.5);
+          doc.moveTo(startX, doc.y).lineTo(550, doc.y).stroke();
+      };
 
-        const tableStartX = 50; 
-        const tableTop = doc.y + 20; 
-        
-        
-        doc.fontSize(10).font("Helvetica-Bold");
-        doc.text("Order ID", tableStartX, tableTop, { width: columnWidths.orderId });
-        doc.text("Customer Name", tableStartX + columnWidths.orderId, tableTop, { width: columnWidths.customer });
-        doc.text("Total Price", tableStartX + columnWidths.orderId + columnWidths.customer, tableTop, { width: columnWidths.total });
-        doc.text("Discount", tableStartX + columnWidths.orderId + columnWidths.customer + columnWidths.total, tableTop, { width: columnWidths.discount });
-        doc.text("Order Amount", tableStartX + columnWidths.orderId + columnWidths.customer + columnWidths.total + columnWidths.discount, tableTop, { width: columnWidths.final });
-        
-        doc.moveDown(1);
-        
-        
-        doc.font("Helvetica").fontSize(10);
-        salesData.forEach(data => {
-            let y = doc.y; 
-            doc.text(data.orderId, tableStartX, y, { width: columnWidths.orderId, ellipsis: true });
-            doc.text(data.user.name, tableStartX + columnWidths.orderId, y, { width: columnWidths.customer, ellipsis: true });
-            doc.text(`₹${data.totalPrice}`, tableStartX + columnWidths.orderId + columnWidths.customer, y, { width: columnWidths.total });
-            doc.text(`₹${data.discount}`, tableStartX + columnWidths.orderId + columnWidths.customer + columnWidths.total, y, { width: columnWidths.discount });
-            doc.text(`₹${data.finalAmount}`, tableStartX + columnWidths.orderId + columnWidths.customer + columnWidths.total + columnWidths.discount, y, { width: columnWidths.final });
-        
-            doc.moveDown(0.5); 
-        });
-        doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke(); 
+      doc.fontSize(22).text('Sales Report', { align: 'center', underline: true });
+      doc.moveDown();
+      doc.fontSize(12).text(`Date: ${new Date().toLocaleDateString()}`, { align: 'left' });
+      doc.moveDown(1);
 
-        
-        doc.fontSize(10).text('Generated by BAG IT', 50, doc.y + 20, { align: 'left', italic: true });
-        doc.text(`Page 1 of 1`, 500, doc.y + 20, { align: 'right' });
+      const headers = ['Order ID', 'Customer', 'Total Price', 'Discount', 'Final Amount'];
+      const columnWidths = [120, 120, 80, 80, 80];
+      const startX = 50;
+      let startY = doc.y + 20;
 
-        doc.end();
-    } catch (error) {
-        console.error("Error generating PDF:", error);
-        res.status(500).send("Error generating PDF");
-    }
+      drawTableHeaders(doc, headers, columnWidths, startX, startY);
+
+      doc.font("Helvetica").fontSize(10);
+      salesData.forEach((data) => {
+          if (doc.y > 700) { 
+              doc.addPage();
+              startY = 50; 
+              drawTableHeaders(doc, headers, columnWidths, startX, startY); 
+              doc.moveDown(1);
+          }
+
+          startY = doc.y + 5;
+          const row = [
+              data.orderId,
+              data.user.name,
+              `₹${data.totalPrice}`,
+              `₹${data.discount}`,
+              `₹${data.finalAmount}`
+          ];
+          row.forEach((text, i) => {
+              doc.text(text, startX + columnWidths.slice(0, i).reduce((a, b) => a + b, 0), startY, {
+                  width: columnWidths[i],
+                  align: 'center'
+              });
+          });
+          doc.moveDown(0.5);
+      });
+
+      doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke();
+      doc.moveDown(1);
+
+      doc.fontSize(12).text('Summary', { underline: true });
+      doc.fontSize(10);
+      doc.text(`Total Users: ${totalUsers}`);
+      doc.text(`Total Products: ${totalProducts}`);
+      doc.text(`Total Orders: ${totalOrders}`);
+      doc.text(`Total Sales Count: ${salesCount}`);
+      doc.text(`Total Revenue: ₹${overallRevenue}`);
+      doc.text(`Total Discount: ₹${overallDiscount}`);
+      doc.moveDown(2);
+
+      doc.fontSize(10).text('Generated by BAG IT', 50, doc.y + 20, { align: 'left', italic: true });
+      doc.text(`Page 1 of 1`, 500, doc.y + 20, { align: 'right' });
+
+      doc.end();
+  } catch (error) {
+      console.error("Error generating PDF:", error);
+      res.status(500).send("Error generating PDF");
+  }
 };
+
+const loadDashboardData = async () => {
+  const [totalUsers, totalProducts, totalOrders] = await Promise.all([
+      User.countDocuments(),
+      Product.countDocuments(),
+      Order.countDocuments()
+  ]);
+  const salesMetrics = await Order.aggregate([
+      { $unwind: "$orderItems" },
+      { $match: { "orderItems.status": { $nin: ["Cancelled", "Returned"] } } },
+      {
+          $group: {
+              _id: null,
+              salesCount: { $sum: 1 },
+              overallRevenue: { $sum: "$finalAmount" },
+              overallDiscount: { $sum: "$discount" }
+          }
+      }
+  ]);
+  return {
+      totalUsers,
+      totalProducts,
+      totalOrders,
+      salesCount: salesMetrics[0]?.salesCount || 0,
+      overallRevenue: salesMetrics[0]?.overallRevenue || 0,
+      overallDiscount: salesMetrics[0]?.overallDiscount || 0
+  };
+};
+
+
 
 
 const downloadExcel = async (req, res) => {
-    try {
-        const { filter, start, end } = req.query;
-        let query = { "orderItems.status": { $nin: ["Delivered", "Cancelled"] } };
+  try {
+      const { filter, start, end } = req.query;
+      let query = { "orderItems.status": { $nin: ["Delivered", "Cancelled"] } };
+      if (filter === "today") {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          query.createdAt = { $gte: today };
+      } else if (filter === "week") {
+          const lastWeek = new Date();
+          lastWeek.setDate(lastWeek.getDate() - 7);
+          query.createdAt = { $gte: lastWeek };
+      } else if (filter === "month") {
+          const lastMonth = new Date();
+          lastMonth.setMonth(lastMonth.getMonth() - 1);
+          query.createdAt = { $gte: lastMonth };
+      } else if (filter === "custom" && start && end) {
+          query.createdAt = { $gte: new Date(start), $lte: new Date(end) };
+      }
 
-        if (filter === "today") {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            query.createdAt = { $gte: today };
-        } else if (filter === "week") {
-            const lastWeek = new Date();
-            lastWeek.setDate(lastWeek.getDate() - 7);
-            query.createdAt = { $gte: lastWeek };
-        } else if (filter === "month") {
-            const lastMonth = new Date();
-            lastMonth.setMonth(lastMonth.getMonth() - 1);
-            query.createdAt = { $gte: lastMonth };
-        } else if (filter === "custom" && start && end) {
-            query.createdAt = { $gte: new Date(start), $lte: new Date(end) };
-        }
+      const [salesData, totalUsers, totalProducts, totalOrders, salesMetrics] = await Promise.all([
+          Order.find(query)
+              .select("orderId totalPrice discount couponApplied finalAmount")
+              .populate("user", "name"),
+          User.countDocuments(),
+          Product.countDocuments(),
+          Order.countDocuments(),
+          Order.aggregate([
+              { $unwind: "$orderItems" },
+              { $match: { "orderItems.status": { $nin: ["Cancelled", "Returned"] } } },
+              {
+                  $group: {
+                      _id: null,
+                      salesCount: { $sum: 1 },
+                      overallRevenue: { $sum: "$finalAmount" },
+                      overallDiscount: { $sum: "$discount" },
+                  },
+              },
+          ]),
+      ]);
 
-        const salesData = await Order.find(query)
-            .select("orderId totalPrice discount couponApplied finalAmount")
-            .populate("user", "name");
+      const { salesCount = 0, overallRevenue = 0, overallDiscount = 0 } = salesMetrics.length > 0 ? salesMetrics[0] : {};
 
-        const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet('Sales Report');
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Sales Report');
 
-        
-        worksheet.columns = [
-            { header: 'Order ID', key: 'orderId', width: 15 },
-            { header: 'Customer Name', key: 'customerName', width: 20 },
-            { header: 'Total Price', key: 'totalPrice', width: 15 },
-            { header: 'Discount', key: 'discount', width: 15 },
-            { header: 'Order Amount', key: 'orderAmount', width: 15 },
-        ];
+      worksheet.columns = [
+          { header: 'Order ID', key: 'orderId', width: 15 },
+          { header: 'Customer Name', key: 'customerName', width: 20 },
+          { header: 'Total Price', key: 'totalPrice', width: 15 },
+          { header: 'Discount', key: 'discount', width: 15 },
+          { header: 'Order Amount', key: 'orderAmount', width: 15 },
+      ];
 
-        
-        salesData.forEach(data => {
-            worksheet.addRow({
-                orderId: data.orderId,
-                customerName: data.user.name,
-                totalPrice: `₹${data.totalPrice}`,
-                discount: `₹${data.discount}`,
-                orderAmount: `₹${data.finalAmount}`,
-            });
-        });
+      salesData.forEach(data => {
+          worksheet.addRow({
+              orderId: data.orderId,
+              customerName: data.user.name,
+              totalPrice: `₹${data.totalPrice}`,
+              discount: `₹${data.discount}`,
+              orderAmount: `₹${data.finalAmount}`,
+          });
+      });
 
-        
-        worksheet.getRow(1).font = { bold: true };
-        worksheet.getRow(1).alignment = { horizontal: 'center' };
+      worksheet.addRow([]);
+      worksheet.addRow(["Summary"]);
+      worksheet.addRow(["Total Users", totalUsers]);
+      worksheet.addRow(["Total Products", totalProducts]);
+      worksheet.addRow(["Total Orders", totalOrders]);
+      worksheet.addRow(["Sales Count", salesCount]);
+      worksheet.addRow(["Total Revenue", `₹${overallRevenue}`]);
+      worksheet.addRow(["Total Discount", `₹${overallDiscount}`]);
 
-        
-        res.setHeader('Content-disposition', 'attachment; filename=sales-report.xlsx');
-        res.setHeader('Content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-disposition', 'attachment; filename=sales-report.xlsx');
+      res.setHeader('Content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
-        await workbook.xlsx.write(res);
-        res.end();
-    } catch (error) {
-        console.error("Error generating Excel:", error);
-        res.status(500).send("Error generating Excel");
-    }
+      await workbook.xlsx.write(res);
+      res.end();
+  } catch (error) {
+      console.error("Error generating Excel:", error);
+      res.status(500).send("Error generating Excel");
+  }
 };
-
 
 
 
