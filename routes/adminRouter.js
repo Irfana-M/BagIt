@@ -65,6 +65,7 @@ router.post("/updateCoupon",adminAuth,couponController.updateCoupon);
 router.get("/deleteCoupon",adminAuth,couponController.deleteCoupon);
 
 //Sales Report
+router.get("/salesReport",adminAuth,adminController.loadSalesReport);
 router.get("/sales",adminAuth,adminController.generateReport);
 router.get("/sales/download-pdf", adminAuth, adminController.downloadPDF);
 router.get("/sales/download-excel", adminAuth, adminController.downloadExcel);

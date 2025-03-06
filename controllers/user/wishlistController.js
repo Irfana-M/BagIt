@@ -8,14 +8,14 @@ const loadWishlist = async (req, res) => {
         const userId = req.session.user;
 
         if (!userId) {
-            return res.redirect("/login"); // Redirect to login if not logged in
+            return res.redirect("/login"); 
         }
 
         const user = await User.findById(userId);
 
-        // Pagination setup
-        let page = parseInt(req.query.page) || 1; // Default page = 1
-        let limit = 5; // Wishlist items per page
+        
+        let page = parseInt(req.query.page) || 1; 
+        let limit = 5; 
         let skip = (page - 1) * limit;
 
         // Fetch paginated wishlist products

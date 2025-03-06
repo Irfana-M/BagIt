@@ -42,149 +42,282 @@ const login = async (req, res) => {
 };
 
 
+const loadDashboard = async(req,res)=>{
+  if(req.session.admin){
+    try {
+    res.render("dashboard",{ activePage: 'dashboard' });
+}catch (error) {
+    res.redirect('/admin/pageerror');
+}
+} 
+}
 
-const loadDashboard = async (req, res) => {
+
+
+const loadSalesReport = async (req, res) => {
   if (!req.session.admin) {
     return res.redirect("/admin/login");
   }
 
   try {
-    
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    // Fetch basic stats
     const [totalUsers, totalProducts, totalOrders] = await Promise.all([
       User.countDocuments(),
       Product.countDocuments(),
       Order.countDocuments(),
     ]);
 
-    
     const salesMetrics = await Order.aggregate([
-      
       { $unwind: "$orderItems" },
-     
       { $match: { "orderItems.status": { $nin: ["Cancelled", "Returned"] } } },
-      
       {
         $group: {
           _id: null,
-          salesCount: { $sum: 1 }, 
-          overallRevenue: { $sum: "$finalAmount" }, 
-          overallDiscount: { $sum: "$discount" }, 
-          overallOrderAmount: {
-            $sum: { $multiply: ["$orderItems.price", "$orderItems.quantity"] }, 
-          },
+          salesCount: { $sum: 1 },
+          overallRevenue: { $sum: "$finalAmount" },
+          overallDiscount: { $sum: "$discount" },
         },
       },
     ]);
 
-    
     const {
       salesCount = 0,
       overallRevenue = 0,
       overallDiscount = 0,
-      overallOrderAmount = 0,
     } = salesMetrics.length > 0 ? salesMetrics[0] : {};
 
-    
-    const salesData = await Order.find()
-      .select("orderId totalPrice discount couponApplied finalAmount createdAt")
-      .populate("user", "name");
-      
+    // Initial Sales Report Data (default: today's data) with pagination
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayEnd = new Date(today);
+    todayEnd.setHours(23, 59, 59, 999);
 
-    
-    res.render("dashboard", {
-      activePage: "dashboard",
+    const salesDataQuery = Order.aggregate([
+      { $match: { createdAt: { $gte: today, $lte: todayEnd } } },
+      { $unwind: "$orderItems" },
+      { $match: { "orderItems.status": { $nin: ["Cancelled", "Returned"] } } },
+      {
+        $lookup: {
+          from: "products",
+          localField: "orderItems.product",
+          foreignField: "_id",
+          as: "productInfo",
+        },
+      },
+      { $unwind: "$productInfo" },
+      {
+        $lookup: {
+          from: "categories",
+          localField: "productInfo.category",
+          foreignField: "_id",
+          as: "categoryInfo",
+        },
+      },
+      { $unwind: { path: "$categoryInfo", preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "userInfo",
+        },
+      },
+      { $unwind: "$userInfo" },
+      {
+        $project: {
+          orderId: "$orderId",
+          customerName: "$userInfo.name",
+          productName: "$orderItems.productName",
+          categoryName: { $ifNull: ["$categoryInfo.name", "Uncategorized"] },
+          quantitySold: "$orderItems.quantity",
+          unitPrice: "$orderItems.price",
+          discountApplied: "$discount",
+          orderStatus: "$orderItems.status",
+          orderDate: "$createdAt",
+        },
+      },
+      { $skip: skip },
+      { $limit: limit },
+    ]);
+
+    const totalSalesData = await Order.aggregate([
+      { $match: { createdAt: { $gte: today, $lte: todayEnd } } },
+      { $unwind: "$orderItems" },
+      { $match: { "orderItems.status": { $nin: ["Cancelled", "Returned"] } } },
+      { $count: "total" },
+    ]);
+
+    const salesData = await salesDataQuery;
+    const totalItems = totalSalesData.length > 0 ? totalSalesData[0].total : 0;
+    const totalPages = Math.ceil(totalItems / limit);
+
+    const formattedSalesData = salesData.map((data) => ({
+      orderId: data.orderId,
+      customerName: data.customerName,
+      productName: data.productName,
+      categoryName: data.categoryName,
+      quantitySold: data.quantitySold,
+      unitPrice: data.unitPrice,
+      discountApplied: data.discountApplied,
+      orderStatus: data.orderStatus,
+      orderDate: new Date(data.orderDate).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }),
+    }));
+
+    res.render("salesReport", {
+      activePage: "salesReport",
       totalUsers,
       totalProducts,
       totalOrders,
       salesCount,
       overallRevenue,
       overallDiscount,
-      overallOrderAmount,
-      salesData,
+      salesData: formattedSalesData,
+      currentPage: page,
+      totalPages,
+      limit,
     });
   } catch (error) {
-    console.error("Error loading dashboard:", error);
+    console.error("Error loading sales report:", error);
     res.redirect("/admin/pageerror");
   }
 };
 
 
 const generateReport = async (req, res) => {
-    try {
-        const { filter, start, end } = req.query;
+  try {
+    const { filter, start, end, page = 1, limit = 10 } = req.query;
+    const skip = (page - 1) * limit;
 
-        let query = { "orderItems.status": { $nin: ["Delivered", "Cancelled"] } };
+    let query = {};
+    const now = new Date();
 
-
-        if (filter === "today") {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            query.createdAt = { $gte: today };
-        } else if (filter === "week") {
-            const lastWeek = new Date();
-            lastWeek.setDate(lastWeek.getDate() - 7);
-            query.createdAt = { $gte: lastWeek };
-        } else if (filter === "month") {
-            const lastMonth = new Date();
-            lastMonth.setMonth(lastMonth.getMonth() - 1);
-            query.createdAt = { $gte: lastMonth };
-        } else if (filter === "custom" && start && end) {
-            query.createdAt = { 
-                $gte: new Date(start), 
-                $lte: new Date(end) 
-            };
-        }
-
-        
-        const salesData = await Order.find(query)
-            .select("orderId totalPrice discount couponApplied finalAmount")
-            .populate("user", "name");
-
-        
-        const result = await Order.aggregate([
-            { $unwind: "$orderItems" },
-            { $match: query },
-            { $count: "totalSales" },
-        ]);
-        const salesCount = result.length > 0 ? result[0].totalSales : 0;
-
-        const overallRevenueResult = await Order.aggregate([
-            { $match: query },
-            { $group: { _id: null, total: { $sum: "$finalAmount" } } },
-        ]);
-        const overallRevenue = overallRevenueResult.length > 0 ? overallRevenueResult[0].total : 0;
-
-        const overallDiscountResult = await Order.aggregate([
-            { $match: query },
-            { $group: { _id: null, discount: { $sum: "$discount" } } },
-        ]);
-        const overallDiscount = overallDiscountResult.length > 0 ? overallDiscountResult[0].discount : 0;
-
-        const overallOrderAmountResult = await Order.aggregate([
-            { $unwind: "$orderItems" },
-            { $match: query },
-            { $group: { _id: null, totalOrderAmount: { $sum: { $multiply: ["$orderItems.price", "$orderItems.quantity"] } } } },
-        ]);
-        const overallOrderAmount = overallOrderAmountResult.length > 0 ? overallOrderAmountResult[0].totalOrderAmount : 0;
-
-        
-        const formattedSalesData = salesData.map(data => ({
-            orderId: data.orderId,
-            user: { name: data.user.name },
-            totalPrice: data.totalPrice,
-            discount: data.discount,
-            salesCount: salesCount,
-            overallOrderAmount: overallOrderAmount,
-            overallDiscount: overallDiscount
-        }));
-
-        res.json(formattedSalesData);
-    } catch (error) {
-        console.error("Error fetching sales data:", error);
-        res.status(500).json({ message: "Server error" });
+    // Filters for Sales Report table
+    if (filter === "today") {
+      const todayStart = new Date(now);
+      todayStart.setHours(0, 0, 0, 0);
+      const todayEnd = new Date(now);
+      todayEnd.setHours(23, 59, 59, 999);
+      query.createdAt = { $gte: todayStart, $lte: todayEnd };
+    } else if (filter === "week") {
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - 7);
+      weekStart.setHours(0, 0, 0, 0);
+      const weekEnd = new Date(now);
+      weekEnd.setHours(23, 59, 59, 999);
+      query.createdAt = { $gte: weekStart, $lte: weekEnd };
+    } else if (filter === "month") {
+      const monthStart = new Date(now);
+      monthStart.setDate(1);
+      monthStart.setHours(0, 0, 0, 0);
+      const monthEnd = new Date(now);
+      monthEnd.setHours(23, 59, 59, 999);
+      query.createdAt = { $gte: monthStart, $lte: monthEnd };
+    } else if (filter === "custom" && start && end) {
+      const customStart = new Date(start);
+      const customEnd = new Date(end);
+      customEnd.setHours(23, 59, 59, 999);
+      query.createdAt = { $gte: customStart, $lte: customEnd };
     }
-};
 
+    query["orderItems.status"] = { $nin: ["Cancelled", "Returned"] };
+
+    const salesDataQuery = Order.aggregate([
+      { $match: query },
+      { $unwind: "$orderItems" },
+      { $match: { "orderItems.status": { $nin: ["Cancelled", "Returned"] } } },
+      {
+        $lookup: {
+          from: "products",
+          localField: "orderItems.product",
+          foreignField: "_id",
+          as: "productInfo",
+        },
+      },
+      { $unwind: "$productInfo" },
+      {
+        $lookup: {
+          from: "categories",
+          localField: "productInfo.category",
+          foreignField: "_id",
+          as: "categoryInfo",
+        },
+      },
+      { $unwind: { path: "$categoryInfo", preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "userInfo",
+        },
+      },
+      { $unwind: "$userInfo" },
+      {
+        $project: {
+          orderId: "$orderId",
+          customerName: "$userInfo.name",
+          productName: "$orderItems.productName",
+          categoryName: { $ifNull: ["$categoryInfo.name", "Uncategorized"] },
+          quantitySold: "$orderItems.quantity",
+          unitPrice: "$orderItems.price",
+          discountApplied: "$discount",
+          orderStatus: "$orderItems.status",
+          orderDate: "$createdAt",
+        },
+      },
+      { $skip: skip },
+      { $limit: parseInt(limit) },
+    ]);
+
+    const totalSalesData = await Order.aggregate([
+      { $match: query },
+      { $unwind: "$orderItems" },
+      { $match: { "orderItems.status": { $nin: ["Cancelled", "Returned"] } } },
+      { $count: "total" },
+    ]);
+
+    const salesData = await salesDataQuery;
+    const totalItems = totalSalesData.length > 0 ? totalSalesData[0].total : 0;
+    const totalPages = Math.ceil(totalItems / limit);
+
+    const formattedSalesData = salesData.map((data) => ({
+      orderId: data.orderId,
+      customerName: data.customerName,
+      productName: data.productName,
+      categoryName: data.categoryName,
+      quantitySold: data.quantitySold,
+      unitPrice: data.unitPrice,
+      discountApplied: data.discountApplied,
+      orderStatus: data.orderStatus,
+      orderDate: new Date(data.orderDate).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      }),
+    }));
+
+    res.json({
+      salesData: formattedSalesData,
+      currentPage: parseInt(page),
+      totalPages,
+      totalItems,
+    });
+  } catch (error) {
+    console.error("Error fetching sales data:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 
 const downloadPDF = async (req, res) => {
@@ -415,31 +548,57 @@ const downloadExcel = async (req, res) => {
 
 
 const salesReport = async (req, res) => {
-    try {
-        const { filter } = req.query;
-        console.log("filter reached",filter)
-        let matchStage = { "orderItems.status": { $nin: ["Cancelled", "Returned"] } };
+  try {
+    const { filter, startDate, endDate } = req.query;
+    let matchStage = { "orderItems.status": { $nin: ["Cancelled", "Returned"] } };
 
-        if (filter === "yearly") {
-            matchStage.createdAt = { $gte: moment().startOf("year").toDate() };
-        } else if (filter === "monthly") {
-            matchStage.createdAt = { $gte: moment().startOf("month").toDate() };
-        } else if (filter === "weekly") {
-            matchStage.createdAt = { $gte: moment().startOf("week").toDate() };
-        }
-
-        const salesData = await Order.aggregate([
-            { $match: matchStage },
-            { $group: { _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }, totalSales: { $sum: "$finalAmount" } } },
-            { $sort: { _id: 1 } }
-        ]);
-        console.log("sales report",salesData)
-
-        res.json(salesData);
-    } catch (error) {
-        console.error("Error fetching sales data:", error);
-        res.status(500).send("Internal Server Error");
+    // Filters for Sales Overview chart
+    if (filter === "daily") {
+      matchStage.createdAt = {
+        $gte: new Date(new Date().setHours(0, 0, 0, 0)),
+        $lte: new Date(new Date().setHours(23, 59, 59, 999)),
+      };
+    } else if (filter === "weekly") {
+      matchStage.createdAt = {
+        $gte: new Date(new Date().setDate(new Date().getDate() - 7)),
+      };
+    } else if (filter === "monthly") {
+      matchStage.createdAt = {
+        $gte: new Date(new Date().setMonth(new Date().getMonth() - 1)),
+      };
+    } else if (filter === "yearly") {
+      matchStage.createdAt = {
+        $gte: new Date(new Date().setFullYear(new Date().getFullYear() - 1)),
+      };
+    } else if (filter === "custom" && startDate && endDate) {
+      matchStage.createdAt = {
+        $gte: new Date(startDate),
+        $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999)),
+      };
     }
+
+    const salesData = await Order.aggregate([
+      { $match: matchStage },
+      { $unwind: "$orderItems" },
+      {
+        $group: {
+          _id: {
+            $dateToString: {
+              format: filter === "yearly" ? "%Y" : filter === "monthly" ? "%Y-%m" : "%Y-%m-%d",
+              date: "$createdAt",
+            },
+          },
+          totalSales: { $sum: "$finalAmount" },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    res.json(salesData);
+  } catch (error) {
+    console.error("Error fetching sales data:", error);
+    res.status(500).send("Internal Server Error");
+  }
 };
 
 
@@ -571,6 +730,7 @@ module.exports = {
   loadLogin,
   login,
   loadDashboard,
+  loadSalesReport,
   pageerror,
   logout,
   generateReport,
