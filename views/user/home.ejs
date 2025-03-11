@@ -1,5 +1,8 @@
 
 <%-include("../../views/partials/user/header")%>
+<link rel="stylesheet" href="/path/to/owl.carousel.min.css">
+<link rel="stylesheet" href="/path/to/owl.theme.default.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css">
 	<!-- start banner Area -->
 	<section class="banner-area">
 		<div class="container">
@@ -150,7 +153,9 @@
 								<h6><%=products[i].productName%></h6>
 								<div class="price">
 									<h6><%=products[i].salePrice%></h6>
-									<h6 class="l-through"><%=products[i].oringinalPrice%></h6>
+									<% if (products[i].salePrice < products[i].regularPrice) { %>
+										<h6 class="l-through">₹<%= products[i].regularPrice %></h6>
+									<% } %>
 								</div>
 								<div class="prd-bottom">
 
@@ -179,13 +184,35 @@
 				</div>
 				<div class="row">
 					<!-- single product -->
+					<%for(let i=0;i<products.length;i++){%>
+						<!-- single product -->
+						<div class="col-lg-3 col-md-6">
+							<div class="single-product">
+								<img class="img-fluid" src="/uploads/product-images/<%=products[i].productImage[0]%>" alt="<%=products[i].productName%>">
+								
+								<div class="product-details">
+									<a href="/productDetails?id=<%=products[i]._id%>"</a>
+									<h6><%=products[i].productName%></h6>
+									<div class="price">
+										<h6><%=products[i].salePrice%></h6>
+										<% if (products[i].salePrice < products[i].regularPrice) { %>
+											<h6 class="l-through">₹<%= products[i].regularPrice %></h6>
+										<% } %>
+									</div>
+									<div class="prd-bottom">
+	
+										
+									</div>
+								</div>
+							</div>
+						</div>
+										
+						<%}%>
 					
 							</div>
 						</div>
 					</div>
-				</div>
-			</div>
-		</div>
+				
 	</section>
 	<!-- End exclusive deal Area -->
 
@@ -213,5 +240,5 @@
 	</section>
 	<!-- End brand Area -->
 
-	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
 	<%-include("../../views/partials/user/footer")%>
