@@ -1,36 +1,4 @@
-<!DOCTYPE html>
-<html lang="zxx" class="no-js">
-
-<head>
-	<!-- Mobile Specific Meta -->
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<!-- Favicon-->
-	<link rel="shortcut icon" href="img/logo.png">
-	<!-- Author Meta -->
-	<meta name="author" content="CodePixar">
-	<!-- Meta Description -->
-	<meta name="description" content="">
-	<!-- Meta Keyword -->
-	<meta name="keywords" content="">
-	<!-- meta character set -->
-	<meta charset="UTF-8">
-	<!-- Site Title -->
-	<title>BAG IT Shopping</title>
-	<!--
-			CSS
-			============================================= -->
-	<link rel="stylesheet" href="css/linearicons.css">
-	<link rel="stylesheet" href="css/font-awesome.min.css">
-	<link rel="stylesheet" href="css/themify-icons.css">
-	<link rel="stylesheet" href="css/bootstrap.css">
-	<link rel="stylesheet" href="css/owl.carousel.css">
-	<link rel="stylesheet" href="css/nice-select.css">
-	<link rel="stylesheet" href="css/nouislider.min.css">
-	<link rel="stylesheet" href="css/ion.rangeSlider.css" />
-	<link rel="stylesheet" href="css/ion.rangeSlider.skinFlat.css" />
-	<link rel="stylesheet" href="css/main.css">
-
-	<link rel="stylesheet" href="https://unpkg.com/panzoom/dist/panzoom.min.css">
+<%-include("../../views/partials/user/header")%>
 
 <style>
 	/* Zoom Container */
@@ -61,69 +29,7 @@
   background-size: cover;
 }
 </style>	  
-</head>
 
-<body>
-
-	<!-- Start Header Area -->
-	<header class="header_area sticky-header">
-		<div class="main_menu">
-			<nav class="navbar navbar-expand-lg navbar-light main_box">
-				<div class="container">
-					<!-- Brand and toggle get grouped for better mobile display -->
-					<a class="navbar-brand logo_h" href="/"><img src="img/logo.png" alt=""></a>
-					<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-					 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
-					</button>
-					<!-- Collect the nav links, forms, and other content for toggling -->
-					<div class="collapse navbar-collapse offset" id="navbarSupportedContent">
-						<ul class="nav navbar-nav menu_nav ml-auto">
-							<li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-                            <li class="nav-item active"><a class="nav-link" href="/shop">Shop</a></li>
-                                <!-- <a href="/shop" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
-                                 aria-expanded="false">Shop</a> -->
-                                <!-- <ul class="dropdown-menu">
-                                    <li class="nav-item"><a class="nav-link" href="">Shop Category</a></li>
-                                    <li class="nav-item"><a class="nav-link" href="/checkout">Product Checkout</a></li>
-                                    <li class="nav-item"><a class="nav-link" href='/view-cart'>Shopping Cart</a></li>
-                                    <li class="nav-item"><a class="nav-link" href="confirmation.html">Confirmation</a></li>
-                                </ul> -->
-							
-							<li class="nav-item submenu dropdown">
-								<a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
-								 aria-expanded="false"></a>
-								<ul class="dropdown-menu">
-									<li class="nav-item"><a class="nav-link" href="login.html">Login</a></li>
-									<li class="nav-item"><a class="nav-link" href="tracking.html">Tracking</a></li>
-									<li class="nav-item"><a class="nav-link" href="elements.html">Elements</a></li>
-								</ul>
-							</li>
-							<li class="nav-item"><a class="nav-link" href="contact.html"></a></li>
-						</ul>
-						<ul class="nav navbar-nav navbar-right">
-							<li class="nav-item"><a href="/view-cart" class="cart"><span class="ti-bag"></span></a></li>
-							<li class="nav-item">
-								<button class="search"><span class="lnr lnr-magnifier" id="search"></span></button>
-							</li>
-						</ul>
-					</div>
-				</div>
-			</nav>
-		</div>
-		<div class="search_input" id="search_input_box">
-			<div class="container">
-				<form action="/search" method="POST" class="d-flex justify-content-between">
-					<input type="text" class="form-control" name="query" id="search_input" placeholder="Search Here">
-					<button type="submit" class="btn"></button>
-					<span class="lnr lnr-cross" id="close_search" title="Close Search"></span>
-				</form>
-			</div>
-		</div>
-	</header>
-	<!-- End Header Area -->
 
 	<!-- Start Banner Area -->
 	<section class="banner-area organic-breadcrumb">
@@ -189,7 +95,13 @@
 							 class="reduced items-count" type="button"><i class="lnr lnr-chevron-down"></i></button>
 						</div> -->
 						<div class="card_area d-flex align-items-center">
-							<a class="primary-btn" href="/add-To-cart?id=<%=product._id%>&quantity=<%=product.quantity%>">Add to Cart</a>
+							<a
+							href="javascript:void(0);"
+							class="primary-btn"
+							onclick="addToCart('<%= product._id.toString() %>')"
+						  >
+							add to Cart
+						  </a>
 							<a class="icon_btn" href="#"><i class="lnr lnr lnr-diamond"></i></a>
 							<a class="icon_btn" href="#"><i class="lnr lnr lnr-heart"></i></a>
 						</div>
@@ -546,7 +458,7 @@
 
 					<div class="col-lg-4 col-md-6 col-sm-6">
 					  <div class="card shadow-sm h-100"> <!-- Ensures all cards have equal height -->
-						<a href="/product-details?id=<%= relatedProducts[i]._id %>">
+						<a href="/productDetails?id=<%= relatedProducts[i]._id %>">
 							
 							<img src="/uploads/product-images/<%= relatedProducts[i].productImage[0] %>" 
     						alt="<%= relatedProducts[i].name %>" class="card-img-top" 
@@ -692,7 +604,85 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 <!-- Include ElevateZoom Plugin -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/elevatezoom/3.0.8/jquery.elevatezoom.min.js"></script>
 
-	
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+function addToCart(productId) {
+  console.log("Product ID:", productId);
+
+  if (!productId) {
+    Swal.fire({
+      title: "Error",
+      text: "Invalid Product ID",
+      icon: "error",
+      timer: 2000,
+    });
+    return;
+  }
+
+  fetch(`/addToCart?id=${productId}&jsonResponse=true`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+    .then((response) => {
+      if (!response.ok) {
+        if (response.status === 401) {
+          return response.json().then((data) => {
+            throw new Error(data.message || "User not logged in", { cause: data });
+          });
+        }
+        return response.json().catch(() => {
+          throw new Error("Unexpected server response");
+        });
+      }
+      return response.json();
+    })
+    .then((data) => {
+      console.log("Server Response:", data);
+      if (data.status === "success") {
+        Swal.fire({
+          title: "Success!",
+          text: data.message,
+          icon: "success",
+          showCancelButton: true,
+          confirmButtonText: "Okay",
+          cancelButtonText: "Go to Cart",
+          reverseButtons: true,
+        }).then((result) => {
+          if (result.isDismissed) {
+            window.location.href = "/view-cart";
+          }
+        });
+      } else {
+        Swal.fire({
+          title: "Error!",
+          text: data.message,
+          icon: "error",
+          confirmButtonText: "Okay",
+        }).then((result) => {
+          if (result.isConfirmed && data.redirect) {
+            window.location.href = data.redirect; // Redirect to /login after clicking "Okay"
+          }
+        });
+      }
+    })
+    .catch((error) => {
+      Swal.fire({
+        title: "Error!",
+        text: error.message || "An error occurred while processing your request.",
+        icon: "error",
+        confirmButtonText: "Okay",
+      }).then((result) => {
+        if (result.isConfirmed && error.cause && error.cause.redirect) {
+          window.location.href = error.cause.redirect; 
+        }
+      });
+    });
+}
+</script>
     <script>
 
       // Select all product images

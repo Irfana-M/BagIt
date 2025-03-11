@@ -69,7 +69,7 @@ router.get("/editAddress",userAuth,profileController.editAddress)
 router.post("/editAddress",userAuth,profileController.postEditAddress);
 router.get("/deleteAddress",userAuth,profileController.deleteAddress);
 //cart management
-router.get("/add-To-cart",userAuth,cartController.addToCart);
+router.post("/addToCart",userAuth,cartController.addToCart);
 router.get("/view-cart",userAuth,cartController.viewCart);
 router.get("/deleteCart",userAuth,cartController.deleteCart);
 router.get("/checkout",userAuth,cartController.getCheckout);
@@ -110,6 +110,10 @@ router.post('/send-referral',userAuth,profileController.sendReferral);
 
 
 router.get('/download-invoice/:orderId',userAuth,orderController.downloadInvoice);
+
+//Contact Management
+router.get('/contact',userController.getContact);
+router.post('/contactProcess',userAuth,userController.contactProcess);
 
 //logout
 router.get('/logout',userController.logout);

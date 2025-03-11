@@ -12,6 +12,9 @@ const ensureUploadDirExists = (dirPath) => {
 };
 
 const getProductAddPage = async (req, res) => {
+    if (!req.session.admin) {
+        return res.redirect("/admin/login");
+      }
     try {
         const category = await Category.find({ isListed: true });
         res.render("product-add", { cat: category,currentPage:'products',activePage:'product-add' });
@@ -22,6 +25,7 @@ const getProductAddPage = async (req, res) => {
 };
 
 const addProducts = async (req, res) => {
+    
     try {
         const products = req.body;
         const productExists = await Product.findOne({ productName: products.productName });
@@ -44,7 +48,7 @@ const addProducts = async (req, res) => {
             
                     
                     if (metadata.width > metadata.height) {
-                        
+                       
                         await image.resize({
                             width: 440, 
                             fit: 'cover', 
@@ -97,6 +101,9 @@ const addProducts = async (req, res) => {
 };
 
 const getAllProducts = async (req, res) => {
+    if (!req.session.admin) {
+        return res.redirect("/admin/login");
+      }
     try {
      
         const search = req.query.search || "";
@@ -105,7 +112,12 @@ const getAllProducts = async (req, res) => {
 
         const productData = await Product.find({
             productName: { $regex: new RegExp(".*" + search + ".*", "i") }
-        }).limit(limit).skip((page - 1) * limit).populate("category").exec();
+        })
+        .sort({ createdAt: -1 }) 
+        .limit(limit)
+        .skip((page - 1) * limit)
+        .populate("category")
+        .exec();
 
         const count = await Product.find({
             productName: { $regex: new RegExp(".*" + search + ".*", "i") }
@@ -192,6 +204,9 @@ const unblockProduct = async (req,res)=>{
 
 
 const getEditProduct = async (req,res)=>{
+    if (!req.session.admin) {
+        return res.redirect("/admin/login");
+      }
     try {
         const id = req.query.id;
         const product = await Product.findOne({_id:id});
@@ -214,15 +229,15 @@ const editProduct = async (req, res) => {
         const id = req.params.id;
         const data = req.body;
 
-        // Fetch existing product details
+        
         const product = await Product.findById(id);
         if (!product) {
             return res.status(404).json({ error: "Product not found" });
         }
 
-        let images = product.productImage || []; // Keep existing images
+        let images = product.productImage || []; 
 
-        // Check if a product with the same name already exists (excluding the current product)
+        
         const existingProduct = await Product.findOne({
             productName: data.productName,
             _id: { $ne: id }
@@ -234,7 +249,7 @@ const editProduct = async (req, res) => {
             });
         }
 
-        // Validate and convert the `category` field to ObjectId
+        
         let categoryId;
         if (data.category) {
             const category = await Category.findOne({ name: data.category });
@@ -244,12 +259,12 @@ const editProduct = async (req, res) => {
             categoryId = category._id;
         }
 
-        // Process uploaded files
+        
         if (req.files && req.files.length > 0) {
             const uploadPath = path.join(__dirname, "..", "..", "public", "uploads", "product-images");
 
             if (!fs.existsSync(uploadPath)) {
-                fs.mkdirSync(uploadPath, { recursive: true }); // Ensure directory exists
+                fs.mkdirSync(uploadPath, { recursive: true }); 
             }
 
             for (let i = 0; i < req.files.length; i++) {
@@ -265,26 +280,26 @@ const editProduct = async (req, res) => {
                     await image.resize({ height: 440, fit: "cover", position: "center" }).toFile(resizedImagePath);
                 }
 
-                images.push(req.files[i].filename); // Add new images while keeping existing ones
+                images.push(req.files[i].filename); 
             }
         }
 
         console.log("Updated images:", images);
 
-        // Prepare update fields
+        
         const updateFields = {
             productName: data.productName,
-            description: data.description,
+            description: data.descriptionData,
             category: categoryId,
             regularPrice: data.regularPrice,
             salePrice: data.salePrice,
             quantity: data.quantity,
             size: data.size,
             color: data.color,
-            productImage: images, // Keep existing + new images
+            productImage: images, 
         };
 
-        // Update the product
+        
         await Product.findByIdAndUpdate(id, updateFields, { new: true });
         res.redirect("/admin/products");
     } catch (error) {
@@ -314,13 +329,13 @@ const deleteSingleImage = async (req,res)=>{
 
 const deleteProduct = async (req, res) => {
         try {
-          const { productId } = req.body; // Get productId from the request body
+          const { productId } = req.body; 
           console.log(productId);
           if (!productId) {
             return res.status(400).json({ status: false, message: "product ID is required." });
           }
       
-          const deletedProduct = await Product.findByIdAndDelete(productId); // Delete the category
+          const deletedProduct = await Product.findByIdAndDelete(productId); 
       
           if (!deletedProduct) {
             return res.status(404).json({ status: false, message: "Prodcut not found." });

@@ -18,17 +18,17 @@ const loadWishlist = async (req, res) => {
         let limit = 5; 
         let skip = (page - 1) * limit;
 
-        // Fetch paginated wishlist products
+        
         const totalItems = await Product.countDocuments({ _id: { $in: user.wishlist } });
         const products = await Product.find({ _id: { $in: user.wishlist } })
             .populate('category')
             .skip(skip)
             .limit(limit);
 
-        // Calculate total pages
+       
         const totalPages = Math.ceil(totalItems / limit);
 
-        // Render wishlist page with pagination data
+        
         res.render("wishlist", {
             user,
             wishlist: products,

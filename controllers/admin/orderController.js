@@ -7,12 +7,13 @@ const User = require("../../models/userSchema");
 const { v4: uuidv4 } = require("uuid");
 
 const getOrder = async (req, res) => {
+  if (!req.session.admin) {
+    return res.redirect("/admin/login");
+  }
   try {
     const { page = 1, limit = 5, search = "" } = req.query;
     const sanitizedSearch = search.trim().replace(/[^a-zA-Z0-9 ]/g, "");
     const limitNum = Number(limit) || 5;
-
-    
     let orders = await Order.find({})
       .populate("user", "name email")
       .populate({
@@ -179,6 +180,9 @@ const deleteOrder = async (req, res) => {
 };
 
 const viewOrder = async (req, res) => {
+  if (!req.session.admin) {
+    return res.redirect("/admin/login");
+  }
   try {
     const { orderId, productId } = req.params;
     console.log("Fetching order details for:", orderId, "and product:", productId);

@@ -90,7 +90,7 @@ const loadSalesReport = async (req, res) => {
       overallDiscount = 0,
     } = salesMetrics.length > 0 ? salesMetrics[0] : {};
 
-    // Initial Sales Report Data (default: today's data) with pagination
+    
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const todayEnd = new Date(today);
@@ -199,7 +199,7 @@ const generateReport = async (req, res) => {
     let query = {};
     const now = new Date();
 
-    // Filters for Sales Report table
+    
     if (filter === "today") {
       const todayStart = new Date(now);
       todayStart.setHours(0, 0, 0, 0);
@@ -624,7 +624,7 @@ const bestSellingProducts = async (req, res) => {
                   name: "$product.productName",
                   totalSales: 1,
                   revenue: 1,
-                  stock: "$product.quantity" // Assuming 'stock' is a field in your Product model
+                  stock: "$product.quantity" 
               }
           }
       ]);

@@ -1,6 +1,9 @@
 const User = require('../../models/userSchema');
 
 const customerInfo = async(req,res)=>{
+    if (!req.session.admin) {
+        return res.redirect("/admin/login");
+      }
     try {
        let search = "";
        if(req.query.search){
@@ -30,7 +33,6 @@ const customerInfo = async(req,res)=>{
         activePage: 'customers'});
     } catch (error) {
         console.error(error);
-        //res.status(500).send("An error occured");
         return res.redirect("/admin/pageerror");
     }
 }

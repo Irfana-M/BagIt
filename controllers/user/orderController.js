@@ -16,39 +16,63 @@ const getOrder = async (req, res) => {
         const userId = req.session.user;
         const page = parseInt(req.query.page) || 1;
         const limit = 5; 
-        const skip = (page - 1) * limit; 
-        const totalOrders = await Order.countDocuments({ user: userId }); 
+        const skip = (page - 1) * limit;
 
+       
         const orders = await Order.find({ user: userId })
-            .populate('user') 
-            .populate('orderItems.product') 
-            .sort({ createdAt: -1 }) 
-            .limit(limit);
-
-        const deliveryDays = 5; 
+            .populate('user')
+            .populate('orderItems.product')
+            .sort({ createdAt: -1 });
 
         
-        const ordersWithDeliveryDate = orders.map(order => {
-            const deliveryDate = new Date(order.createdAt); 
+        const totalOrderItems = orders.reduce((total, order) => {
+            return total + order.orderItems.length;
+        }, 0);
+
+        console.log("Total Order Items:", totalOrderItems);
+        console.log("Total Pages:", Math.ceil(totalOrderItems / limit));
+
+        
+        const allOrderItems = orders.flatMap(order => order.orderItems);
+        const paginatedOrderItems = allOrderItems.slice(skip, skip + limit);
+
+        
+        const deliveryDays = 5;
+        const ordersWithDeliveryDate = paginatedOrderItems.map((item, index) => {
+            
+            const parentOrder = orders.find(order => 
+                order.orderItems.some(orderItem => orderItem._id.equals(item._id))
+            );
+
+            const deliveryDate = new Date(parentOrder.createdAt);
             deliveryDate.setDate(deliveryDate.getDate() + deliveryDays);
 
-          
-            const day = String(deliveryDate.getDate()).padStart(2, '0'); 
-            const month = String(deliveryDate.getMonth() + 1).padStart(2, '0'); 
+            const day = String(deliveryDate.getDate()).padStart(2, '0');
+            const month = String(deliveryDate.getMonth() + 1).padStart(2, '0');
             const year = deliveryDate.getFullYear();
 
-            
             const formattedDeliveryDate = `${day}/${month}/${year}`;
 
-            return {
-                ...order.toObject(), 
-                deliveryDate: formattedDeliveryDate 
-            };
+           
+                return {
+                    ...item.toObject(),
+                    orderId: parentOrder.orderId,
+                    createdAt: parentOrder.createdAt,
+                    deliveryDate: formattedDeliveryDate,
+                    paymentInfo: parentOrder.paymentInfo, 
+                    product: item.product 
+                };
+          
         });
+
+  
+        const  userData= await User.findById(userId);
+        
         res.render('order', {
             orders: ordersWithDeliveryDate,
             currentPage: page,
-            totalPages: Math.ceil(totalOrders / limit)
+            totalPages: Math.ceil(totalOrderItems / limit),
+            user:userData,
         });
 
     } catch (error) {
@@ -56,6 +80,7 @@ const getOrder = async (req, res) => {
         res.redirect("/pageNotFound");
     }
 };
+
 
 
 
@@ -70,7 +95,7 @@ const cancelOrderItem = async (req, res) => {
         }
 
        
-        const order = await Order.findById(orderId).populate('orderItems.product', 'price quantity');
+        const order = await Order.findOne({orderId:orderId}).populate('orderItems.product', 'price quantity');
         if (!order) {
             return res.status(404).json({ success: false, message: "Order not found" });
         }
@@ -96,10 +121,6 @@ const cancelOrderItem = async (req, res) => {
             product.quantity += productItem.quantity;
             await product.save();
         }
-
-        
-
-        
         let refundAmount = productItem.price * productItem.quantity;
         console.log("Initial Refund Amount:", refundAmount);
 
@@ -176,7 +197,7 @@ const orderDetails = async (req, res) => {
         const { orderId, productId } = req.params;
 
      
-        const order = await Order.findOne({ _id: orderId, user: userId })
+        const order = await Order.findOne({ orderId: orderId, user: userId })
             .populate("user")
             .populate({
                 path: 'orderItems.product',
@@ -194,7 +215,7 @@ const orderDetails = async (req, res) => {
             return res.redirect("/pageNotFound");
         }
 
-        const relatedOrders = await Order.find({ _id: orderId })
+        const relatedOrders = await Order.find({ orderId: orderId })
     .populate({
         path: 'orderItems.product',
         select: 'productName productImage'
@@ -902,7 +923,7 @@ const codPayment = async (req, res) => {
         const { addressId, totalPrice, cartItems } = req.body;
         console.log("Raw cartItems:", cartItems);
         if (totalPrice > 1000) {
-            return res.status(400).json({ success: false, message: "COD is only available for orders above 1000." });
+            return res.status(400).json({ success: false, message: "COD is only available for orders below 1000." });
         }
         
 

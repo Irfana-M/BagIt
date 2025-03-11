@@ -1,39 +1,4 @@
-<!DOCTYPE html>
-<html lang="zxx" class="no-js">
-  <head>
-    <!-- Mobile Specific Meta -->
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, shrink-to-fit=no"
-    />
-    <!-- Favicon-->
-    <link rel="shortcut icon" href="img/logo.png" />
-    <!-- Author Meta -->
-    <meta name="author" content="CodePixar" />
-    <!-- Meta Description -->
-    <meta name="description" content="" />
-    <!-- Meta Keyword -->
-    <meta name="keywords" content="" />
-    <!-- meta character set -->
-    <meta charset="UTF-8" />
-    <!-- Site Title -->
-    <title>BAG IT Shopping</title>
-
-    <!--
-            CSS
-            ============================================= -->
-    <link rel="stylesheet" href="css/linearicons.css" />
-    <link rel="stylesheet" href="css/owl.carousel.css" />
-    <link rel="stylesheet" href="css/font-awesome.min.css" />
-    <link rel="stylesheet" href="css/themify-icons.css" />
-    <link rel="stylesheet" href="css/nice-select.css" />
-    <link rel="stylesheet" href="css/nouislider.min.css" />
-    <link rel="stylesheet" href="css/bootstrap.css" />
-    <link rel="stylesheet" href="css/main.css" />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css"
-    />
+<%-include("../../views/partials/user/header")%>
     <style>
       .sortProduct {
         padding-right: 110px;
@@ -53,112 +18,7 @@
 }
 
     </style>
-  </head>
 
-  <body id="category">
-    <!-- Start Header Area -->
-    <header class="header_area sticky-header">
-      <div class="main_menu">
-        <nav class="navbar navbar-expand-lg navbar-light main_box">
-          <div class="container">
-            <!-- Brand and toggle get grouped for better mobile display -->
-            <a class="navbar-brand logo_h" href="/"
-              ><img src="img/logo.png" alt=""
-            /></a>
-            <button
-              class="navbar-toggler"
-              type="button"
-              data-toggle="collapse"
-              data-target="#navbarSupportedContent"
-              aria-controls="navbarSupportedContent"
-              aria-expanded="false"
-              aria-label="Toggle navigation"
-            >
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-            </button>
-            <!-- Collect the nav links, forms, and other content for toggling -->
-            <div
-              class="collapse navbar-collapse offset"
-              id="navbarSupportedContent"
-            >
-              <ul class="nav navbar-nav menu_nav ml-auto">
-                <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-                <li class="nav-item active">
-                  <a class="nav-link" href="/shop">Shop</a>
-                </li>
-                <!-- <a href="/shop" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
-                                 aria-expanded="false">Shop</a> -->
-                <!-- <ul class="dropdown-menu">
-                                    <li class="nav-item"><a class="nav-link" href="">Shop Category</a></li>
-                                    <li class="nav-item"><a class="nav-link" href="/checkout">Product Checkout</a></li>
-                                    <li class="nav-item"><a class="nav-link" href='/view-cart'>Shopping Cart</a></li>
-                                    <li class="nav-item"><a class="nav-link" href="confirmation.html">Confirmation</a></li>
-                                </ul> -->
-
-                <li class="nav-item submenu dropdown">
-                  <a
-                    href="#"
-                    class="nav-link dropdown-toggle"
-                    data-toggle="dropdown"
-                    role="button"
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                  ></a>
-                  <ul class="dropdown-menu">
-                    <li class="nav-item">
-                      <a class="nav-link" href="login.html">Login</a>
-                    </li>
-                    <li class="nav-item">
-                      <a class="nav-link" href="tracking.html">Tracking</a>
-                    </li>
-                    <li class="nav-item">
-                      <a class="nav-link" href="elements.html">Elements</a>
-                    </li>
-                  </ul>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="contact.html"></a>
-                </li>
-              </ul>
-              <ul class="nav navbar-nav navbar-right">
-                <li class="nav-item">
-                  <a href="/view-cart" class="cart"
-                    ><span class="ti-bag"></span
-                  ></a>
-                </li>
-                <li class="nav-item">
-                  <button class="search">
-                    <span class="lnr lnr-magnifier" id="search"></span>
-                  </button>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </nav>
-      </div>
-      <div class="search_input" id="search_input_box">
-        <div class="container">
-          <form action="" method="GET" class="d-flex justify-content-between">
-            <input
-              type="text"
-              class="form-control"
-              name="query"
-              id="search_input"
-              placeholder="Search Here"
-            />
-            <button type="submit" class="btn"></button>
-            <span
-              class="lnr lnr-cross"
-              id="close_search"
-              title="Close Search"
-            ></span>
-          </form>
-        </div>
-      </div>
-    </header>
-    <!-- End Header Area -->
     <!-- Start Banner Area -->
     <section class="banner-area organic-breadcrumb">
       <div class="container">
@@ -239,12 +99,13 @@
             </div>
             <div class="prd-bottom">
               <a
-                href="/add-To-cart?id=<%=products[i]._id%>&quantity=<%=products[i].quantity%>"
-                class="social-info"
-              >
-                <span class="ti-bag"></span>
-                <p class="hover-text">add to bag</p>
-              </a>
+  href="javascript:void(0);"
+  class="social-info"
+  onclick="addToCart('<%= products[i]._id.toString() %>')"
+>
+  <span class="ti-bag"></span>
+  <p class="hover-text">add to bag</p>
+</a>
               <a
                 href="javascript:void(0);"
                 class="social-info"
@@ -472,7 +333,7 @@
           class="footer-bottom d-flex justify-content-center align-items-center flex-wrap"
         >
           <p class="footer-text m-0">
-            <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+           
             Copyright &copy;
             <script>
               document.write(new Date().getFullYear());
@@ -480,7 +341,7 @@
             All rights reserved | This template is made with
             <i class="fa fa-heart-o" aria-hidden="true"></i> by
             <a href="https://colorlib.com" target="_blank">Colorlib</a>
-            <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+           
           </p>
         </div>
       </div>
@@ -622,46 +483,49 @@
     <script src="js/main.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
    <script>
+    let persistentFilters = {};
     function applyFilters(filters = {}) {
-      const currentFilters = {
-        category: document.querySelector(".category-link.selected")?.dataset.category,
-        gt: document.querySelector("#priceFilters a.selected")?.dataset.gt,
-        lt: document.querySelector("#priceFilters a.selected")?.dataset.lt,
-        sort: document.querySelector("#sortOptions a.selected")?.dataset.sort,
-        query: document.getElementById("searchQuery").value.trim(),
-        ...filters,
-      };
+      persistentFilters = {
+    ...persistentFilters,
+    category: document.querySelector(".category-link.selected")?.dataset.category,
+    gt: document.querySelector("#priceFilters a.selected")?.dataset.gt,
+    lt: document.querySelector("#priceFilters a.selected")?.dataset.lt,
+    sort: document.querySelector("#sortOptions a.selected")?.dataset.sort,
+    query: document.getElementById("searchQuery").value.trim(),
+    page: filters.page || 1,
+    ...filters, // Override with any explicit filters passed
+  };
     
-      // Remove empty filters
-      Object.keys(currentFilters).forEach((key) => {
-        if (!currentFilters[key]) {
-          delete currentFilters[key];
-        }
-      });
-    
-      // Convert to query string
-      const queryParams = new URLSearchParams(currentFilters).toString();
-      console.log("Request URL: ", `/filter?${queryParams}`); // Debugging statement
-    
-      // Fetch filtered products
-      fetch(`/filter?${queryParams}`)
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          return response.json(); // Parse JSON response
-        })
-        .then((data) => {
-          if (data.success) {
-            renderProducts(data.products); // Render products
-            updateSelectedFilters(currentFilters); // Update selected filters in UI
-          } else {
-            console.error("Error:", data.message);
-          }
-        })
-        .catch((error) => console.error("Error:", error));
+      
+  Object.keys(persistentFilters).forEach((key) => {
+    if (!persistentFilters[key]) {
+      delete persistentFilters[key];
     }
-// Function to render products
+  });
+
+  const queryParams = new URLSearchParams(persistentFilters).toString();
+  console.log("Request URL: ", `/filter?${queryParams}`);
+    
+      
+  fetch(`/filter?${queryParams}`)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      console.log('Response data:', data);
+      if (data.success) {
+        renderProducts(data.products);
+        updateSelectedFilters(persistentFilters);
+        updatePagination(data.totalPages, data.currentPage);
+      } else {
+        console.error("Error:", data.message);
+      }
+    })
+    .catch((error) => console.error("Fetch Error:", error));
+}
 function renderProducts(products) {
   const productList = document.getElementById("productList");
   if (!productList) {
@@ -669,10 +533,10 @@ function renderProducts(products) {
     return;
   }
 
-  // Clear existing products
+  
   productList.innerHTML = "";
 
-  // Render new products
+  
   if (products.length === 0) {
     productList.innerHTML = "<p>No products found.</p>";
     return;
@@ -697,14 +561,15 @@ function renderProducts(products) {
             <h6 class="l-through">₹${product.regularPrice.toLocaleString("en-IN")}</h6>
           </div>
           <div class="prd-bottom">
-            <a
-              href="/add-To-cart?id=${product._id}&quantity=${product.quantity}"
-              class="social-info"
-            >
-              <span class="ti-bag"></span>
-              <p class="hover-text">add to bag</p>
-            </a>
-            <a
+                          <a
+                href="javascript:void(0);"
+                class="social-info"
+                onclick="addToCart('${product._id.toString()}')"
+              >
+                <span class="ti-bag"></span>
+                <p class="hover-text">add to bag</p>
+              </a>
+              <a
               href="javascript:void(0);"
               class="social-info"
               onclick="addToWishlist('${product._id.toString()}')"
@@ -743,6 +608,77 @@ function updateSelectedFilters(filters) {
   }
 }
 
+// Function to update pagination UI
+function updatePagination(totalPages, currentPage) {
+  console.log('updatePagination called with:', { totalPages, currentPage });
+  const paginationContainer = document.querySelector(".pagination");
+  if (!paginationContainer) {
+    console.error('Pagination container not found');
+    return;
+  }
+
+  paginationContainer.innerHTML = "";
+
+  if (totalPages <= 1) {
+    console.log('Single page case triggered');
+    const prevSpan = document.createElement("span");
+    prevSpan.className = "prev-arrow disabled";
+    prevSpan.innerHTML = '<i class="fa fa-long-arrow-left" aria-hidden="true"></i>';
+    paginationContainer.appendChild(prevSpan);
+
+    const pageLink = document.createElement("a");
+    pageLink.href = "javascript:void(0);";
+    pageLink.textContent = "1";
+    pageLink.className = "active";
+    paginationContainer.appendChild(pageLink);
+
+    const nextSpan = document.createElement("span");
+    nextSpan.className = "next-arrow disabled";
+    nextSpan.innerHTML = '<i class="fa fa-long-arrow-right" aria-hidden="true"></i>';
+    paginationContainer.appendChild(nextSpan);
+    return;
+  }
+
+  console.log('Multiple pages case triggered');
+  if (currentPage > 1) {
+    const prevArrow = document.createElement("a");
+    prevArrow.href = "javascript:void(0);";
+    prevArrow.className = "prev-arrow";
+    prevArrow.innerHTML = '<i class="fa fa-long-arrow-left" aria-hidden="true"></i>';
+    prevArrow.addEventListener("click", () => applyFilters({ page: currentPage - 1 }));
+    paginationContainer.appendChild(prevArrow);
+  } else {
+    const prevSpan = document.createElement("span");
+    prevSpan.className = "prev-arrow disabled";
+    prevSpan.innerHTML = '<i class="fa fa-long-arrow-left" aria-hidden="true"></i>';
+    paginationContainer.appendChild(prevSpan);
+  }
+
+  for (let i = 1; i <= totalPages; i++) {
+    const pageLink = document.createElement("a");
+    pageLink.href = "javascript:void(0);";
+    pageLink.textContent = i;
+    pageLink.className = currentPage === i ? "active" : "";
+    pageLink.addEventListener("click", () => applyFilters({ page: i }));
+    paginationContainer.appendChild(pageLink);
+  }
+
+  if (currentPage < totalPages) {
+    const nextArrow = document.createElement("a");
+    nextArrow.href = "javascript:void(0);";
+    nextArrow.className = "next-arrow";
+    nextArrow.innerHTML = '<i class="fa fa-long-arrow-right" aria-hidden="true"></i>';
+    nextArrow.addEventListener("click", () => applyFilters({ page: currentPage + 1 }));
+    paginationContainer.appendChild(nextArrow);
+  } else {
+    const nextSpan = document.createElement("span");
+    nextSpan.className = "next-arrow disabled";
+    nextSpan.innerHTML = '<i class="fa fa-long-arrow-right" aria-hidden="true"></i>';
+    paginationContainer.appendChild(nextSpan);
+  }
+}
+
+
 // Event Listeners
 document.getElementById("searchForm").addEventListener("submit", function (event) {
   event.preventDefault();
@@ -772,58 +708,90 @@ document.querySelectorAll("#sortOptions a").forEach((link) => {
 
 document.getElementById("clearFilters").addEventListener("click", function (event) {
   event.preventDefault();
+  
+  persistentFilters = {};
   document.querySelectorAll(".category-link, #priceFilters a, #sortOptions a").forEach((el) => el.classList.remove("selected"));
   document.getElementById("searchQuery").value = "";
-  applyFilters({});
+  applyFilters({ page: 1 });
 });
 </script>
-    <script>
-      document.querySelectorAll(".add-to-cart").forEach((button) => {
-        button.addEventListener("click", async (e) => {
-          e.preventDefault();
-          const productId = button.dataset.productId;
-          const quantity = button.dataset.quantity;
+ <script>
+function addToCart(productId) {
+  console.log("Product ID:", productId);
 
-          try {
-            const response = await fetch(
-              `/add-To-cart?id=${productId}&quantity=${quantity}`,
-              { method: "POST" }
-            );
-            const result = await response.json();
+  if (!productId) {
+    Swal.fire({
+      title: "Error",
+      text: "Invalid Product ID",
+      icon: "error",
+      timer: 2000,
+    });
+    return;
+  }
 
-            if (result.status === "success") {
-              Swal.fire({
-                title: "Success!",
-                text: result.message,
-                icon: "success",
-                showCancelButton: true,
-                confirmButtonText: "Okay",
-                cancelButtonText: "Go to Cart",
-                reverseButtons: true,
-              }).then((result) => {
-                if (result.isDismissed) {
-                  window.location.href = "/view-cart";
-                }
-              });
-            } else {
-              Swal.fire({
-                title: "Error!",
-                text: result.message,
-                icon: "error",
-                confirmButtonText: "Okay",
-              });
-            }
-          } catch (error) {
-            Swal.fire({
-              title: "Error!",
-              text: "An error occurred while adding the product to the cart.",
-              icon: "error",
-              confirmButtonText: "Okay",
-            });
+  fetch(`/addToCart?id=${productId}&jsonResponse=true`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+    .then((response) => {
+      if (!response.ok) {
+        if (response.status === 401) {
+          return response.json().then((data) => {
+            throw new Error(data.message || "User not logged in", { cause: data });
+          });
+        }
+        return response.json().catch(() => {
+          throw new Error("Unexpected server response");
+        });
+      }
+      return response.json();
+    })
+    .then((data) => {
+      console.log("Server Response:", data);
+      if (data.status === "success") {
+        Swal.fire({
+          title: "Success!",
+          text: data.message,
+          icon: "success",
+          showCancelButton: true,
+          confirmButtonText: "Okay",
+          cancelButtonText: "Go to Cart",
+          reverseButtons: true,
+        }).then((result) => {
+          if (result.isDismissed) {
+            window.location.href = "/view-cart";
           }
         });
+      } else {
+        Swal.fire({
+          title: "Error!",
+          text: data.message,
+          icon: "error",
+          confirmButtonText: "Okay",
+        }).then((result) => {
+          if (result.isConfirmed && data.redirect) {
+            window.location.href = data.redirect; 
+          }
+        });
+      }
+    })
+    .catch((error) => {
+      Swal.fire({
+        title: "Error!",
+        text: error.message || "An error occurred while processing your request.",
+        icon: "error",
+        confirmButtonText: "Okay",
+      }).then((result) => {
+        if (result.isConfirmed && error.cause && error.cause.redirect) {
+          window.location.href = error.cause.redirect;
+        }
       });
-    </script>
+    });
+}
+</script>
+
 
     <% if (message && message.status) { %>
     <script>

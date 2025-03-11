@@ -1,37 +1,4 @@
-<!DOCTYPE html>
-<html lang="zxx" class="no-js">
-  <head>
-    <!-- Mobile Specific Meta -->
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, shrink-to-fit=no"
-    />
-    <!-- Favicon-->
-    <link rel="shortcut icon" href="img/logo.png" />
-    <!-- Author Meta -->
-    <meta name="author" content="CodePixar" />
-    <!-- Meta Description -->
-    <meta name="description" content="" />
-    <!-- Meta Keyword -->
-    <meta name="keywords" content="" />
-    <!-- meta character set -->
-    <meta charset="UTF-8" />
-    <!-- Site Title -->
-    <title>BAG IT Shopping - Checkout</title>
-
-    <!-- CSS -->
-    <link rel="stylesheet" href="css/linearicons.css" />
-    <link rel="stylesheet" href="css/owl.carousel.css" />
-    <link rel="stylesheet" href="css/themify-icons.css" />
-    <link rel="stylesheet" href="css/font-awesome.min.css" />
-    <link rel="stylesheet" href="css/nice-select.css" />
-    <link rel="stylesheet" href="css/nouislider.min.css" />
-    <link rel="stylesheet" href="css/bootstrap.css" />
-    <link rel="stylesheet" href="css/main.css" />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
-    />
+<%-include("../../views/partials/user/header")%>
     <style>
       /* General Reset */
       * {
@@ -215,53 +182,7 @@
 
       
     </style>
-  </head>
 
-  <body>
-    <!-- Start Header Area -->
-    <header class="header_area sticky-header">
-      <div class="main_menu">
-        <nav class="navbar navbar-expand-lg navbar-light main_box">
-          <div class="container">
-            <a class="navbar-brand logo_h" href="/"
-              ><img src="img/logo.png" alt=""
-            /></a>
-            <button
-              class="navbar-toggler"
-              type="button"
-              data-toggle="collapse"
-              data-target="#navbarSupportedContent"
-              aria-controls="navbarSupportedContent"
-              aria-expanded="false"
-              aria-label="Toggle navigation"
-            >
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-            </button>
-            <div
-              class="collapse navbar-collapse offset"
-              id="navbarSupportedContent"
-            >
-              <ul class="nav navbar-nav menu_nav ml-auto">
-                <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-                <li class="nav-item active">
-                  <a class="nav-link" href="/shop">Shop</a>
-                </li>
-              </ul>
-              <ul class="nav navbar-nav navbar-right">
-                <li class="nav-item">
-                  <a href="/view-cart" class="cart"
-                    ><span class="ti-bag"></span
-                  ></a>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </nav>
-      </div>
-    </header>
-    <!-- End Header Area -->
 
     <!-- Start Banner Area -->
     <section class="banner-area organic-breadcrumb">
@@ -368,7 +289,7 @@
                           <span class="product-name"><%= item.productId.productName %></span>
                           <span class="quantity">x <%= item.quantity %></span>
                           <span class="price last">
-                              ₹<%= (item.productId.salePrice * item.quantity).toFixed(2) %>
+                              ₹<%= (item.productId.regularPrice * item.quantity).toFixed(2) %>
                           </span>
                       </div>
                   </li>
@@ -403,10 +324,10 @@
                   >
                 </li>
 
-                <% let gst = (typeof subTotal !== 'undefined' ? (subTotal * 0.05).toFixed(2) : "0.00"); %>
+                <% let gst = (typeof totalOfferPrice !== 'undefined' ? (totalOfferPrice * 0.18).toFixed(2) : "0.00"); %>
 
                 <li>
-                  <a href="#">GST (5%) <span>₹<%= gst %></span></a>
+                  <a href="#">GST (18%) <span>₹<%= gst %></span></a>
                 </li>
 
                 <% if (coupons && coupons.length > 0) { %>
@@ -519,72 +440,7 @@
     </section>
     <!--================End Checkout Area =================-->
 
-    <!-- Start Footer Area -->
-    <footer class="footer-area section_gap">
-      <div class="container">
-        <div class="row">
-          <div class="col-lg-3 col-md-6 col-sm-6">
-            <div class="single-footer-widget">
-              <h6>About Us</h6>
-              <p>
-                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
-                eiusmod tempor incididunt ut labore dolore magna aliqua.
-              </p>
-            </div>
-          </div>
-          <div class="col-lg-4 col-md-6 col-sm-6">
-            <div class="single-footer-widget">
-              <h6>Newsletter</h6>
-              <p>Stay update with our latest</p>
-              <form
-                target="_blank"
-                novalidate="true"
-                action="https://spondonit.us12.list-manage.com/subscribe/post?u=1462626880ade1ac87bd9c93a&amp;id=92a4423d01"
-                method="get"
-                class="form-inline"
-              >
-                <input
-                  class="form-control"
-                  name="EMAIL"
-                  placeholder="Enter Email"
-                  required=""
-                  type="email"
-                />
-                <button class="click-btn btn btn-default">
-                  <i class="fa fa-long-arrow-right" aria-hidden="true"></i>
-                </button>
-              </form>
-            </div>
-          </div>
-          <div class="col-lg-3 col-md-6 col-sm-6">
-            <div class="single-footer-widget">
-              <h6>Follow Us</h6>
-              <p>Let us be social</p>
-              <div class="footer-social d-flex align-items-center">
-                <a href="#"><i class="fa fa-facebook"></i></a>
-                <a href="#"><i class="fa fa-twitter"></i></a>
-                <a href="#"><i class="fa fa-dribbble"></i></a>
-                <a href="#"><i class="fa fa-behance"></i></a>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div
-          class="footer-bottom d-flex justify-content-center align-items-center flex-wrap"
-        >
-          <p class="footer-text m-0">
-            Copyright &copy;
-            <script>
-              document.write(new Date().getFullYear());
-            </script>
-            All rights reserved | This template is made with
-            <i class="fa fa-heart-o" aria-hidden="true"></i> by
-            <a href="https://colorlib.com" target="_blank">Colorlib</a>
-          </p>
-        </div>
-      </div>
-    </footer>
-    <!-- End Footer Area -->
+   
 
     <script src="js/vendor/jquery-2.2.4.min.js"></script>
     <script
@@ -608,14 +464,14 @@
     <script>
         function showAlert(type, title, text) {
             Swal.fire({
-                icon: type, // "success", "error", "warning", "info"
+                icon: type, 
                 title: title,
                 text: text,
                 confirmButtonColor: type === "success" ? "#28a745" : "#d33",
             });
         }
     
-        // Parse cart data from server
+        
         const cart = JSON.parse('<%- JSON.stringify(cart || []) %>');
 const cartItems = cart.items || []; 
 
@@ -917,35 +773,41 @@ function handleWalletPayment(amount, addressId, cartItems) {
 //coupon management
 $('#applyCoupon').click(function() {
     let couponCode = $('#couponCode').val().trim();
-    let cartItems = []; 
-
-    $('.cart-item').each(function() { 
-        let productId = $(this).data('product-id'); 
-        let quantity = parseInt($(this).find('.quantity').text().replace(/\D/g, ''), 10);
-        let price = parseFloat($(this).find('.price').text().replace('₹', ''));
-
-        cartItems.push({ productId, quantity, price });
-    });
 
     if (!couponCode) {
         alert('Please enter a coupon code.');
         return;
     }
 
+    // Fetch values from the DOM (already rendered in EJS)
+    let subTotal = parseFloat($('#subTotal').text().replace('₹', '')) || 0;
+    let shippingCharge = parseFloat($('ul.list_2 li:contains("Shipping") span').text().replace('₹', '')) || 0;
+    let productOffer = parseFloat($('#productOffer').text().replace('-₹', '')) || 0;
+    let gst = parseFloat($('ul.list_2 li:contains("GST") span').text().replace('₹', '')) || 0;
+
+    // Calculate total before coupon (subtotal - product offer + GST + shipping)
+    let totalOfferPrice = subTotal - productOffer; // After product discounts
+    let totalBeforeCoupon = totalOfferPrice + gst + shippingCharge;
+
     $.ajax({
         url: '/apply-coupon',
         type: 'POST',
         contentType: 'application/json',
-        data: JSON.stringify({ couponCode, cartItems }), 
+        data: JSON.stringify({ couponCode, totalBeforeCoupon }),
         success: function(response) {
             if (response.success) {
                 $('#couponMessage').text(response.message).css('color', 'green');
-                $('#subTotal').text(`₹${response.subTotal}`);
-                $('#couponDiscountAmount').text(`-₹${response.couponDiscount}`);
-                $('#finalTotal').text(`₹${response.finalTotal}`);
-                
-                // Show the remove coupon button after applying
-                $('#removeCoupon').show();
+                $('#couponDiscountAmount').text(`-₹${response.couponDiscount.toFixed(2)}`);
+                $('#finalTotal').text(`₹${response.finalTotal.toFixed(2)}`);
+
+                // If coupon is applied, update the applied coupon section
+                if (response.appliedCoupon) {
+                    $('#appliedCoupon').html(
+                        `<a href="#">Discount (${response.appliedCoupon.name}) ` +
+                        `<span id="couponDiscount">-₹${response.appliedCoupon.discount}</span></a>`
+                    ).show();
+                    $('#removeCoupon').show();
+                }
             } else {
                 $('#couponMessage').text(response.message).css('color', 'red');
             }
@@ -963,26 +825,23 @@ $('#removeCoupon').click(function() {
         url: '/remove-coupon',
         type: 'POST',
         success: function(response) {
-                if (response.success) {
-                    $('#couponMessage').text(response.message).css('color', 'green');
-                    $('#discount').text('₹0');
-                    $('#finalTotal').text(`₹${response.finalTotal}`);
-                    $('#removeCoupon').hide(); 
-                    $('#appliedCoupon').hide();
-                    $('#couponDiscountAmount').text('₹0');
-                    $('#couponCode').val('');  // Clears the value
-                    $('#couponCode').attr('placeholder', 'Enter your coupon code'); 
-                } else {
-                    $('#couponMessage').text(response.message).css('color', 'red');
-                }
-            },
+            if (response.success) {
+                $('#couponMessage').text(response.message).css('color', 'green'); // Show success message
+                $('#couponDiscountAmount').text('-₹0.00'); // Reset coupon discount
+                $('#finalTotal').text(`₹${response.finalTotal.toFixed(2)}`); // Update final total
+                $('#appliedCoupon').hide(); // Hide applied coupon section
+                $('#removeCoupon').hide(); // Hide remove button
+                $('#couponCode').val(''); // Clear coupon input
+                $('#couponCode').attr('placeholder', 'Enter Coupon Code'); // Reset placeholder
+            } else {
+                $('#couponMessage').text(response.message).css('color', 'red');
+            }
+        },
         error: function() {
             alert('Something went wrong.');
         }
     });
 });
-
 </script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  </body>
-</html>
+<%-include("../../views/partials/user/footer")%>>

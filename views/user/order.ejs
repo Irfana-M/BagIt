@@ -1,34 +1,4 @@
-<!DOCTYPE html>
-<html lang="zxx" class="no-js">
-
-<head>
-	<!-- Mobile Specific Meta -->
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<!-- Favicon-->
-	<link rel="shortcut icon" href="img/logo.png">
-	<!-- Author Meta -->
-	<meta name="author" content="CodePixar">
-	<!-- Meta Description -->
-	<meta name="description" content="">
-	<!-- Meta Keyword -->
-	<meta name="keywords" content="">
-	<!-- meta character set -->
-	<meta charset="UTF-8">
-	<!-- Site Title -->
-	<title>BAG IT Shopping</title>
-
-	<!--
-		CSS
-		============================================= -->
-	<link rel="stylesheet" href="css/linearicons.css">
-	<link rel="stylesheet" href="css/owl.carousel.css">
-	<link rel="stylesheet" href="css/themify-icons.css">
-	<link rel="stylesheet" href="css/font-awesome.min.css">
-	<link rel="stylesheet" href="css/nice-select.css">
-	<link rel="stylesheet" href="css/nouislider.min.css">
-	<link rel="stylesheet" href="css/bootstrap.css">
-	<link rel="stylesheet" href="css/main.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+<%-include("../../views/partials/user/header")%>
     <style>
         .order-status {
             padding: 5px 15px;
@@ -163,71 +133,22 @@
   .retry-btn:hover {
     background-color: #2980b9;
   }
+  .order-status.order-placed { background-color: #3498db; }
+.order-status.processing { background-color: #f1c40f; }
+.order-status.shipped { background-color: #9b59b6; }
+.order-status.out-for-delivery { background-color: #e67e22; }
+.order-status.delivered { background-color: #2ecc71; }
+.order-status.cancelled { background-color: #e74c3c; }
+.order-status.return-requested { background-color: #e91e63; }
+.order-status.returned { background-color: #7f8c8d; }
+.order-status.return-rejected { background-color: #c0392b; }
+
+.payment-status.pending { background-color: orange; }
+.payment-status.success { background-color: green; }
+.payment-status.failed { background-color: red; }
 
     </style>
-</head>
 
-<body>
-
-	<!-- Start Header Area -->
-	<header class="header_area sticky-header">
-		<div class="main_menu">
-			<nav class="navbar navbar-expand-lg navbar-light main_box">
-				<div class="container">
-					<!-- Brand and toggle get grouped for better mobile display -->
-					<a class="navbar-brand logo_h" href="/"><img src="img/logo.png" alt=""></a>
-					<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-					 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
-					</button>
-					<!-- Collect the nav links, forms, and other content for toggling -->
-					<div class="collapse navbar-collapse offset" id="navbarSupportedContent">
-						<ul class="nav navbar-nav menu_nav ml-auto">
-							<li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-                            <li class="nav-item active"><a class="nav-link" href="/shop">Shop</a></li>
-                                <!-- <a href="/shop" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
-                                 aria-expanded="false">Shop</a> -->
-                                <!-- <ul class="dropdown-menu">
-                                    <li class="nav-item"><a class="nav-link" href="">Shop Category</a></li>
-                                    <li class="nav-item"><a class="nav-link" href="/checkout">Product Checkout</a></li>
-                                    <li class="nav-item"><a class="nav-link" href='/view-cart'>Shopping Cart</a></li>
-                                    <li class="nav-item"><a class="nav-link" href="confirmation.html">Confirmation</a></li>
-                                </ul> -->
-							
-							<li class="nav-item submenu dropdown">
-								<a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
-								 aria-expanded="false"></a>
-								<ul class="dropdown-menu">
-									<li class="nav-item"><a class="nav-link" href="login.html">Login</a></li>
-									<li class="nav-item"><a class="nav-link" href="tracking.html">Tracking</a></li>
-									<li class="nav-item"><a class="nav-link" href="elements.html">Elements</a></li>
-								</ul>
-							</li>
-							<li class="nav-item"><a class="nav-link" href="contact.html"></a></li>
-						</ul>
-						<ul class="nav navbar-nav navbar-right">
-							<li class="nav-item"><a href="/view-cart" class="cart"><span class="ti-bag"></span></a></li>
-							<li class="nav-item">
-								<button class="search"><span class="lnr lnr-magnifier" id="search"></span></button>
-							</li>
-						</ul>
-					</div>
-				</div>
-			</nav>
-		</div>
-		<div class="search_input" id="search_input_box">
-			<div class="container">
-				<form class="d-flex justify-content-between">
-					<input type="text" class="form-control" id="search_input" placeholder="Search Here">
-					<button type="submit" class="btn"></button>
-					<span class="lnr lnr-cross" id="close_search" title="Close Search"></span>
-				</form>
-			</div>
-		</div>
-	</header>
-	<!-- End Header Area -->
 
 	<!-- Start Banner Area -->
 	<section class="banner-area organic-breadcrumb">
@@ -237,7 +158,7 @@
 					<h1>Confirmation</h1>
 					<nav class="d-flex align-items-center">
 						<a href="/">Home<span class="lnr lnr-arrow-right"></span></a>
-						<a href="#">Confirmation</a>
+						<a href="/userProfile">Profile</a>
 					</nav>
 				</div>
 			</div>
@@ -246,93 +167,91 @@
 	<!-- End Banner Area -->
 
   
-	<body class="bg-light">
-		<div class="container mt-5">
-			<h2 class="mb-4">MY ORDERS</h2>
-			
-			<div class="orders-table">
-				<div class="table-responsive">
-					<table class="table table-hover mb-6">
-						<thead class="table-header">
-							<tr>
-								<th scope="col">Order Id</th>
-								<th scope="col">Product Name</th>
-								<th scope="col">Price</th>
-								<th scope="col">Delivery Date</th>
-								<th scope="col">Status</th>
-								<th scope="col">Payment Status</th>
-								<th scope="col">Product</th>
-								<th scope="col">Action</th>
-							</tr>
-						</thead>
-						<tbody>
-							<% if (orders.length === 0) { %>
-								<tr>
-									<td colspan="7" class="text-center">No orders found.</td>
-								</tr>
-							<% } else { %>
-								<% orders.forEach(order => { %>
-									<% order.orderItems.forEach(item => { %>
-										<tr>
-											<!-- Show Order ID for each product -->
-											<td><%= order.orderId %></td>
-											<!-- Product Name -->
-											<td><%= item.product.productName %></td>
-											<!-- Product Price -->
-											<td>₹<%= item.price.toFixed(2) %></td>
-											<!-- Delivery Date -->
-											<td><%= order.deliveryDate %></td>
-											<!-- Order Status -->
-											<td>
-												<span class="order-status <%= item.status.toLowerCase() %>">
-												  <%= item.status %>
-												</span>
-											  </td>
-											  <td>
-												<span class="payment-status <%= order.paymentInfo.status ? order.paymentInfo.status.toLowerCase() : '' %>">
-												  <%= order.paymentInfo.status || 'Unknown' %>
-												</span>
-												<span>
-													<% if (order.paymentInfo.status === 'Pending') { %>
-														<a href="#" class="retry-btn" data-order-id="<%= order._id %>">
-															Retry Payment
-														</a>
-													<% } %>
-												</span>
-											  </td>
-											  
-											  
-											<td>
-												<img src="uploads/product-images/<%= item.product.productImage[0] %>" alt="Product Image" width="50" height="50">
-											</td>
-											<!-- Action Buttons -->
-											<td>
-												<a href="/orderDetails/<%= order._id %>/<%= item.product._id %>" class="btn btn-primary btn-sm">View</a>
-												<a onclick="confirmCancelOrder('<%= order._id %>', '<%= item.product._id %>')" class="btn btn-danger btn-sm">Cancel</a>
-											</td>
-										</tr>
-									<% }) %>
-								<% }) %>
-							<% } %>
-						</tbody>
-					</table>
-				</div>
-			</div>
-		</div>
-	</body>
-	<!-- pagiantion -->
+	<!-- Replace the existing body section with this -->
+<body class="bg-light">
+    <div class="container mt-5">
+        <h2 class="mb-4">MY ORDERS</h2>
+        
+        <div class="orders-table">
+            <div class="table-responsive">
+                <table class="table table-hover mb-6">
+                    <thead class="table-header">
+                        <tr>
+                            <th scope="col">Order Id</th>
+                            <th scope="col">Product Name</th>
+                            <th scope="col">Price</th>
+                            <th scope="col">Delivery Date</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Payment Status</th>
+                            <th scope="col">Product</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (orders.length === 0) { %>
+                            <tr>
+                                <td colspan="8" class="text-center">No orders found.</td>
+                            </tr>
+                        <% } else { %>
+                            <% orders.forEach(item => { %>
+                                <tr>
+                                    <!-- Order ID -->
+                                    <td><%= item.orderId %></td>
+                                    <!-- Product Name -->
+                                    <td><%= item.product.productName %></td>
+                                    <!-- Product Price -->
+                                    <td>₹<%= item.price.toFixed(2) %></td>
+                                    <!-- Delivery Date -->
+                                    <td><%= item.deliveryDate %></td>
+                                    <!-- Order Status -->
+                                    <td>
+                                        <span class="order-status <%= item.status.toLowerCase().replace(/\s+/g, '-') %>">
+                                            <%= item.status %>
+                                        </span>
+                                    </td>
+                                    <!-- Payment Status -->
+                                    <td>
+                                        <span class="payment-status <%= item.paymentInfo && item.paymentInfo.status ? item.paymentInfo.status.toLowerCase() : '' %>">
+                                            <%= item.paymentInfo && item.paymentInfo.status ? item.paymentInfo.status : 'Unknown' %>
+                                        </span>
+                                        <% if (item.paymentInfo && item.paymentInfo.status === 'Pending') { %>
+                                            <a href="#" class="retry-btn" data-order-id="<%= item.orderId %>">
+                                                Retry Payment
+                                            </a>
+                                        <% } %>
+                                    </td>
+                                    <!-- Product Image -->
+                                    <td>
+                                        <img src="uploads/product-images/<%= item.product.productImage[0] %>" alt="Product Image" width="50" height="50">
+                                    </td>
+                                    <!-- Action Buttons -->
+                                    <td class="action-buttons">
+                                        <a href="/orderDetails/<%= item.orderId %>/<%= item.product._id %>" class="btn btn-primary btn-sm">View</a>
+                                        <% if (item.status !== 'Cancelled' && item.status !== 'Returned') { %>
+                                            <a onclick="confirmCancelOrder('<%= item.orderId %>', '<%= item.product._id %>')" class="btn btn-danger btn-sm">Cancel</a>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-	<div class="pagination-container">
-		<% if (currentPage > 1) { %>
-			<a href="?page=<%= currentPage - 1 %>" class="pagination-btn">Previous</a>
-		<% } %>
+        <!-- Pagination -->
+        <div class="pagination-container">
+            <% if (currentPage > 1) { %>
+                <a href="?page=<%= currentPage - 1 %>" class="pagination-btn">Previous</a>
+            <% } %>
+            <span class="pagination-text">Page <%= currentPage %> of <%= totalPages %></span>
+            <% if (currentPage < totalPages) { %>
+                <a href="?page=<%= currentPage + 1 %>" class="pagination-btn">Next</a>
+            <% } %>
+        </div>
+    </div>
+</body>
 	
-		<span class="pagination-text">Page <%= currentPage %> of <%= totalPages %></span>
-	
-		<% if (currentPage < totalPages) { %>
-			<a href="?page=<%= currentPage + 1 %>" class="pagination-btn">Next</a>
-		<% } %>
-	</div>
 	
 	
              <!-- start footer Area -->

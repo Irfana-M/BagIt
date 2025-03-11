@@ -2,6 +2,9 @@ const Coupon = require('../../models/couponSchema');
 const mongoose = require('mongoose');
 
 const loadCoupon = async (req,res)=>{
+    if (!req.session.admin) {
+        return res.redirect("/admin/login");
+      }
     try {
         const findCoupons = await Coupon.find({});
 
@@ -36,6 +39,9 @@ const createCoupon = async  (req,res)=>{
 }
 
 const editCoupon = async (req,res)=>{
+    if (!req.session.admin) {
+        return res.redirect("/admin/login");
+      }
     try {
         const id = req.query.id;
         const findCoupon = await Coupon.findOne({_id:id});
@@ -88,19 +94,18 @@ const deleteCoupon = async (req, res) => {
     try {
         const id = req.query.id;
         
-        // Ensure the coupon exists before trying to delete
+        
         const coupon = await Coupon.findById(id);
         if (!coupon) {
             return res.status(404).send({ success: false, message: "Coupon not found" });
         }
 
-        // Delete the coupon
+        
         await Coupon.deleteOne({ _id: id });
         
         res.status(200).send({ success: true, message: "Coupon deleted successfully" });
     } catch (error) {
         console.error("Error deleting coupon:", error);
-        //res.status(500).send({ success: false, message: "Failed to delete coupon" });
        return res.redirect("/admin/pageerror");
 
     }

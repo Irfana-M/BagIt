@@ -4,6 +4,9 @@ const Product = require('../../models/productSchema');
 
 
 const categoryInfo = async (req, res) => {
+    if (!req.session.admin) {
+        return res.redirect("/admin/login");
+      }
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = 4;
@@ -58,6 +61,7 @@ const categoryInfo = async (req, res) => {
 
 
     const addCategoryOffer = async(req,res)=>{
+
         try {
             
            const percentage = parseInt(req.body.percentage);
@@ -119,6 +123,7 @@ const categoryInfo = async (req, res) => {
 
 
     const getListCategory = async (req,res)=>{
+
         try {
             let id = req.query.id;
             await Category.updateOne({_id:id},{$set:{isListed:false}});
@@ -140,11 +145,12 @@ const categoryInfo = async (req, res) => {
     }
 
     const getEditCategory = async (req,res)=>{
-        console.log("subjkdsjkn");
+        if (!req.session.admin) {
+            return res.redirect("/admin/login");
+          }
         try {
             
             let id = req.query.id;
-            // console.log(id);
             const category = await Category.findOne({_id:id});
             console.log(category);
             res.render("edit-category",{category:category,activePage: 'category'});
@@ -171,7 +177,7 @@ const categoryInfo = async (req, res) => {
         } catch (error) {
             console.error("Error caught:", error);
            return res.redirect('/admin/pageerror'); 
-            //res.status(500).json({error:"Internal server error"});
+           
         }
     }
 

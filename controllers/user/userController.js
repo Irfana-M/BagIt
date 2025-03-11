@@ -5,6 +5,7 @@ const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
 const env = require("dotenv").config();
 const mongoose = require("mongoose");
+const { google } = require('googleapis');
 
 const  pageNotFound = async (req,res)=>{
     try{
@@ -161,7 +162,7 @@ const verifyOtp = async (req, res) => {
             const passwordHash = await securePassword(user.password);
 
             let inviter = null;
-            if (user.inviter) {  // `user.inviter` now stores referralCode
+            if (user.inviter) {  
                 inviter = await User.findOne({ referralCode: user.inviter });
             }
 
@@ -179,7 +180,7 @@ const verifyOtp = async (req, res) => {
                 inviter.redeemedUsers.push(saveUserData._id);
                 await inviter.save();
 
-                // Reward referrer by adding 50 to wallet (if wallet field exists)
+                
                 await User.findByIdAndUpdate(inviter._id, {
                     $inc: { wallet: 50 }  
                 });
@@ -187,7 +188,7 @@ const verifyOtp = async (req, res) => {
                 console.log(`Referrer ${inviter._id} rewarded with 50 credits`);
             }
 
-            // Store full user session
+            
             req.session.user = saveUserData;
 
             res.json({ success: true, redirectUrl: "/login" });
@@ -227,8 +228,8 @@ const resendOtp = async(req,res)=>{
 
 const loadHomepage = async (req, res) => {
     try {
-        const userId = req.session.user;  // Normal login
-        const googleId = req.session.googleId;  // Google login
+        const userId = req.session.user;  
+        const googleId = req.session.googleId;  
 
         const categories = await Category.find({ isListed: true });
         let productData = await Product.find({
@@ -271,7 +272,7 @@ const loadShoppingPage = async (req, res) => {
       const limit = 9;
       const skip = (page - 1) * limit;
   
-      // Extract gt and lt from query parameters (default to null if not provided)
+      
       const gt = req.query.gt || null;
       const lt = req.query.lt || null;
   
@@ -296,7 +297,7 @@ const loadShoppingPage = async (req, res) => {
         name: category.name,
       }));
     
-      const sort = req.query.sort || ""; // Get sorting value from query params
+      const sort = req.query.sort || ""; 
   
       res.render("shop", {
         user: userData,
@@ -308,8 +309,8 @@ const loadShoppingPage = async (req, res) => {
         totalPages: totalPages,
         message: message,
         sort,
-        gt, // Pass gt to the template
-        lt, // Pass lt to the template
+        gt, 
+        lt, 
       });
     } catch (error) {
       console.error("Error while loading shop page:", error);
@@ -320,53 +321,51 @@ const loadShoppingPage = async (req, res) => {
 
   const filterProduct = async (req, res) => {
     try {
-      const { category, gt, lt, sort, query, page } = req.query;
+      const { category, gt, lt, sort, query, page = 1 } = req.query;
+      const itemsPerPage = 9; 
   
-      // Build filter query
       const filterQuery = {
         isBlocked: false,
         quantity: { $gt: 0 },
-        salePrice: { $gte: parseFloat(gt) || 0, $lte: parseFloat(lt) || Infinity },
+        salePrice: {
+          $gte: parseFloat(gt) || 0,
+          $lte: parseFloat(lt) || Infinity,
+        },
       };
   
-      // Apply category filter
       if (category) {
         filterQuery.category = category;
       }
   
-      // Apply search filter
       if (query) {
         filterQuery.productName = { $regex: query, $options: "i" };
       }
   
-      // Sorting logic
       const sortQuery = {};
       if (sort === "price_asc") sortQuery.salePrice = 1;
       else if (sort === "price_desc") sortQuery.salePrice = -1;
       else if (sort === "name_asc") sortQuery.productName = 1;
       else if (sort === "name_desc") sortQuery.productName = -1;
-      else sortQuery.createdOn = -1; // Default sorting
+      else sortQuery.createdOn = -1;
   
-      // Pagination
-      const itemsPerPage = 6;
-      const currentPage = parseInt(page) || 1;
+      
       const totalProducts = await Product.countDocuments(filterQuery);
       const totalPages = Math.ceil(totalProducts / itemsPerPage);
-      const skip = (currentPage - 1) * itemsPerPage;
+      console.log(totalPages)
   
-      // Fetch products
+      
       const products = await Product.find(filterQuery)
         .sort(sortQuery)
-        .skip(skip)
+        .skip((page - 1) * itemsPerPage)
         .limit(itemsPerPage)
         .lean();
   
-      // Send JSON response
       res.json({
         success: true,
         products,
+        totalProducts,
         totalPages,
-        currentPage,
+        currentPage: parseInt(page),
       });
     } catch (error) {
       console.error("Error in filterProducts:", error);
@@ -376,25 +375,75 @@ const loadShoppingPage = async (req, res) => {
 
 
 
-
-
-
-
-
-const logout = async (req,res)=>{
+const getContact = async (req, res) => {
     try {
-        req.session.destroy((err)=>{
-            if(err){
-                console.log("Session destruction error",err);
-                return res.redirect("/");
-            }
-            return res.redirect("/login");
-        })
+        const user = req.session.user;
+        if (!user) {
+            // Handle case where user is not logged in
+            return res.render("contact", { user: null });
+        }
+        
+        const userData = await User.findOne({ _id: user });
+        res.render("contact", {
+            user: userData,
+        });
     } catch (error) {
-        res.clearCookie('connect.sid'); // Clear the session cookie
-        res.redirect('/login'); // Redirect to the login page after logout
+        console.error('Error in getContact:', error);
+        res.redirect("/pageNotFound");
     }
-}
+};
+
+const contactProcess = async (req, res) => {
+    try {
+        // Since userAuth middleware is present, req.user should be available
+        const { name, email, subject, message } = req.body;
+
+        // Input validation
+        if (!name || !email || !subject || !message) {
+            return res.status(400).json({ error: 'All fields are required' });
+        }
+
+        // Configure nodemailer
+        let transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.NODEMAILER_EMAIL,
+                pass: process.env.NODEMAILER_PASSWORD
+            }
+        });
+
+        let mailOptions = {
+            from: `"${name}" <${email}>`,
+            to: process.env.NODEMAILER_EMAIL,
+            subject: subject,
+            text: message,
+            replyTo: email
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+        res.status(200).json({ 
+            message: 'Message sent successfully', 
+            response: info.response 
+        });
+
+    } catch (error) {
+        console.error('Error in contactProcess:', error);
+        res.status(500).json({ error: 'Failed to send message' });
+    }
+};
+
+
+const logout = (req, res) => {
+    if (req.session.user) {
+        delete req.session.user;  
+        delete req.session.name;  
+        res.redirect("/login");   
+    } else {
+        res.redirect("/login");
+    }
+};
+
+
 
 
 
@@ -405,5 +454,5 @@ const logout = async (req,res)=>{
 
 
 module.exports = {loadHomepage,pageNotFound,loadLogin,loadSignUp,signUp,verifyOtp,resendOtp,login,logout,
-    loadShoppingPage,filterProduct,
+    loadShoppingPage,filterProduct,getContact,contactProcess
 };

@@ -236,22 +236,22 @@ const verifyEmailOtp = async (req,res)=>{
 const updateEmail = async (req, res) => {
     try {
         console.log("success");
-        const { newEmail } = req.body;  // Destructure newEmail from req.body
+        const { newEmail } = req.body;  
         const userId = req.session.user;
 
-        // Check if the newEmail is provided and is valid
+        
         if (!newEmail || !validateEmail(newEmail)) {
             return res.render("userProfile", { message: "Please provide a valid email address." });
         }
 
-        // Find and update the user by ID
+        
         const updatedUser = await User.findByIdAndUpdate(userId, { email: newEmail }, { new: true });
 
         if (updatedUser) {
-            // Successfully updated the email
-            res.redirect("/userProfile");  // You can pass a success message here as well
+            
+            res.redirect("/userProfile");  
         } else {
-            // If no user found with the given userId
+            
             res.render("userProfile", { message: "User not found." });
         }
     } catch (error) {
@@ -260,7 +260,7 @@ const updateEmail = async (req, res) => {
     }
 };
 
-// Helper function to validate the email format
+
 const validateEmail = (email) => {
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     return emailRegex.test(email);
@@ -327,8 +327,8 @@ const getMyAddress = async(req,res)=>{
         const addressData = await Address.findOne({userId : userId});
         
             res.render("myAddress", {
-                user: userData, // This is fine
-                userAddress: addressData // This should pass the full object
+                user: userData, 
+                userAddress: addressData 
               });
               
         
