@@ -529,7 +529,7 @@
 
 
     document.getElementById('downloadInvoice').addEventListener('click', () => {
-    const orderId = "<%= order.orderId %>"; // Ensure this is passed dynamically
+    const orderId = "<%= order.orderId %>"; 
     window.location.href = `/download-invoice/${orderId}`;
 });
 

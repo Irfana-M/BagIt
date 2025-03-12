@@ -1,93 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>404 - Page Not Found | BAG IT</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <style>
-        body {
-            min-height: 100vh;
-            background-color: #f5f5f5;
-        }
+      body {
+        min-height: 100vh;
+        background-color: #f5f5f5;
+      }
 
+      .split-container {
+        background: white;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        margin: 2rem auto;
+        max-width: 1200px;
+      }
+
+      .brand-side img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .error-side {
+        padding: 4rem 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        min-height: 400px;
+      }
+
+      .error-code {
+        font-size: 5rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+      }
+
+      .error-message {
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+      }
+
+      .back-link {
+        color: #0d6efd;
+        text-decoration: none;
+      }
+
+      .back-link:hover {
+        text-decoration: underline;
+      }
+
+      @media (max-width: 767px) {
         .split-container {
-            background: white;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-            overflow: hidden;
-            margin: 2rem auto;
-            max-width: 1200px;
-        }
-
-        .brand-side img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+          margin: 0;
         }
 
         .error-side {
-            padding: 4rem 2rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            min-height: 400px;
+          min-height: 300px;
+          padding: 2rem 1rem;
         }
 
         .error-code {
-            font-size: 5rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
+          font-size: 4rem;
         }
-
-        .error-message {
-            font-size: 1.1rem;
-            margin-bottom: 2rem;
-        }
-
-        .back-link {
-            color: #0d6efd;
-            text-decoration: none;
-        }
-
-        .back-link:hover {
-            text-decoration: underline;
-        }
-
-        @media (max-width: 767px) {
-            .split-container {
-                margin: 0;
-            }
-            
-            .error-side {
-                min-height: 300px;
-                padding: 2rem 1rem;
-            }
-
-            .error-code {
-                font-size: 4rem;
-            }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container-fluid py-4">
-        <div class="split-container row mx-auto">
-            <!-- Brand Side with Image -->
-            <div class="brand-side col-md-6 p-0">
-                <img src="/img/bagit_logo.png" alt="BAG IT Logo" />
-                <!-- Replace the src with your actual image path -->
-            </div>
-            
-            <!-- Error Side -->
-            <div class="error-side col-md-6">
-                <div class="error-code">404</div>
-                <p class="error-message">Page not found. Check the address or <a href="/" class="back-link">go back</a>.</p>
-            </div>
+      <div class="split-container row mx-auto">
+        <!-- Brand Side with Image -->
+        <div class="brand-side col-md-6 p-0">
+          <img src="/img/bagit_logo.png" alt="BAG IT Logo" />
+          <!-- Replace the src with your actual image path -->
         </div>
+
+        <!-- Error Side -->
+        <div class="error-side col-md-6">
+          <div class="error-code">404</div>
+          <p class="error-message">
+            Page not found. Check the address or
+            <a href="/" class="back-link">go back</a>.
+          </p>
+        </div>
+      </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+  </body>
 </html>

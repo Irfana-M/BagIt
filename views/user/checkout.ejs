@@ -779,14 +779,14 @@ $('#applyCoupon').click(function() {
         return;
     }
 
-    // Fetch values from the DOM (already rendered in EJS)
+    
     let subTotal = parseFloat($('#subTotal').text().replace('₹', '')) || 0;
     let shippingCharge = parseFloat($('ul.list_2 li:contains("Shipping") span').text().replace('₹', '')) || 0;
     let productOffer = parseFloat($('#productOffer').text().replace('-₹', '')) || 0;
     let gst = parseFloat($('ul.list_2 li:contains("GST") span').text().replace('₹', '')) || 0;
 
-    // Calculate total before coupon (subtotal - product offer + GST + shipping)
-    let totalOfferPrice = subTotal - productOffer; // After product discounts
+   
+    let totalOfferPrice = subTotal - productOffer; 
     let totalBeforeCoupon = totalOfferPrice + gst + shippingCharge;
 
     $.ajax({
@@ -800,7 +800,7 @@ $('#applyCoupon').click(function() {
                 $('#couponDiscountAmount').text(`-₹${response.couponDiscount.toFixed(2)}`);
                 $('#finalTotal').text(`₹${response.finalTotal.toFixed(2)}`);
 
-                // If coupon is applied, update the applied coupon section
+                
                 if (response.appliedCoupon) {
                     $('#appliedCoupon').html(
                         `<a href="#">Discount (${response.appliedCoupon.name}) ` +
@@ -826,13 +826,13 @@ $('#removeCoupon').click(function() {
         type: 'POST',
         success: function(response) {
             if (response.success) {
-                $('#couponMessage').text(response.message).css('color', 'green'); // Show success message
-                $('#couponDiscountAmount').text('-₹0.00'); // Reset coupon discount
-                $('#finalTotal').text(`₹${response.finalTotal.toFixed(2)}`); // Update final total
-                $('#appliedCoupon').hide(); // Hide applied coupon section
-                $('#removeCoupon').hide(); // Hide remove button
-                $('#couponCode').val(''); // Clear coupon input
-                $('#couponCode').attr('placeholder', 'Enter Coupon Code'); // Reset placeholder
+                $('#couponMessage').text(response.message).css('color', 'green'); 
+                $('#couponDiscountAmount').text('-₹0.00'); 
+                $('#finalTotal').text(`₹${response.finalTotal.toFixed(2)}`); 
+                $('#appliedCoupon').hide(); 
+                $('#removeCoupon').hide(); 
+                $('#couponCode').val(''); 
+                $('#couponCode').attr('placeholder', 'Enter Coupon Code'); 
             } else {
                 $('#couponMessage').text(response.message).css('color', 'red');
             }

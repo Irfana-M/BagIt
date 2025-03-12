@@ -1,62 +1,68 @@
 <%- include("../../views/partials/user/header") %>
 <!-- Start Banner Area -->
 <section class="banner-area organic-breadcrumb">
-    <div class="container">
-        <div class="breadcrumb-banner d-flex flex-wrap align-items-center justify-content-end">
-            <div class="col-first">
-                <h1>Product Details Page</h1>
-                <nav class="d-flex align-items-center">
-                    <a href="/">Home<span class="lnr lnr-arrow-right"></span></a>
-                    <a href="/shop">Shop<span class="lnr lnr-arrow-right"></span></a>
-                    <a href="#">product-details</a>
-                </nav>
-            </div>
-        </div>
+  <div class="container">
+    <div
+      class="breadcrumb-banner d-flex flex-wrap align-items-center justify-content-end"
+    >
+      <div class="col-first">
+        <h1>Product Details Page</h1>
+        <nav class="d-flex align-items-center">
+          <a href="/">Home<span class="lnr lnr-arrow-right"></span></a>
+          <a href="/shop">Shop<span class="lnr lnr-arrow-right"></span></a>
+          <a href="#">product-details</a>
+        </nav>
+      </div>
     </div>
+  </div>
 </section>
 <!-- End Banner Area -->
 <section class="content-main mt-80 mb-80">
-   <div class="card mx-auto card-login col-4">
-       <div class="card-body">
-           <h4 class="card-title mb-4">Enter Current Email</h4>
-           <form method="post" action="/change-email" onsubmit="return validateLoginForm()">
-               <div class="mb-3">
-                   <input class="form-control" name="email" placeholder="Email" type="text" id="email">
-                   <div class="error-message" id="email-error"></div>
-               </div>
-               <div class="mb-4">
-                   <button type="submit" class="btn btn-primary w-100">Verify</button>
-               </div>
-           </form>
-         
-         
-       </div>
-   </div>
+  <div class="card mx-auto card-login col-4">
+    <div class="card-body">
+      <h4 class="card-title mb-4">Enter Current Email</h4>
+      <form
+        method="post"
+        action="/change-email"
+        onsubmit="return validateLoginForm()"
+      >
+        <div class="mb-3">
+          <input
+            class="form-control"
+            name="email"
+            placeholder="Email"
+            type="text"
+            id="email"
+          />
+          <div class="error-message" id="email-error"></div>
+        </div>
+        <div class="mb-4">
+          <button type="submit" class="btn btn-primary w-100">Verify</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </section>
 <script>
-   function validateLoginForm() {
-       const emailInput = document.getElementById('email');
-       const emailError = document.getElementById('email-error');
-       const emailValue = emailInput.value.trim();
-       const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+  function validateLoginForm() {
+    const emailInput = document.getElementById("email");
+    const emailError = document.getElementById("email-error");
+    const emailValue = emailInput.value.trim();
+    const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 
-
-       if (emailValue === '') {
-           emailError.textContent = 'Please enter your email.';
-           emailInput.classList.add('is-invalid');
-           return false;
-       } else if (!emailValue.match(emailPattern)) {
-           emailError.textContent = 'Please enter a valid email address';
-           emailInput.classList.add('is-invalid');
-           return false;
-       } else {
-           emailError.textContent = '';
-           emailInput.classList.remove('is-invalid');
-           return true;
-       }
-   }
+    if (emailValue === "") {
+      emailError.textContent = "Please enter your email.";
+      emailInput.classList.add("is-invalid");
+      return false;
+    } else if (!emailValue.match(emailPattern)) {
+      emailError.textContent = "Please enter a valid email address";
+      emailInput.classList.add("is-invalid");
+      return false;
+    } else {
+      emailError.textContent = "";
+      emailInput.classList.remove("is-invalid");
+      return true;
+    }
+  }
 </script>
 <%- include("../../views/partials/user/footer") %>
-
-
-

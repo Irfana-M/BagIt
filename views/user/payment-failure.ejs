@@ -1,97 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Payment Failed</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <style>
-        .failure-container {
-            min-height: 100vh;
-            background-color: #f8f9fa;
-        }
-        
+      .failure-container {
+        min-height: 100vh;
+        background-color: #f8f9fa;
+      }
+
+      .failure-card {
+        max-width: 500px;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .illustration {
+        width: 200px;
+        height: 200px;
+        margin: 2rem auto;
+      }
+
+      .btn-retry {
+        background-color: #dc3545;
+        color: white;
+        transition: all 0.3s ease;
+      }
+
+      .btn-retry:hover {
+        background-color: #c82333;
+        color: white;
+        transform: translateY(-2px);
+      }
+
+      .btn-details {
+        border: 2px solid #6c757d;
+        transition: all 0.3s ease;
+      }
+
+      .btn-details:hover {
+        background-color: #6c757d;
+        color: white;
+        transform: translateY(-2px);
+      }
+
+      @media (max-width: 576px) {
         .failure-card {
-            max-width: 500px;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          margin: 1rem;
         }
-        
-        .illustration {
-            width: 200px;
-            height: 200px;
-            margin: 2rem auto;
+        .btn-container {
+          flex-direction: column;
         }
-        
-        .btn-retry {
-            background-color: #dc3545;
-            color: white;
-            transition: all 0.3s ease;
+        .btn-container .btn {
+          width: 100%;
+          margin: 0.5rem 0;
         }
-        
-        .btn-retry:hover {
-            background-color: #c82333;
-            color: white;
-            transform: translateY(-2px);
-        }
-        
-        .btn-details {
-            border: 2px solid #6c757d;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-details:hover {
-            background-color: #6c757d;
-            color: white;
-            transform: translateY(-2px);
-        }
-        
-        @media (max-width: 576px) {
-            .failure-card {
-                margin: 1rem;
-            }
-            .btn-container {
-                flex-direction: column;
-            }
-            .btn-container .btn {
-                width: 100%;
-                margin: 0.5rem 0;
-            }
-        }
+      }
     </style>
-</head>
-<body>
-    <div class="failure-container d-flex align-items-center justify-content-center">
-        <div class="failure-card bg-white p-4 m-3">
-            <div class="text-center">
-                <div class="illustration">
-                    <img src="/api/placeholder/200/200" alt="Payment Failed Illustration" class="img-fluid">
-                </div>
-                <h2 class="mb-4 text-danger">Payment Failed</h2>
-                <p class="text-muted mb-4">We couldn't process your payment. Please try again or check your payment details.</p>
-                <div class="btn-container d-flex gap-3 justify-content-center">
-                    <button class="btn btn-retry px-4 py-2" onclick="retryPayment()">
-                        Retry Payment
-                    </button>
-                    <button class="btn btn-details px-4 py-2" onclick="viewOrderDetails()">
-                        View Order Details
-                    </button>
-                </div>
-            </div>
+  </head>
+  <body>
+    <div
+      class="failure-container d-flex align-items-center justify-content-center"
+    >
+      <div class="failure-card bg-white p-4 m-3">
+        <div class="text-center">
+          <div class="illustration">
+            <img
+              src="/api/placeholder/200/200"
+              alt="Payment Failed Illustration"
+              class="img-fluid"
+            />
+          </div>
+          <h2 class="mb-4 text-danger">Payment Failed</h2>
+          <p class="text-muted mb-4">
+            We couldn't process your payment. Please try again or check your
+            payment details.
+          </p>
+          <div class="btn-container d-flex gap-3 justify-content-center">
+            <button class="btn btn-retry px-4 py-2" onclick="retryPayment()">
+              Retry Payment
+            </button>
+            <button
+              class="btn btn-details px-4 py-2"
+              onclick="viewOrderDetails()"
+            >
+              View Order Details
+            </button>
+          </div>
         </div>
+      </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
     <script>
-        function retryPayment() {
-            console.log('Retrying payment...');
-            window.location.href = "/checkout";
-        }
+      function retryPayment() {
+        console.log("Retrying payment...");
+        window.location.href = "/checkout";
+      }
 
-        function viewOrderDetails() {
-            console.log('Redirecting to order details...');
-            window.location.href = "/orders"
-        }
+      function viewOrderDetails() {
+        console.log("Redirecting to order details...");
+        window.location.href = "/orders";
+      }
     </script>
-</body>
+  </body>
 </html>

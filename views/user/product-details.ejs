@@ -1,6 +1,6 @@
 <style>
 	.zoom-container {
-	  overflow: hidden; /* Ensures the zoomed image doesn't spill out */
+	  overflow: hidden; 
 	  position: relative;
 	}
 	
@@ -10,13 +10,10 @@
 	}
 	
 	.zoom-container:hover img {
-	  transform: scale(2); /* Adjust scale value as needed */
+	  transform: scale(2); 
 	}
 	
-	</style>
-
 	
-<style>
 	.carousel-item img {
 		background: #f8f9fa;
 	}
@@ -218,8 +215,8 @@
 	  document.querySelectorAll('.zoom-container').forEach(function(container) {
 		container.addEventListener('mousemove', function(e) {
 		  const rect = container.getBoundingClientRect();
-		  const x = e.clientX - rect.left; // X coordinate relative to container
-		  const y = e.clientY - rect.top;  // Y coordinate relative to container
+		  const x = e.clientX - rect.left; 
+		  const y = e.clientY - rect.top;  
 		  const xPercent = (x / rect.width) * 100;
 		  const yPercent = (y / rect.height) * 100;
 		  container.querySelector('img').style.transformOrigin = `${xPercent}% ${yPercent}%`;
@@ -239,7 +236,7 @@
 		$(document).ready(function() {
 			// Initialize carousel
 			$('#product-carousel').carousel({
-				interval: 5000 // Change slide every 5 seconds
+				interval: 5000 
 			});
 	
 			// Enable thumbnail clicks

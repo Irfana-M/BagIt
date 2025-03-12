@@ -261,14 +261,6 @@
                 <li class="nav-item active">
                   <a class="nav-link" href="/shop">Shop</a>
                 </li>
-                <!-- <a href="/shop" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
-                                 aria-expanded="false">Shop</a> -->
-                <!-- <ul class="dropdown-menu">
-                                    <li class="nav-item"><a class="nav-link" href="">Shop Category</a></li>
-                                    <li class="nav-item"><a class="nav-link" href="/checkout">Product Checkout</a></li>
-                                    <li class="nav-item"><a class="nav-link" href='/view-cart'>Shopping Cart</a></li>
-                                    <li class="nav-item"><a class="nav-link" href="confirmation.html">Confirmation</a></li>
-                                </ul> -->
 
                 <li class="nav-item submenu dropdown">
                   <a
@@ -436,8 +428,11 @@
                     >
                       <i class="bi bi-trash"></i>
                     </a>
-                    <a id="buy-now-<%= item.productId._id %>" href="/getCheckout?id=<%= item.productId._id %>&quantity=<%= item.quantity %>"
-                      class="btn btn-sm btn-success">
+                    <a
+                      id="buy-now-<%= item.productId._id %>"
+                      href="/getCheckout?id=<%= item.productId._id %>&quantity=<%= item.quantity %>"
+                      class="btn btn-sm btn-success"
+                    >
                       Buy This Now
                     </a>
                   </td>
@@ -701,72 +696,74 @@
       }
 
       function updateCart(productId, newQuantity) {
-  fetch("/update-cart", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      productId: productId,
-      quantity: newQuantity,
-    }),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.success) {
-        // Update the total price dynamically
-        const totalPriceElement = document.getElementById(
-          `total-price-${productId}`
-        );
-        if (totalPriceElement) {
-          totalPriceElement.innerText = `₹${data.newTotalPrice}`;
-        }
+        fetch("/update-cart", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            productId: productId,
+            quantity: newQuantity,
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              const totalPriceElement = document.getElementById(
+                `total-price-${productId}`
+              );
+              if (totalPriceElement) {
+                totalPriceElement.innerText = `₹${data.newTotalPrice}`;
+              }
 
-        // Update final total if the element exists
-        const finalTotalElement = document.getElementById("final-total");
-        const totalSalePrice = document.getElementById("totalSalePrice");
-        const totalRegularPrice = document.getElementById("totalRegularPrice");
-        const totalDiscount = document.getElementById("totalDiscount");
+              const finalTotalElement = document.getElementById("final-total");
+              const totalSalePrice = document.getElementById("totalSalePrice");
+              const totalRegularPrice =
+                document.getElementById("totalRegularPrice");
+              const totalDiscount = document.getElementById("totalDiscount");
 
-        if (finalTotalElement) {
-          finalTotalElement.innerText = `₹${data.finalTotal}`;
-        }
-        if (totalSalePrice) {
-          totalSalePrice.innerText = `₹${data.finalTotal}`;
-        }
-        if (totalRegularPrice) {
-          totalRegularPrice.innerText = `₹${data.totalOriginalPrice}`;
-        }
-        if (totalDiscount) {
-          totalDiscount.innerText = `-₹${data.totalDiscount}`;
-        }
+              if (finalTotalElement) {
+                finalTotalElement.innerText = `₹${data.finalTotal}`;
+              }
+              if (totalSalePrice) {
+                totalSalePrice.innerText = `₹${data.finalTotal}`;
+              }
+              if (totalRegularPrice) {
+                totalRegularPrice.innerText = `₹${data.totalOriginalPrice}`;
+              }
+              if (totalDiscount) {
+                totalDiscount.innerText = `-₹${data.totalDiscount}`;
+              }
 
-        // 🔥 Update the "Buy This Now" link with the new quantity
-        const buyNowLink = document.getElementById(`buy-now-${productId}`);
-        if (buyNowLink) {
-          buyNowLink.href = `/getCheckout?id=${productId}&quantity=${newQuantity}`;
-        }
+              const buyNowLink = document.getElementById(
+                `buy-now-${productId}`
+              );
+              if (buyNowLink) {
+                buyNowLink.href = `/getCheckout?id=${productId}&quantity=${newQuantity}`;
+              }
 
-        console.log("Cart updated successfully");
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "Failed to update cart",
-          text: data.message || "Something went wrong while updating the cart.",
-          confirmButtonText: "OK",
-        });
+              console.log("Cart updated successfully");
+            } else {
+              Swal.fire({
+                icon: "error",
+                title: "Failed to update cart",
+                text:
+                  data.message ||
+                  "Something went wrong while updating the cart.",
+                confirmButtonText: "OK",
+              });
+            }
+          })
+          .catch((error) => {
+            console.error("Error updating cart:", error);
+            Swal.fire({
+              icon: "error",
+              title: "Network Error",
+              text: "Failed to connect to the server. Please try again later.",
+              confirmButtonText: "OK",
+            });
+          });
       }
-    })
-    .catch((error) => {
-      console.error("Error updating cart:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Network Error",
-        text: "Failed to connect to the server. Please try again later.",
-        confirmButtonText: "OK",
-      });
-    });
-}
     </script>
     <script>
       document.querySelectorAll(".remove-btn").forEach((button) => {

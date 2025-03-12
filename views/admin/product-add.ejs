@@ -39,14 +39,7 @@
                                    class="form-control border" id="product_name">
                                <div id="productName-error" class="error-message"></div>
                            </div>
-                           <!-- <div class="col-lg-4 mb-4">
-                               <label class="form-label">Brand</label>
-                               <select class="form-select border" name="brand">
-                                       <option value="">
-                                       </option>
-                               </select>
-                               <div id="brand-error" class="error-message"></div>
-                           </div> -->
+                           
                            <div class="mb-4">
                                <label class="form-label">Full description</label>
                                <textarea placeholder="Type here" id="descriptionid" name="description" class="form-control border"
@@ -293,7 +286,7 @@ function viewImage1(event){
 }
 
 function validateForm() {
-    clearErrorMessages(); // Ensure this function is defined as above
+    clearErrorMessages(); 
 
     let isValid = true;
 
@@ -306,48 +299,48 @@ function validateForm() {
     const category = document.getElementsByName('category')[0].value.trim();
     const images = document.getElementById('input1').files;
 
-    // Validate Product Name
+    
     if (name === '') {
         document.getElementById('productName-error').textContent = 'Product name is required.';
         isValid = false;
     }
 
-    // Validate Description
+    
     if (description === '') {
         document.getElementById('description-error').textContent = 'Description is required.';
         isValid = false;
     }
 
-    // Validate Regular Price
+    
     if (price === '' || isNaN(price)) {
         document.getElementById('regularPrice-error').textContent = 'Valid regular price is required.';
         isValid = false;
     }
 
-    // Validate Sale Price
+    
     if (saleprice === '' || isNaN(saleprice)) {
         document.getElementById('salePrice-error').textContent = 'Valid sale price is required.';
         isValid = false;
     }
-    //validate quantity
+    
     if (!quantity.trim() || isNaN(quantity) || parseInt(quantity) <= 0) {
         document.getElementById('quantity-error').textContent = 'Enter a valid quantity.';
         isValid = false;
     }
 
-    // Validate Color
+    
     if (color === '') {
         document.getElementById('color-error').textContent = 'Color is required.';
         isValid = false;
     }
 
-    // Validate Category
+    
     if (category === '') {
         document.getElementById('category-error').textContent = 'Category is required.';
         isValid = false;
     }
 
-    // Validate Images
+    
     if (images.length === 0) {
         document.getElementById('images-error').textContent = 'At least one image is required.';
         isValid = false;

@@ -228,22 +228,22 @@
             document.querySelectorAll(".order-status-dropdown").forEach(dropdown => {
                 dropdown.addEventListener("change", function () {
                     const orderId = "<%= order.orderId %>"; 
-                    const productId = this.getAttribute("data-product-id"); // Get productId
-                    const currentStatus = this.getAttribute("data-current-status"); // Current status
+                    const productId = this.getAttribute("data-product-id"); 
+                    const currentStatus = this.getAttribute("data-current-status"); 
                     const newStatus = this.value;
     
-                    // Prevent changing from Delivered or Cancelled
+                    
                     if (currentStatus === "Delivered" || currentStatus === "Cancelled") {
                         Swal.fire({
                             title: "Action Not Allowed",
                             text: "You cannot change the status of a Delivered or Cancelled order item.",
                             icon: "error"
                         });
-                        this.value = currentStatus; // Reset dropdown to previous value
+                        this.value = currentStatus; 
                         return;
                     }
     
-                    // Show confirmation SweetAlert
+                    
                     Swal.fire({
                         title: "Are you sure?",
                         text: `Do you want to change the product status to ${newStatus}?`,
@@ -253,7 +253,7 @@
                         cancelButtonText: "No, cancel!"
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            // Send request with orderId + productId
+                            
                             fetch("/admin/update-order-status", {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
@@ -263,10 +263,10 @@
                             .then(data => {
                                 if (data.success) {
                                     Swal.fire("Updated!", "Product status has been changed.", "success")
-                                        .then(() => window.location.reload()); // Reload on success
+                                        .then(() => window.location.reload()); 
                                 } else {
                                     Swal.fire("Error", data.message || "Failed to update status.", "error");
-                                    this.value = currentStatus; // Reset dropdown
+                                    this.value = currentStatus; 
                                 }
                             })
                             .catch(error => {
@@ -274,7 +274,7 @@
                                 this.value = currentStatus;
                             });
                         } else {
-                            this.value = currentStatus; // Reset dropdown if cancelled
+                            this.value = currentStatus; 
                         }
                     });
                 });

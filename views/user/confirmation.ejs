@@ -1,376 +1,476 @@
 <!DOCTYPE html>
 <html lang="zxx" class="no-js">
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta charset="UTF-8">
-    <meta name="author" content="CodePixar">
-    <meta name="description" content="Confirmation Page">
-    <meta name="keywords" content="Confirmation, Order">
+  <head>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta charset="UTF-8" />
+    <meta name="author" content="CodePixar" />
+    <meta name="description" content="Confirmation Page" />
+    <meta name="keywords" content="Confirmation, Order" />
     <title>BAG IT Shopping</title>
 
-    <link rel="stylesheet" href="css/linearicons.css">
-    <link rel="stylesheet" href="css/owl.carousel.css">
-    <link rel="stylesheet" href="css/themify-icons.css">
-    <link rel="stylesheet" href="css/font-awesome.min.css">
-    <link rel="stylesheet" href="css/nice-select.css">
-    <link rel="stylesheet" href="css/nouislider.min.css">
-    <link rel="stylesheet" href="css/bootstrap.css">
-    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/linearicons.css" />
+    <link rel="stylesheet" href="css/owl.carousel.css" />
+    <link rel="stylesheet" href="css/themify-icons.css" />
+    <link rel="stylesheet" href="css/font-awesome.min.css" />
+    <link rel="stylesheet" href="css/nice-select.css" />
+    <link rel="stylesheet" href="css/nouislider.min.css" />
+    <link rel="stylesheet" href="css/bootstrap.css" />
+    <link rel="stylesheet" href="css/main.css" />
 
     <style>
-        /* General Body Styling */
-        body {
-            background: linear-gradient(to bottom right, #f2f4f8, #e0f7fa);
-            font-family: 'Arial', sans-serif;
-            color: #2c3e50;
-        }
-    
-        /* Confirmation Message Styling */
-        .title_confirmation {
-            font-size: 50px;
-            font-weight: 700;
-            color: #00bcd4;
-            text-align: center;
-            margin-bottom: 40px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 15px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-    
-        /* Order Details Section */
-        .order_details {
-            background-color: #ffffff;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            margin-top: 30px;
-        }
-    
-        .details_item h4 {
-            font-size: 24px;
-            color: #333;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #00bcd4;
-            padding-bottom: 10px;
-        }
-    
-        .details_item ul {
-            list-style: none;
-            padding: 0;
-        }
-    
-        .details_item ul li {
-            margin: 15px 0;
-            font-size: 16px;
-            color: #555;
-        }
-    
-        .details_item ul li a {
-            color: #555;
-            text-decoration: none;
-        }
-    
-        .details_item ul li a span {
-            font-weight: bold;
-            color: #00bcd4;
-        }
-    
-        /* Order Details Table */
-        .order_details_table {
-            margin-top: 40px;
-        }
-    
-        .order_details_table h2 {
-            font-size: 28px;
-            font-weight: 700;
-            color: #2c3e50;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-    
-        .order_details_table h2 u {
-            text-decoration: none;
-            border-bottom: 3px solid #00bcd4;
-        }
-    
-        .order_details_table table {
-            width: 100%;
-            margin-top: 20px;
-            border-collapse: collapse;
-        }
-    
-        .order_details_table th,
-        .order_details_table td {
-            text-align: left;
-            padding: 15px;
-            border-bottom: 1px solid #ddd;
-        }
-    
-        .order_details_table th {
-            background-color: #00bcd4;
-            color: white;
-            font-weight: 600;
-        }
-    
-        .order_details_table td {
-            font-size: 16px;
-        }
-    
-        .order_details_table h4 {
-            font-weight: bold;
-            color: #333;
-        }
-    
-        .order_details_table p {
-            font-size: 18px;
-            color: #2c3e50;
-        }
-    
-        .order_details_table .btn {
-            background-color: #00bcd4;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            font-size: 16px;
-            font-weight: 600;
-        }
-    
-        .order_details_table .btn:hover {
-            background-color: #00796b;
-        }
-    
-        .paymentClass {
-            color: #00bcd4;
-            font-weight: 700;
-        }
-    
-        /* Footer Styling */
-        footer {
-            background-color: #333;
-            color: white;
-            padding: 40px;
-            margin-top: 50px;
-        }
-    
-        footer .single-footer-widget {
-            margin-bottom: 30px;
-        }
-    
-        footer h6 {
-            font-size: 20px;
-            margin-bottom: 15px;
-        }
-    
-        footer .social-icons a {
-            color: #fff;
-            font-size: 20px;
-            margin: 0 10px;
-            transition: color 0.3s ease;
-        }
-    
-        footer .social-icons a:hover {
-            color: #00bcd4;
-        }
+      /* General Body Styling */
+      body {
+        background: linear-gradient(to bottom right, #f2f4f8, #e0f7fa);
+        font-family: "Arial", sans-serif;
+        color: #2c3e50;
+      }
+
+      /* Confirmation Message Styling */
+      .title_confirmation {
+        font-size: 50px;
+        font-weight: 700;
+        color: #00bcd4;
+        text-align: center;
+        margin-bottom: 40px;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 15px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Order Details Section */
+      .order_details {
+        background-color: #ffffff;
+        padding: 40px;
+        border-radius: 15px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin-top: 30px;
+      }
+
+      .details_item h4 {
+        font-size: 24px;
+        color: #333;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #00bcd4;
+        padding-bottom: 10px;
+      }
+
+      .details_item ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      .details_item ul li {
+        margin: 15px 0;
+        font-size: 16px;
+        color: #555;
+      }
+
+      .details_item ul li a {
+        color: #555;
+        text-decoration: none;
+      }
+
+      .details_item ul li a span {
+        font-weight: bold;
+        color: #00bcd4;
+      }
+
+      /* Order Details Table */
+      .order_details_table {
+        margin-top: 40px;
+      }
+
+      .order_details_table h2 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+
+      .order_details_table h2 u {
+        text-decoration: none;
+        border-bottom: 3px solid #00bcd4;
+      }
+
+      .order_details_table table {
+        width: 100%;
+        margin-top: 20px;
+        border-collapse: collapse;
+      }
+
+      .order_details_table th,
+      .order_details_table td {
+        text-align: left;
+        padding: 15px;
+        border-bottom: 1px solid #ddd;
+      }
+
+      .order_details_table th {
+        background-color: #00bcd4;
+        color: white;
+        font-weight: 600;
+      }
+
+      .order_details_table td {
+        font-size: 16px;
+      }
+
+      .order_details_table h4 {
+        font-weight: bold;
+        color: #333;
+      }
+
+      .order_details_table p {
+        font-size: 18px;
+        color: #2c3e50;
+      }
+
+      .order_details_table .btn {
+        background-color: #00bcd4;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      .order_details_table .btn:hover {
+        background-color: #00796b;
+      }
+
+      .paymentClass {
+        color: #00bcd4;
+        font-weight: 700;
+      }
+
+      /* Footer Styling */
+      footer {
+        background-color: #333;
+        color: white;
+        padding: 40px;
+        margin-top: 50px;
+      }
+
+      footer .single-footer-widget {
+        margin-bottom: 30px;
+      }
+
+      footer h6 {
+        font-size: 20px;
+        margin-bottom: 15px;
+      }
+
+      footer .social-icons a {
+        color: #fff;
+        font-size: 20px;
+        margin: 0 10px;
+        transition: color 0.3s ease;
+      }
+
+      footer .social-icons a:hover {
+        color: #00bcd4;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <header class="header_area sticky-header">
-		<div class="main_menu">
-			<nav class="navbar navbar-expand-lg navbar-light main_box">
-				<div class="container">
-					<!-- Brand and toggle for better mobile display -->
-					<a class="navbar-brand logo_h" href="index.html"><img src="img/logo.png" alt=""></a>
-					<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
-					</button>
-					<div class="collapse navbar-collapse offset" id="navbarSupportedContent">
-						<ul class="nav navbar-nav menu_nav ml-auto">
-							<li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-                            <li class="nav-item"><a class="nav-link" href="/shop">Shop</a></li>
-							
-							<li class="nav-item submenu dropdown">
-								<a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"></a>
-								<ul class="dropdown-menu">
-									<li class="nav-item"><a class="nav-link" href="blog.html"></a></li>
-									<li class="nav-item"><a class="nav-link" href="single-blog.html"></a></li>
-								</ul>
-							</li>
-							<li class="nav-item submenu dropdown">
-								<a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"></a>
-								<ul class="dropdown-menu">
-									<li class="nav-item"><a class="nav-link" href="login.html"></a></li>
-									<li class="nav-item"><a class="nav-link" href="tracking.html"></a></li>
-									<li class="nav-item"><a class="nav-link" href="elements.html"></a></li>
-								</ul>
-							</li>
-							<li class="nav-item"><a class="nav-link" href="contact.html"></a></li>
-						</ul>
-						<ul class="nav navbar-nav navbar-right">
-							<li class="nav-item"><a href="/view-cart" class="cart"><span class="ti-bag"></span></a></li>
-							<li class="nav-item">
-								<button class="search"><span class="lnr lnr-magnifier" id="search"></span></button>
-							</li>
-						</ul>
-					</div>
-				</div>
-			</nav>
-		</div>
-		
-	</header>
-	
-<!-- Start Banner Area -->
-<section class="banner-area organic-breadcrumb">
-	<div class="container">
-		<div class="breadcrumb-banner d-flex flex-wrap align-items-center justify-content-end">
-			<div class="col-first">
-				<h1>Confirmation</h1>
-				<nav class="d-flex align-items-center">
-					<a href="/">Home<span class="lnr lnr-arrow-right"></span></a>
-					<a href="/checkout">Checkout</a>
-				</nav>
-			</div>
-		</div>
-	</div>
-</section>
+      <div class="main_menu">
+        <nav class="navbar navbar-expand-lg navbar-light main_box">
+          <div class="container">
+            <!-- Brand and toggle for better mobile display -->
+            <a class="navbar-brand logo_h" href="index.html"
+              ><img src="img/logo.png" alt=""
+            /></a>
+            <button
+              class="navbar-toggler"
+              type="button"
+              data-toggle="collapse"
+              data-target="#navbarSupportedContent"
+              aria-controls="navbarSupportedContent"
+              aria-expanded="false"
+              aria-label="Toggle navigation"
+            >
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <div
+              class="collapse navbar-collapse offset"
+              id="navbarSupportedContent"
+            >
+              <ul class="nav navbar-nav menu_nav ml-auto">
+                <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/shop">Shop</a>
+                </li>
 
-    
+                <li class="nav-item submenu dropdown">
+                  <a
+                    href="#"
+                    class="nav-link dropdown-toggle"
+                    data-toggle="dropdown"
+                    role="button"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                  ></a>
+                  <ul class="dropdown-menu">
+                    <li class="nav-item">
+                      <a class="nav-link" href="blog.html"></a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" href="single-blog.html"></a>
+                    </li>
+                  </ul>
+                </li>
+                <li class="nav-item submenu dropdown">
+                  <a
+                    href="#"
+                    class="nav-link dropdown-toggle"
+                    data-toggle="dropdown"
+                    role="button"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                  ></a>
+                  <ul class="dropdown-menu">
+                    <li class="nav-item">
+                      <a class="nav-link" href="login.html"></a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" href="tracking.html"></a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" href="elements.html"></a>
+                    </li>
+                  </ul>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="contact.html"></a>
+                </li>
+              </ul>
+              <ul class="nav navbar-nav navbar-right">
+                <li class="nav-item">
+                  <a href="/view-cart" class="cart"
+                    ><span class="ti-bag"></span
+                  ></a>
+                </li>
+                <li class="nav-item">
+                  <button class="search">
+                    <span class="lnr lnr-magnifier" id="search"></span>
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Start Banner Area -->
+    <section class="banner-area organic-breadcrumb">
+      <div class="container">
+        <div
+          class="breadcrumb-banner d-flex flex-wrap align-items-center justify-content-end"
+        >
+          <div class="col-first">
+            <h1>Confirmation</h1>
+            <nav class="d-flex align-items-center">
+              <a href="/">Home<span class="lnr lnr-arrow-right"></span></a>
+              <a href="/checkout">Checkout</a>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Order Details Section -->
     <section class="order_details section_gap">
-        <div class="container">
-            <h1 class="title_confirmation">Thank you for your order. Your transaction has been completed successfully.</h1>
-            <div class="row order_d_inner">
-                <div class="col-lg-6 display-flex align-content-center ">
-                    <div class="details_item">
-                        <% if (selectedAddress) { %>
-                        <h4 style="color: #00bcd4;">Shipping Address</h4>
-                        <ul class="list">
-                            <li><a href="#"><span>Address Type</span>: <%= selectedAddress.addressType %></a></li>
-                            <li><a href="#"><span>City</span>: <%= selectedAddress.city %></a></li>
-                            <li><a href="#"><span>Landmark</span>: <%= selectedAddress.landMark %></a></li>
-                            <li><a href="#"><span>State</span>: <%= selectedAddress.state %></a></li>
-                            <li><a href="#"><span>Pincode</span>: <%= selectedAddress.pincode %></a></li>
-                            <li><a href="#"><span>Phone</span>: <%= selectedAddress.phone %></a></li>
-                            <li><a href="#"><span>Alternate Phone</span>: <%= selectedAddress.altPhone %></a></li>
-                        </ul>
-                        <% } else { %>
-                            <p>No shipping address available.</p>
-                        <% } %>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <% cartItems.forEach(item => { %>
-                        <div class="details_item">
-                            <img class="img-fluid" style="height: 30%; width: 30%;" src="uploads/product-images/<%= item.productId.productImage[0] %>" class="img-fluid" alt="Product Image">
-                        </div>
-                    <% }); %>
-                </div>
-                
+      <div class="container">
+        <h1 class="title_confirmation">
+          Thank you for your order. Your transaction has been completed
+          successfully.
+        </h1>
+        <div class="row order_d_inner">
+          <div class="col-lg-6 display-flex align-content-center">
+            <div class="details_item">
+              <% if (selectedAddress) { %>
+              <h4 style="color: #00bcd4">Shipping Address</h4>
+              <ul class="list">
+                <li>
+                  <a href="#"
+                    ><span>Address Type</span>: <%= selectedAddress.addressType
+                    %></a
+                  >
+                </li>
+                <li>
+                  <a href="#"><span>City</span>: <%= selectedAddress.city %></a>
+                </li>
+                <li>
+                  <a href="#"
+                    ><span>Landmark</span>: <%= selectedAddress.landMark %></a
+                  >
+                </li>
+                <li>
+                  <a href="#"
+                    ><span>State</span>: <%= selectedAddress.state %></a
+                  >
+                </li>
+                <li>
+                  <a href="#"
+                    ><span>Pincode</span>: <%= selectedAddress.pincode %></a
+                  >
+                </li>
+                <li>
+                  <a href="#"
+                    ><span>Phone</span>: <%= selectedAddress.phone %></a
+                  >
+                </li>
+                <li>
+                  <a href="#"
+                    ><span>Alternate Phone</span>: <%= selectedAddress.altPhone
+                    %></a
+                  >
+                </li>
+              </ul>
+              <% } else { %>
+              <p>No shipping address available.</p>
+              <% } %>
             </div>
-            <div class="order_details_table">
-                <h2 style="color: #00bcd4;"><u>Order Details</u></h2>
-                <h2>Order Method: <span class="paymentClass"><%= paymentMethod %></span></h2>
-                <h3>Payment Status: <span class="paymentClass"><%=paymentStatus%></span></h3>
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th scope="col">Product</th>
-                                <th scope="col">Quantity</th>
-                                <th scope="col">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% if (cartItems) { %>
-                            <% cartItems.forEach(item => { %>
-                            <tr>
-                                <td><p><%= item.productId.productName %></p></td>
-                                <td><h5>x <%= item.quantity %></h5></td>
-                                <td><p>₹<%= (item.productId.salePrice * item.quantity).toFixed(2) %></p></td>
-                            </tr>
-                            <% }); %>
-            
-                            <!-- Show original total price before discount -->
-                            <tr>
-                                <td><h4>Subtotal</h4></td>
-                                <td></td>
-                                <td><p>₹<%= totalOriginalPrice.toFixed(2) %></p></td>
-                            </tr>
-            
-                            <!-- Show discount amount if applied -->
-                            <% if (totalDiscount > 0) { %>
-                            <tr>
-                                <td><h4>Discount</h4></td>
-                                <td></td>
-                                <td><p class="text-success">- ₹<%= totalDiscount.toFixed(2) %></p></td>
-                            </tr>
-                            <% } %>
-                            <% if (couponDiscount > 0) { %>
-                                <tr>
-                                    <td><h4>Coupon Discount</h4></td>
-                                    <td></td>
-                                    <td><p class="text-success">- ₹<%= couponDiscount.toFixed(2) %></p></td>
-                                </tr>
-                                <% } %>
-            
-                            <!-- Shipping Charge -->
-                            <tr>
-                                <td><h4>Shipping</h4></td>
-                                <td></td>
-                                <td><p>Flat rate: ₹<%= shippingCharge %></p></td>
-                            </tr>
-            
-                            <!-- Final Total after Discount & Shipping -->
-                            <tr>
-                                <td><h4>Total</h4></td>
-                                <td></td>
-                                <td><p><strong>₹<%= subTotal.toFixed(2) %></strong></p></td>
-                            </tr>
-                            <% } %>
-                        </tbody>
-                    </table>
-                </div>
+          </div>
+          <div class="col-lg-6">
+            <% cartItems.forEach(item => { %>
+            <div class="details_item">
+              <img
+                class="img-fluid"
+                style="height: 30%; width: 30%"
+                src="uploads/product-images/<%= item.productId.productImage[0] %>"
+                class="img-fluid"
+                alt="Product Image"
+              />
             </div>
-            
-            <div class="row">
-                <div class="col-lg-6 text-center">
-                    <a class="btn btn-primary" href="/">Back to Shopping</a>
-                </div>
-                <div class="col-lg-6 text-center">
-                    <a class="btn btn-primary" href="/orders">View Your Orders</a>
-                </div>
-            </div>
+            <% }); %>
+          </div>
         </div>
+        <div class="order_details_table">
+          <h2 style="color: #00bcd4"><u>Order Details</u></h2>
+          <h2>
+            Order Method: <span class="paymentClass"><%= paymentMethod %></span>
+          </h2>
+          <h3>
+            Payment Status: <span class="paymentClass"><%=paymentStatus%></span>
+          </h3>
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th scope="col">Product</th>
+                  <th scope="col">Quantity</th>
+                  <th scope="col">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (cartItems) { %> <% cartItems.forEach(item => { %>
+                <tr>
+                  <td><p><%= item.productId.productName %></p></td>
+                  <td><h5>x <%= item.quantity %></h5></td>
+                  <td>
+                    <p>
+                      ₹<%= (item.productId.salePrice * item.quantity).toFixed(2)
+                      %>
+                    </p>
+                  </td>
+                </tr>
+                <% }); %>
+
+                <!-- Show original total price before discount -->
+                <tr>
+                  <td><h4>Subtotal</h4></td>
+                  <td></td>
+                  <td><p>₹<%= totalOriginalPrice.toFixed(2) %></p></td>
+                </tr>
+
+                <!-- Show discount amount if applied -->
+                <% if (totalDiscount > 0) { %>
+                <tr>
+                  <td><h4>Discount</h4></td>
+                  <td></td>
+                  <td>
+                    <p class="text-success">
+                      - ₹<%= totalDiscount.toFixed(2) %>
+                    </p>
+                  </td>
+                </tr>
+                <% } %> <% if (couponDiscount > 0) { %>
+                <tr>
+                  <td><h4>Coupon Discount</h4></td>
+                  <td></td>
+                  <td>
+                    <p class="text-success">
+                      - ₹<%= couponDiscount.toFixed(2) %>
+                    </p>
+                  </td>
+                </tr>
+                <% } %>
+
+                <!-- Shipping Charge -->
+                <tr>
+                  <td><h4>Shipping</h4></td>
+                  <td></td>
+                  <td><p>Flat rate: ₹<%= shippingCharge %></p></td>
+                </tr>
+
+                <!-- Final Total after Discount & Shipping -->
+                <tr>
+                  <td><h4>Total</h4></td>
+                  <td></td>
+                  <td>
+                    <p><strong>₹<%= subTotal.toFixed(2) %></strong></p>
+                  </td>
+                </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-lg-6 text-center">
+            <a class="btn btn-primary" href="/">Back to Shopping</a>
+          </div>
+          <div class="col-lg-6 text-center">
+            <a class="btn btn-primary" href="/orders">View Your Orders</a>
+          </div>
+        </div>
+      </div>
     </section>
     <footer>
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-4 col-md-6 single-footer-widget">
-                    <h6>Follow Us</h6>
-                    <div class="social-icons">
-                        <a href="#"><i class="fa fa-facebook"></i></a>
-                        <a href="#"><i class="fa fa-twitter"></i></a>
-                        <a href="#"><i class="fa fa-google"></i></a>
-                        <a href="#"><i class="fa fa-instagram"></i></a>
-                    </div>
-                </div>
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-4 col-md-6 single-footer-widget">
+            <h6>Follow Us</h6>
+            <div class="social-icons">
+              <a href="#"><i class="fa fa-facebook"></i></a>
+              <a href="#"><i class="fa fa-twitter"></i></a>
+              <a href="#"><i class="fa fa-google"></i></a>
+              <a href="#"><i class="fa fa-instagram"></i></a>
             </div>
+          </div>
         </div>
+      </div>
     </footer>
     <script>
-        history.pushState(null, null, location.href);
-        window.onpopstate = function () {
-          history.go(1);
-        };
-      </script>
-     
-      
-    
-</body>
+      history.pushState(null, null, location.href);
+      window.onpopstate = function () {
+        history.go(1);
+      };
+    </script>
+  </body>
 </html>

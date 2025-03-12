@@ -7,7 +7,7 @@
         background-color: #828b#ffea00b3;
       }
       .selected {
-  background-color: #e1e4f1; /* Change to your preferred highlight color */
+  background-color: #e1e4f1; 
   color: white;
   font-weight: bold;
   border-radius: 5px;
@@ -72,7 +72,7 @@
           </div>
           <!-- End Filter Bar -->
 
-          <!-- Start Best Seller -->
+          
          <!-- Product List Container -->
 <section class="lattest-product-area pb-40 category-list">
   <div id="productList" class="row">
@@ -240,10 +240,6 @@
   </div>
   
 
-    <!-- Start related-product Area -->
-
-    <!-- End related-product Area -->
-
     <!-- start footer Area -->
     <footer class="footer-area section_gap">
       <div class="container">
@@ -292,9 +288,7 @@
                       />
                     </div>
 
-                    <!-- <div class="col-lg-4 col-md-4">
-													<button class="bb-btn btn"><span class="lnr lnr-arrow-right"></span></button>
-												</div>  -->
+                    
                   </div>
                   <div class="info"></div>
                 </form>
@@ -493,7 +487,7 @@
     sort: document.querySelector("#sortOptions a.selected")?.dataset.sort,
     query: document.getElementById("searchQuery").value.trim(),
     page: filters.page || 1,
-    ...filters, // Override with any explicit filters passed
+    ...filters, 
   };
     
       
@@ -863,7 +857,7 @@ function addToCart(productId) {
                 icon: "info",
                 timer: 2000,
               }).then(() => {
-                window.location.href = "/login"; // Redirect to login page
+                window.location.href = "/login"; 
               });
             }
           })
@@ -880,11 +874,11 @@ function addToCart(productId) {
     </script>
     <script>
       function applySort(event, sortValue) {
-        event.preventDefault(); // Prevent default anchor behavior
+        event.preventDefault(); 
 
         const urlParams = new URLSearchParams(window.location.search);
-        urlParams.set("sort", sortValue); // Update sort parameter
-        window.location.href = `/sortProducts?${urlParams.toString()}`; // Redirect to the correct route
+        urlParams.set("sort", sortValue); 
+        window.location.href = `/sortProducts?${urlParams.toString()}`; 
       }
     </script>
   </body>

@@ -120,15 +120,15 @@
             url:"/admin/addProductOffer",
             method:'post',
             data:{
-                percentage:amount, // Fixed spelling
+                percentage:amount, 
                 productId :productId
             },
             success:(response)=>{
                 if(response.status===true){
                     location.reload();
-                    Swal.fire('Offer added','The offer has been added','success'); // Corrected the message
+                    Swal.fire('Offer added','The offer has been added','success'); 
                 }else{
-                    alert("Failed to add offer"); // Improved the error message
+                    alert("Failed to add offer"); 
                 }
             }
         });
@@ -142,7 +142,7 @@
                 icon:'warning',
                 showCancelButton:true,
                 confirmButtonColor:'#3085d6',
-                cancelButtonColor:'#d33', // Added missing hash symbol
+                cancelButtonColor:'#d33', 
                 confirmButtonText:'Yes, remove it!',
                 timer:5000,
                 timerProgressBar:true
@@ -159,9 +159,9 @@
                                 Swal.fire("Removed!",'The offer has been removed','success');
                                 location.reload();
                             }else if(response.status===false){
-                                Swal.fire('Failed to remove offer'); // Improved the error message
+                                Swal.fire('Failed to remove offer'); 
                             }else{
-                                alert('Failed to remove offer'); // Improved the error message
+                                alert('Failed to remove offer'); 
                             }
                         }
                     });
@@ -187,11 +187,11 @@
 
     if (result.isConfirmed) {
       const response = await fetch("/admin/deleteProduct", {
-        method: "DELETE", // Use DELETE method
+        method: "DELETE", 
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ productId }), // Send productId in the body
+        body: JSON.stringify({ productId }), 
       });
 
       const data = await response.json();
@@ -202,7 +202,7 @@
           data.message || "The product has been deleted successfully.",
           "success"
         ).then(() => {
-          location.reload(); // Reload the page to reflect changes
+          location.reload(); 
         });
       } else {
         Swal.fire("Failed", data.message || "Failed to delete product.", "error");
