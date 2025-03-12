@@ -14,6 +14,49 @@
 	}
 	
 	</style>
+
+	
+<style>
+	.carousel-item img {
+		background: #f8f9fa;
+	}
+
+	.carousel-control-prev,
+	.carousel-control-next {
+		background: rgba(0,0,0,0.2);
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+		top: 50%;
+		transform: translateY(-50%);
+	}
+
+	.carousel-indicators {
+		bottom: -50px;
+	}
+
+	.carousel-indicators li {
+		background-color: #777;
+	}
+
+	.img-thumbnail {
+		transition: opacity 0.2s;
+	}
+
+	.img-thumbnail:hover {
+		opacity: 0.8;
+	}
+
+	#product-carousel {
+		margin-bottom: 50px;
+	}
+
+	.carousel-control-prev-icon,
+	.carousel-control-next-icon {
+		width: 20px;
+		height: 20px;
+	}
+</style>
 	
 	
 		<!-- Start Banner Area -->
@@ -191,47 +234,6 @@
 	<%- include("../../views/partials/user/footer") %>
 		
 	
-		<style>
-			.carousel-item img {
-				background: #f8f9fa;
-			}
-	
-			.carousel-control-prev,
-			.carousel-control-next {
-				background: rgba(0,0,0,0.2);
-				width: 40px;
-				height: 40px;
-				border-radius: 50%;
-				top: 50%;
-				transform: translateY(-50%);
-			}
-	
-			.carousel-indicators {
-				bottom: -50px;
-			}
-	
-			.carousel-indicators li {
-				background-color: #777;
-			}
-	
-			.img-thumbnail {
-				transition: opacity 0.2s;
-			}
-	
-			.img-thumbnail:hover {
-				opacity: 0.8;
-			}
-	
-			#product-carousel {
-				margin-bottom: 50px;
-			}
-	
-			.carousel-control-prev-icon,
-			.carousel-control-next-icon {
-				width: 20px;
-				height: 20px;
-			}
-		</style>
 	
 		<script>
 		$(document).ready(function() {
