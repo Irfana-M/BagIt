@@ -10,18 +10,16 @@ const cartController = require("../controllers/user/cartController");
 const orderController = require("../controllers/user/orderController");
 const wishlistController = require("../controllers/user/wishlistController");
 const walletController = require("../controllers/user/walletController");
-const {userAuth,adminAuth} = require("../middlewares/auth");
+const {userAuth,adminAuth,noCache,isUserAuthenticated} = require("../middlewares/auth");
 
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
     key_secret: process.env.RAZORPAY_KEY_SECRET
 });
 
-
-
 //home page
 router.get('/pageNotFound',userController.pageNotFound);
-router.get('/',userController.loadHomepage);
+router.get('/',isUserAuthenticated,userController.loadHomepage);
 //Product management
 router.get("/shop",userController.loadShoppingPage);
 router.get('/filter',userController.filterProduct);
@@ -31,21 +29,22 @@ router.get("/productDetails",productController.productDetails);
 router.get("/wishlist",userAuth,wishlistController.loadWishlist);
 router.post("/addToWishlist",userAuth,wishlistController.addToWishlist);
 router.get("/removeFromWishlist",userAuth,wishlistController.removeProducts);
-//sortProduct
-//router.get("/sortProduct",userController.getSortProduct);
 
 //user management
-router.get('/signup',userController.loadSignUp);
-router.get('/login',userController.loadLogin);
+router.get('/signup',noCache,userController.loadSignUp);
+router.get('/login',noCache,userController.loadLogin);
 router.post('/login',userController.login);
 router.post('/signup',userController.signUp);
 router.post('/verify_otp',userController.verifyOtp);
-router.post("/resend-otp",userController.resendOtp);router.get('/auth/google',passport.authenticate('google'))
+router.post("/resend-otp",userController.resendOtp);
+router.get('/auth/google',passport.authenticate('google'))
 router.get('/auth/google/callback',passport.authenticate('google',{failureRedirect:'/login'}),(req,res)=>{  
 console.log('object');req.session.user = req.user._id;
         req.session.name=req.user.name || false;
         res.redirect('/')
     })
+
+    
 //profile management
 router.get("/forgot-password", profileController.getForgotPassPage);
 router.post("/forgot-email-valid",profileController.forgotEmailValid);

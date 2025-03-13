@@ -11,16 +11,16 @@ const productController = require("../controllers/admin/productController");
 const orderController = require("../controllers/admin/orderController");
 const couponController = require("../controllers/admin/couponController");
 
-const {userAuth,adminAuth} = require("../middlewares/auth");
+const {adminAuth,noCache,isAdminAuthenticated} = require("../middlewares/auth");
 const uploads = require('../middlewares/upload');
 
 
 
 router.get('/pageerror',adminController.pageerror);
 //Login management
-router.get('/login', adminController.loadLogin);
+router.get('/login', noCache,adminController.loadLogin);
 router.post('/login',adminController.login);
-router.get('/',adminAuth,adminController.loadDashboard);
+router.get('/',isAdminAuthenticated,adminAuth,adminController.loadDashboard);
 router.get("/logout",adminController.logout);
 //Customer management
 router.get('/users',adminAuth,customerController.customerInfo);

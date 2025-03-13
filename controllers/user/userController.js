@@ -17,6 +17,12 @@ const  pageNotFound = async (req,res)=>{
 
 const loadLogin = async (req,res)=>{
     try{
+            if (req.session.user || req.session.googleId) {
+                return res.redirect('/');
+            }
+            
+        
+        
         return res.render('login');
        
     }catch(error){
@@ -250,6 +256,7 @@ const loadHomepage = async (req, res) => {
             userData = await User.findOne({ googleId: googleId });
         }
 
+        
         res.render('home', { user: userData, products: productData,googleId });
     } catch (error) {
         console.error('Home page not found', error);
@@ -298,7 +305,8 @@ const loadShoppingPage = async (req, res) => {
       }));
     
       const sort = req.query.sort || ""; 
-  
+
+
       res.render("shop", {
         user: userData,
         products: products,

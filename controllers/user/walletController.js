@@ -5,12 +5,22 @@ const getUserWallet = async (req, res) => {
   try {
       const userId = req.session.user;
 
-      const user = await User.findById(userId);
+      userData = await User.findOne({ _id: userId });
       const wallet = await Wallet.findOne({ userId: userId });
 
       if (!wallet) {
-          return res.render('wallet', { wallet: { balance: 0, transactions: [] } });
-      }
+        return res.render('wallet', {
+            wallet: { balance: 0, transactions: [] },
+            pagination: {  
+                page: 1,
+                limit: 10,
+                totalTransactions: 0,
+                totalPages: 1,
+            },
+            user: userData,
+        });
+    }
+    
       const page = parseInt(req.query.page) || 1; 
       const limit = parseInt(req.query.limit) || 10; 
       const skip = (page - 1) * limit; 
@@ -26,12 +36,13 @@ const getUserWallet = async (req, res) => {
               transactions: transactions,
           },
           pagination: {
-            user,
+            user:userData,
               page: page,
               limit: limit,
               totalTransactions: wallet.transactions.length,
               totalPages: Math.ceil(wallet.transactions.length / limit),
           },
+          user:userData,
       });
   } catch (error) {
       console.error(error);
@@ -40,7 +51,7 @@ const getUserWallet = async (req, res) => {
 };
 
 
-    const addtoWallet = async (req,res)=>{
+  const addtoWallet = async (req,res)=>{
         const { amount } = req.body;
         
         if (!amount || amount <= 0) {

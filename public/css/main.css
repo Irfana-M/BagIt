@@ -72,6 +72,7 @@
   background: -o-linear-gradient(90deg, #ffba00 0%, #ff6c00 100%);
   background: linear-gradient(90deg, #ffba00 0%, #ff6c00 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent; }
 
 /* Start primary btn css
@@ -120,7 +121,7 @@ body {
   font-size: 14px;
   font-family: "Roboto", sans-serif;
   font-weight: 400;
-  color: #777777;
+  color: #7777;
   background: #fff; }
 
 html,
@@ -1339,6 +1340,7 @@ h1, h2, h3, h4, h5, h6 {
   background: -webkit-linear-gradient(45deg, #f6463d 0%, #f6398d 45%, #f52cdc 100%);
   background: -ms-linear-gradient(45deg, #f6463d 0%, #f6398d 45%, #f52cdc 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent; }
 
 /* start features area css
@@ -2321,6 +2323,7 @@ label {
         font-weight: 400;
         background: -webkit-linear-gradient(-180deg, #555555, #555555);
         -webkit-background-clip: text;
+  background-clip: text;
         -webkit-text-fill-color: transparent; }
       .mini-cart-2a .single-cart-item .middle h6 {
         font-weight: 700;
@@ -2330,6 +2333,7 @@ label {
       .mini-cart-2a .single-cart-item .cross span {
         background: -webkit-linear-gradient(-180deg, #777, #777);
         -webkit-background-clip: text;
+  background-clip: text;
         -webkit-text-fill-color: transparent; }
   .mini-cart-2a .proceed-btn {
     padding: 20px; }
@@ -2372,6 +2376,7 @@ label {
         font-weight: 400;
         background: -webkit-linear-gradient(-180deg, #555555, #555555);
         -webkit-background-clip: text;
+         background-clip: text;
         -webkit-text-fill-color: transparent; }
       .mini-cart .single-cart-item .middle h6 {
         font-weight: 700;
@@ -2381,6 +2386,7 @@ label {
       .mini-cart .single-cart-item .cross span {
         background: -webkit-linear-gradient(-180deg, #777, #777);
         -webkit-background-clip: text;
+  background-clip: text;
         -webkit-text-fill-color: transparent; }
   .mini-cart .proceed-btn {
     padding: 20px; }
@@ -2683,6 +2689,7 @@ label {
       display: inline-block;
       background: -webkit-linear-gradient(-180deg, #555555, #555555);
       -webkit-background-clip: text;
+  background-clip: text;
       -webkit-text-fill-color: transparent; }
     .single-search-product .desc .price {
       font-weight: 700;
@@ -3008,6 +3015,7 @@ label {
       display: inline-block;
       background: -webkit-linear-gradient(-180deg, #555555, #555555);
       -webkit-background-clip: text;
+  background-clip: text;
       -webkit-text-fill-color: transparent; }
     .single-sidebar-product .desc .price {
       font-weight: 700;
@@ -3333,11 +3341,11 @@ label {
   }
 }
 .banner-content-new{
-  margin-top: 30%;
+  margin-top: -60%;
 }
 .banner-content-new h1{
  
-  font-size: 5rem;
+  font-size: 7rem;
   color:#6A0707 ;
   
 }
@@ -3474,6 +3482,12 @@ label {
       flex-direction: column;
       align-items: center;
   }
+}
+.banner-p{
+  color:#1c0101
+}
+.side-filter{
+  padding-top: 5.5%;
 }
 
 
@@ -4454,23 +4468,27 @@ label {
         font-size: 13px;
         font-weight: normal;
         color: #777777; }
-      .review_item .media .media-body .reply_btn {
-        border: 1px solid #e0e0e0;
-        padding: 0px 28px;
-        display: inline-block;
-        line-height: 32px;
-        border-radius: 16px;
-        font-size: 14px;
-        font-family: "Roboto", sans-serif;
-        color: #222222;
-        position: absolute;
-        right: 0px;
-        top: 14px;
-        @icnlude transition; }
+        .review_item .media .media-body .reply_btn {
+          border: 1px solid #e0e0e0;
+          padding: 0px 28px;
+          display: inline-block;
+          line-height: 32px;
+          border-radius: 16px;
+          font-size: 14px;
+          font-family: "Roboto", sans-serif;
+          color: #222222;
+          position: absolute;
+          right: 0px;
+          top: 14px;
+          -webkit-transition: all 0.25s linear; 
+          transition: all 0.25s linear;          
+        }
+        
         .review_item .media .media-body .reply_btn:hover {
           background: #ffba00;
           border-color: #ffba00;
-          color: #fff; }
+          color: #fff;
+        }
   .review_item p {
     padding-top: 10px;
     margin-bottom: 0px; }
@@ -5202,6 +5220,7 @@ label {
   z-index: 9;
   cursor: pointer;
   -webkit-transition: all 0.25s linear;
+  transition: all 0.25s linear;
   font-family: "Roboto", sans-serif;
   font-weight: 500;
   color: #222222;

@@ -351,9 +351,8 @@
             <span id="page-info"
               >Page <%= currentPage %> of <%= totalPages %></span
             >
-            <button class="btn btn-secondary" id="next-page" <%="currentPage">
-              = totalPages ? 'disabled' : '' %>>Next
-            </button>
+            <button class="btn btn-secondary" id="next-page" <%= currentPage === totalPages ? 'disabled' : '' %>>Next</button>
+
           </div>
 
           <div class="action-buttons">

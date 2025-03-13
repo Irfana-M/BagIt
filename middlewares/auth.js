@@ -1,5 +1,31 @@
 const User = require("../models/userSchema");
 
+const noCache = (req, res, next) => {
+    res.set({
+      'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+    });
+    next();
+  };
+
+
+const isAdminAuthenticated = (req, res, next) => {
+    if (!req.session.admin) {
+      return res.redirect("/admin/login"); 
+    }
+    next(); 
+  };
+
+
+const isUserAuthenticated = (req, res, next) => {
+    if (!req.session.user) {
+      return res.redirect("/login"); 
+    }
+    next(); 
+  };
+  
+  
 
 const userAuth = async (req, res, next) => {
     
@@ -14,7 +40,7 @@ const userAuth = async (req, res, next) => {
             }
         } 
 
-        const sendJsonResponse = req.query.jsonResponse === "true"; // Ensure it's a boolean
+        const sendJsonResponse = req.query.jsonResponse === "true"; 
 
         if (sendJsonResponse) {
             return res.status(401).json({ 
@@ -48,4 +74,4 @@ const adminAuth = (req,res,next)=>{
     })
 }
 
-module.exports = {userAuth,adminAuth}
+module.exports = {userAuth,adminAuth,noCache,isAdminAuthenticated,isUserAuthenticated}

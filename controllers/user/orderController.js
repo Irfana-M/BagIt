@@ -926,7 +926,7 @@ const codPayment = async (req, res) => {
             return res.status(400).json({ success: false, message: "COD is only available for orders below 1000." });
         }
         
-
+ c
         if (!Array.isArray(cartItems)) {
             return res.status(400).json({ success: false, message: "cartItems must be an array" });
         }

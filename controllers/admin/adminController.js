@@ -11,35 +11,50 @@ const pageerror = async (req, res) => {
   res.render("pageerror", { activePage: "dashboard" });
 };
 
+
+
 const loadLogin = (req, res) => {
   if (req.session.admin) {
-    return res.redirect("/admin/dashboard");
+    return res.redirect("/admin");
   }
-
-  res.render("admin-login", { message: null });
+  const message = req.session.message || null; 
+  req.session.message = null; 
+  
+  res.render("admin-login", { message });
 };
+
+
 
 const login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const admin = await User.findOne({ email, isAdmin: true });
-    if (admin) {
-      const passwordMatch = await bcrypt.compare(password, admin.password);
+  const { email, password } = req.body;
 
-      if (passwordMatch) {
-        req.session.admin = true;
-        return res.redirect("/admin");
-      } else {
-        return res.redirect("/admin");
-      }
-    } else {
-      return res.redirect("/");
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      req.session.message = "Incorrect email ";
+      return res.redirect("/admin/login");
     }
-  } catch (error) {
-    console.log("Login error", error);
-    return res.redirect("/admin/pageerror");
+
+    if (!user.isAdmin) {
+      req.session.message = "Access denied! Admins only.";
+      return res.redirect("/admin/login");
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      req.session.message = "Incorrect  password";
+      return res.redirect("/admin/login");
+    }
+
+    req.session.admin = user;
+    res.redirect("/admin");
+  } catch (err) {
+    console.error(err);
+    req.session.message = "Something went wrong. Please try again.";
+    res.redirect("/admin/login");
   }
 };
+
 
 const loadDashboard = async (req, res) => {
   if (req.session.admin) {
