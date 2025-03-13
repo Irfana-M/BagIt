@@ -18,12 +18,13 @@ const isAdminAuthenticated = (req, res, next) => {
   };
 
 
-const isUserAuthenticated = (req, res, next) => {
-    if (!req.session.user) {
-      return res.redirect("/login"); 
+  const redirectIfAuthenticated = (req, res, next) => {
+    if (req.session.user) {
+        return res.redirect("/"); 
     }
-    next(); 
-  };
+    next();
+};
+
   
   
 
@@ -74,4 +75,4 @@ const adminAuth = (req,res,next)=>{
     })
 }
 
-module.exports = {userAuth,adminAuth,noCache,isAdminAuthenticated,isUserAuthenticated}
+module.exports = {userAuth,adminAuth,noCache,isAdminAuthenticated,redirectIfAuthenticated}

@@ -10,7 +10,7 @@ const cartController = require("../controllers/user/cartController");
 const orderController = require("../controllers/user/orderController");
 const wishlistController = require("../controllers/user/wishlistController");
 const walletController = require("../controllers/user/walletController");
-const {userAuth,adminAuth,noCache,isUserAuthenticated} = require("../middlewares/auth");
+const {userAuth,adminAuth,noCache,redirectIfAuthenticated} = require("../middlewares/auth");
 
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
@@ -19,7 +19,7 @@ const razorpay = new Razorpay({
 
 //home page
 router.get('/pageNotFound',userController.pageNotFound);
-router.get('/',isUserAuthenticated,userController.loadHomepage);
+router.get('/',userController.loadHomepage);
 //Product management
 router.get("/shop",userController.loadShoppingPage);
 router.get('/filter',userController.filterProduct);
@@ -32,7 +32,7 @@ router.get("/removeFromWishlist",userAuth,wishlistController.removeProducts);
 
 //user management
 router.get('/signup',noCache,userController.loadSignUp);
-router.get('/login',noCache,userController.loadLogin);
+router.get('/login',noCache,redirectIfAuthenticated,userController.loadLogin);
 router.post('/login',userController.login);
 router.post('/signup',userController.signUp);
 router.post('/verify_otp',userController.verifyOtp);
