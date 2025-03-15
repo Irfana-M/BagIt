@@ -3,7 +3,7 @@ const User = require("../models/userSchema");
 
 function checkUserStatus(req, res, next) {
     const userId = req.session.user;
-    console.log('User ID from session:', userId);
+    
   
     if (!userId) {
       req.user = null;

@@ -13,33 +13,42 @@ const pageerror = async (req, res) => {
 
 const loadLogin = (req, res) => {
   if (req.session.admin) {
-    return res.redirect("/admin/dashboard");
+    return res.redirect("/admin");
   }
-
-  res.render("admin-login", { message: null });
+  const message = req.session.message || null;
+  req.session.message = null; 
+  res.render("admin-login", { message: message }); 
 };
+
+
 
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const admin = await User.findOne({ email, isAdmin: true });
-    if (admin) {
-      const passwordMatch = await bcrypt.compare(password, admin.password);
 
-      if (passwordMatch) {
-        req.session.admin = true;
-        return res.redirect("/admin");
-      } else {
-        return res.redirect("/admin");
-      }
-    } else {
-      return res.redirect("/");
+    if (!admin) {
+      req.session.message = "Invalid email. Please try again.";
+      return res.redirect("/admin/login");
     }
+
+    const passwordMatch = await bcrypt.compare(password, admin.password);
+
+    if (!passwordMatch) {
+      req.session.message = "Incorrect password. Please try again.";
+      return res.redirect("/admin/login");
+    }
+
+    
+    req.session.admin = true;
+    return res.redirect("/admin/dashboard");
+
   } catch (error) {
     console.log("Login error", error);
     return res.redirect("/admin/pageerror");
   }
 };
+
 
 
 const loadDashboard = async (req, res) => {
@@ -48,7 +57,7 @@ const loadDashboard = async (req, res) => {
   }
 
   try {
-    // Fetch basic stats
+   
     const [totalUsers, totalProducts, totalOrders] = await Promise.all([
       User.countDocuments(),
       Product.countDocuments(),
@@ -331,7 +340,7 @@ const downloadPDF = async (req, res) => {
     let query = {};
     const now = new Date();
 
-    // Date filter logic (same as generateReport)
+    
     if (filter === "today") {
       const todayStart = new Date(now);
       todayStart.setHours(0, 0, 0, 0);
@@ -359,7 +368,7 @@ const downloadPDF = async (req, res) => {
       query.createdAt = { $gte: customStart, $lte: customEnd };
     }
 
-    // Exclude only Cancelled or Returned items
+    
     query["orderItems.status"] = { $nin: ["Cancelled", "Returned"] };
 
     const salesData = await Order.aggregate([
@@ -562,7 +571,7 @@ const downloadExcel = async (req, res) => {
     let query = {};
     const now = new Date();
 
-    // Date filter logic (same as generateReport)
+    
     if (filter === "today") {
       const todayStart = new Date(now);
       todayStart.setHours(0, 0, 0, 0);
@@ -590,13 +599,13 @@ const downloadExcel = async (req, res) => {
       query.createdAt = { $gte: customStart, $lte: customEnd };
     }
 
-    // Exclude only Cancelled or Returned items
+   
     query["orderItems.status"] = { $nin: ["Cancelled", "Returned"] };
 
     const salesData = await Order.aggregate([
       { $match: query },
       { $unwind: "$orderItems" },
-      { $match: { "orderItems.status": { $nin: ["Cancelled", "Returned"] } } }, // Double-check status
+      { $match: { "orderItems.status": { $nin: ["Cancelled", "Returned"] } } }, 
       {
         $lookup: {
           from: "products",
@@ -857,7 +866,7 @@ const getTopSellingCategories = async (req, res) => {
         }
       }
     ]);
-    console.log(topCategories)
+   
 
     res.json(topCategories);
   } catch (error) {

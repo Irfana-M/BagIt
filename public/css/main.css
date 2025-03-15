@@ -991,7 +991,7 @@ h1, h2, h3, h4, h5, h6 {
   transition: all 0.3s ease 0s; }
 .is-sticky .header_area #search_input_box {
   max-width: 100%; }
-
+  
 .sticky-wrapper {
   position: absolute;
   top: 40px;

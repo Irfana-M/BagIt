@@ -4,89 +4,107 @@
 <head>
     <!-- Mobile Specific Meta -->
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <!-- Favicon-->
-    <link rel="shortcut icon" href="img/logo.png">
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="/img/logo.png">
     <!-- Author Meta -->
     <meta name="author" content="CodePixar">
     <!-- Meta Description -->
     <meta name="description" content="">
     <!-- Meta Keyword -->
     <meta name="keywords" content="">
-    <!-- meta character set -->
+    <!-- Meta Character Set -->
     <meta charset="UTF-8">
     <!-- Site Title -->
     <title>BAG IT SHOPPING</title>
-    <!--
-        CSS
-        ============================================= -->
-    <link rel="stylesheet" href="css/linearicons.css">
-    <link rel="stylesheet" href="css/font-awesome.min.css">
-    <link rel="stylesheet" href="css/themify-icons.css">
-    <link rel="stylesheet" href="css/bootstrap.css">
-    <link rel="stylesheet" href="css/owl.carousel.css">
-    <link rel="stylesheet" href="css/nice-select.css">
-    <link rel="stylesheet" href="css/nouislider.min.css">
-    <link rel="stylesheet" href="css/ion.rangeSlider.css" />
-    <link rel="stylesheet" href="css/ion.rangeSlider.skinFlat.css" />
-    <link rel="stylesheet" href="css/magnific-popup.css">
-    <link rel="stylesheet" href="css/main.css">
+
+    <!-- Inline Critical CSS -->
+    <style>
+        body {
+            visibility: hidden; /* Hide until fully loaded */
+        }
+        body.loaded {
+            visibility: visible; /* Show when ready */
+        }
+        /* Basic styling for common elements */
+        .breadcrumb-banner h1, .s_product_text h3 {
+            font-size: 2em;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .banner-area {
+            background: #f8f9fa; /* Fallback */
+        }
+        .s_product_text p, .list {
+            font-family: Arial, sans-serif;
+        }
+    </style>
+
+    <!-- Non-blocking CSS -->
+    <link rel="stylesheet" href="/css/linearicons.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="/css/font-awesome.min.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="/css/themify-icons.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="/css/bootstrap.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="/css/owl.carousel.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="/css/nice-select.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="/css/nouislider.min.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="/css/ion.rangeSlider.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="/css/ion.rangeSlider.skinFlat.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="/css/magnific-popup.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="/css/main.css" media="print" onload="this.media='all'">
+
+    <!-- Preload Critical Assets (optional, adjust paths as needed) -->
+    <link rel="preload" href="/css/main.css" as="style">
+    <link rel="preload" href="/img/logo.png" as="image">
+
+    <!-- Defer Scripts -->
+    <script src="/js/vendor/jquery-2.2.4.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" defer></script>
+    <script src="/js/vendor/bootstrap.min.js" defer></script>
+
+    <!-- Load handler -->
+    <script>
+        window.addEventListener('load', function() {
+            document.body.classList.add('loaded');
+        });
+    </script>
 </head>
 
 <body>
-
     <!-- Start Header Area -->
     <header class="header_area sticky-header">
         <div class="main_menu">
             <nav class="navbar navbar-expand-lg navbar-light main_box">
                 <div class="container">
-                    <!-- Brand and toggle get grouped for better mobile display -->
                     <a class="navbar-brand logo_h bagit_logo" href="/"><img src="/img/logo.png" alt=""></a>
                     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-                     aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <!-- Collect the nav links, forms, and other content for toggling -->
                     <div class="collapse navbar-collapse offset" id="navbarSupportedContent">
                         <ul class="nav navbar-nav menu_nav ml-auto">
                             <li class="nav-item active"><a class="nav-link" href="/">Home</a></li>
                             <li class="nav-item"><a class="nav-link" href="/shop">Shop</a></li>
                             <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
-                            
                             <% if (user) { %>
-                                
                                 <li class="nav-item">
                                     <a class="nav-link" href="/userProfile">
-                                        <i class="fa fa-user" aria-hidden="true">
-                                            <%= user.name %> 
-                                        </i>
+                                        <i class="fa fa-user" aria-hidden="true"><%= user.name %></i>
                                     </a>
                                 </li>
                                 <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
                             <% } else { %>
                                 <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
                             <% } %>
-                            
-                            
                         </ul>
                         <ul class="nav navbar-nav navbar-right">
                             <li class="nav-item"><a href='/view-cart' class="cart"><span class="ti-bag"></span></a></li>
-                            <li class="nav-item">
-                                <button class="search"><span class="lnr lnr-magnifier" id="search"></span></button>
-                            </li>
+                            <!-- Search button and bar removed globally -->
                         </ul>
                     </div>
                 </div>
             </nav>
         </div>
-        <div class="search_input" id="search_input_box">
-            <div class="container">
-                <form class="d-flex justify-content-between">
-                    <input type="text" class="form-control" id="search_input" placeholder="Search Here">
-                    <button type="submit" class="btn"></button>
-                    <span class="lnr lnr-cross" id="close_search" title="Close Search"></span>
-                </form>
-            </div>
-        </div>
+        <!-- Search input section removed globally -->
     </header>
