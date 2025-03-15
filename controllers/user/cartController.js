@@ -95,6 +95,8 @@ const addToCart = async (req, res) => {
 const viewCart = async (req, res) => {
   try {
     const userId = req.session.user;
+    const userData = await User.findById(userId);
+    
     if (!userId) {
       return res.redirect("/login");
     }
@@ -120,6 +122,7 @@ const viewCart = async (req, res) => {
     let shippingCharge = 50;
 
     res.render("cart", {
+      user:userData,
       errorMessage: null,
       successMessage: null,
       cart: paginatedItems, 
@@ -462,6 +465,7 @@ const getConfirmation = async (req, res) => {
     console.log("Query Parameters:", req.query);
 
     const userId = req.session.user;
+    const userData = await User.findById(userId);
     if (!userId) {
       return res.redirect("/checkout");
     }
@@ -502,8 +506,14 @@ const getConfirmation = async (req, res) => {
       }));
       totalOfferPrice = order.totalPrice;
       couponDiscount = order.couponApplied ? order.discount : 0;
-      shippingCharge = 50;
       totalOriginalPrice = rawCartItems.reduce((total, item) => total + (item.productId.regularPrice || 0) * item.quantity, 0);
+      const totalDiscount = totalOriginalPrice - totalOfferPrice;
+
+      shippingCharge = totalOfferPrice < 1000 ? 50 : 0;
+
+      gst = (totalOfferPrice * 0.18).toFixed(2);
+
+      subTotal = (parseFloat(totalOfferPrice) - parseFloat(couponDiscount) + parseFloat(shippingCharge) + parseFloat(gst)).toFixed(2);
 
       finalPaymentMethod = finalPaymentMethod || order.paymentInfo.method;
       finalPaymentStatus = finalPaymentStatus || order.paymentInfo.status;
@@ -524,8 +534,14 @@ const getConfirmation = async (req, res) => {
       rawCartItems = Array.isArray(req.session.cartItems) ? req.session.cartItems : [];
       totalOfferPrice = parseFloat(totalPrice);
       couponDiscount = req.session.cart?.appliedCoupon?.discount || 0;
-      shippingCharge = 50;
       totalOriginalPrice = rawCartItems.reduce((total, item) => total + (item.productId?.regularPrice || 0) * item.quantity, 0);
+      const totalDiscount = totalOriginalPrice - totalOfferPrice;
+
+      shippingCharge = totalOfferPrice < 1000 ? 50 : 0;
+
+      gst = (totalOfferPrice * 0.18).toFixed(2);
+
+      subTotal = (parseFloat(totalOfferPrice) - parseFloat(couponDiscount) + parseFloat(shippingCharge) + parseFloat(gst)).toFixed(2);
 
       finalPaymentMethod = finalPaymentMethod || "Online";
       finalPaymentStatus = finalPaymentStatus || "Success";
@@ -553,26 +569,30 @@ const getConfirmation = async (req, res) => {
     console.log("Rendering confirmation page with data:", {
       selectedAddress: shippingAddress,
       totalPrice: totalOfferPrice,
-      subTotal: totalOfferPrice - couponDiscount + shippingCharge,
+      subTotal: subTotal,
       totalOriginalPrice,
       totalDiscount,
       shippingCharge,
       paymentMethod: finalPaymentMethod,
       paymentStatus: finalPaymentStatus,
       couponDiscount,
+      gst,
       cartItems: rawCartItems,
+      
     });
 
     res.render("confirmation", {
       selectedAddress: shippingAddress,
       totalPrice: totalOfferPrice,
-      subTotal: totalOfferPrice - couponDiscount + shippingCharge,
+      subTotal: subTotal,
       totalOriginalPrice,
       totalDiscount,
       shippingCharge,
       paymentMethod: finalPaymentMethod,
       paymentStatus: finalPaymentStatus,
       couponDiscount,
+      gst, 
+      user:userData,
       cartItems: rawCartItems,
       deliveryDateNew: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString("en-US", { timeZone: "Asia/Kolkata" }),
     });
@@ -649,14 +669,14 @@ const removeCoupon = async (req, res) => {
           return res.json({ success: false, message: "No coupon applied" });
       }
 
-      // Get the current finalTotal and coupon discount from session
+      
       const currentFinalTotal = cart.finalTotal || 0;
       const couponDiscount = cart.appliedCoupon.discount || 0;
 
-      // Recalculate finalTotal by adding back the coupon discount
+      
       const finalTotal = currentFinalTotal + couponDiscount;
 
-      // Remove coupon and update finalTotal in session
+     
       delete cart.appliedCoupon;
       cart.finalTotal = finalTotal;
       req.session.save();

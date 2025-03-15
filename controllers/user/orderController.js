@@ -454,16 +454,21 @@ const razorpayPayment = async (req, res) => {
 
         const orderId = uuidv4();
 
-        let razorpayOrder = null;
+        // **Handle Razorpay Payment Initiation**
         if (withPayment && initiateOnly) {
-            console.log("Creating Razorpay order with amount:", finalAmount, "Order ID:", orderId);
-            razorpayOrder = await createRazoPayOrder(finalAmount, orderId);
+            const totalAmount = Number(totalPrice); // Convert totalPrice to a number
+        
+            if (isNaN(totalAmount) || totalAmount <= 0) {
+                return res.status(400).json({ success: false, message: "Invalid totalPrice value." });
+            }
+
+            console.log("Creating Razorpay order with amount:", totalAmount, "Order ID:", orderId);
+            const razorpayOrder = await createRazoPayOrder(totalAmount, orderId);
 
             if (!razorpayOrder || !razorpayOrder.id) {
                 return res.status(500).json({ success: false, message: "Failed to create Razorpay order" });
             }
 
-            
             req.session.cartItems = cartItems;
 
             return res.status(200).json({
@@ -475,7 +480,7 @@ const razorpayPayment = async (req, res) => {
             });
         }
 
-        
+        // **Create and Save Order in Database**
         const newOrder = new Order({
             user: userId,
             orderId,
@@ -509,6 +514,7 @@ const razorpayPayment = async (req, res) => {
         res.status(500).json({ success: false, message: "Server error. Please try again later." });
     }
 };
+
 
 
 

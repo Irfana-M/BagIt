@@ -20,10 +20,10 @@ const loadLogin = async (req,res)=>{
             if (req.session.user || req.session.googleId) {
                 return res.redirect('/');
             }
-            
+            const status = req.query.status || null;
         
         
-        return res.render('login');
+        return res.render('login',{status});
        
     }catch(error){
         console.log('login page not loading:',error);
@@ -39,17 +39,17 @@ const login = async(req,res)=>{
         
         if(!findUser){
             
-            return res.render("login",{message:"User not found"})
+            return res.render("login",{message:"User not found",status:null})
         }
         if(findUser.isBlocked){
            
-            return res.render("login",{message:"User is blocked by admin"})
+            return res.render("login",{message:"User is blocked by admin",status:null})
         }
         const passwordMatch = await bcrypt.compare(password,findUser.password)
 
         if(!passwordMatch){
            
-            return res.render("login",{message:"Incorrect Password"});
+            return res.render("login",{message:"Incorrect Password",status:null});
         }
         req.session.user = findUser._id;
         console.log( req.session.user)
@@ -59,7 +59,8 @@ const login = async(req,res)=>{
         req.session.name = findUser.name ;
         }
       
-        res.redirect("/");
+        req.session.user = findUser._id.toString(); 
+        res.redirect('/');
        
 
     } catch (error) {
@@ -220,9 +221,9 @@ const resendOtp = async(req,res)=>{
             const emailSent = await sendVerificationEmail(email,otp);
             if(emailSent){
                 console.log("Resend OTP:",otp);
-                res.status(200).json({succes:true,message:"OTP resend successfully"})
+                res.status(200).json({success:true,message:"OTP resend successfully"})
             }else{
-                res.status(500).json({succes:false,message:"Failed to resend OTP.Please try again"})
+                res.status(500).json({success:false,message:"Failed to resend OTP.Please try again"})
             }
         }
      catch (error) {
@@ -234,7 +235,7 @@ const resendOtp = async(req,res)=>{
 
 const loadHomepage = async (req, res) => {
     try {
-        const userId = req.session.user;  
+        // const userId = req.session.user;  
         const googleId = req.session.googleId;  
 
         const categories = await Category.find({ isListed: true });
@@ -247,14 +248,14 @@ const loadHomepage = async (req, res) => {
         productData.sort((a, b) => new Date(b.createdOn) - new Date(a.createdOn));
         productData = productData.slice(0, 8);
 
-        let userData = null;
+        const userData = req.user;
 
-        if (userId) {
-            userData = await User.findOne({ _id: userId });
-        } else if (googleId) {
-            console.log(userData)
-            userData = await User.findOne({ googleId: googleId });
-        }
+        // if (userId) {
+        //     userData = await User.findOne({ _id: userId });
+        // } else if (googleId) {
+        //     console.log(userData)
+        //     userData = await User.findOne({ googleId: googleId });
+        // }
 
         
         res.render('home', { user: userData, products: productData,googleId });
@@ -269,8 +270,8 @@ const loadHomepage = async (req, res) => {
 
 const loadShoppingPage = async (req, res) => {
     try {
-      const user = req.session.user;
-      const userData = await User.findOne({ _id: user });
+    //   const user = req.session.user;
+    //   const userData = await User.findOne({ _id: user });
       const message = req.session.message || null;
       req.session.message = null;
       const categories = await Category.find({ isListed: true });
@@ -305,7 +306,7 @@ const loadShoppingPage = async (req, res) => {
       }));
     
       const sort = req.query.sort || ""; 
-
+      const userData = req.user;
 
       res.render("shop", {
         user: userData,
@@ -439,6 +440,33 @@ const contactProcess = async (req, res) => {
         res.status(500).json({ error: 'Failed to send message' });
     }
 };
+const checkStatus = async (req,res)=>{
+    const userId = req.session.user;
+  if (!userId) {
+    return res.json({ status: 'not_signed_in' });
+  }
+
+  User.findById(userId)
+    .then(user => {
+      if (!user) {
+        delete req.session.user;
+        delete req.session.name;
+        return res.json({ status: 'not_found', redirect: '/login' });
+      }
+      if (user.isBlocked) {
+        delete req.session.user;
+        delete req.session.name;
+        return res.json({ status: 'blocked', redirect: '/login?status=blocked' });
+      }
+      return res.json({ status: 'active' });
+    })
+    .catch(err => {
+      console.error('Error checking status:', err);
+      res.status(500).json({ status: 'error', message: 'Server error' });
+    });
+};
+
+
 
 
 const logout = (req, res) => {
@@ -462,5 +490,5 @@ const logout = (req, res) => {
 
 
 module.exports = {loadHomepage,pageNotFound,loadLogin,loadSignUp,signUp,verifyOtp,resendOtp,login,logout,
-    loadShoppingPage,filterProduct,getContact,contactProcess
+    loadShoppingPage,filterProduct,getContact,contactProcess,checkStatus
 };

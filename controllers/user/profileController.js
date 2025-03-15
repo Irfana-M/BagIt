@@ -465,17 +465,10 @@ const deleteAddress = async (req,res)=>{
     }
 }
 
-
-
-
-
 const getReferral = async (req, res) => {
     const userId = req.session.user;
     console.log(userId)
-    
-
     try {
-        
         const user = await User.findById(userId);
         console.log("user",user);
 
@@ -488,7 +481,7 @@ const getReferral = async (req, res) => {
        
         const referrals = await User.find({ referredBy: user._id }) || null;
 
-        res.render('referral', { referralLink, referrals });
+        res.render('referral', { referralLink, referrals ,user});
 
     } catch (err) {
         console.error(err);

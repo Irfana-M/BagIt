@@ -203,6 +203,18 @@
             }
         };
     </script>
+    <% if (typeof status !== 'undefined' && status === 'blocked') { %>
+        <script>
+          document.addEventListener('DOMContentLoaded', () => {
+            Swal.fire({
+              icon: 'error',
+              title: 'Blocked',
+              text: 'You are blocked by an admin.',
+              confirmButtonText: 'OK'
+            });
+          });
+        </script>
+      <% } %>
     
 </body>
 </html>

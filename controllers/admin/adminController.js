@@ -3,79 +3,52 @@ const Order = require("../../models/orderSchema");
 const Product = require("../../models/productSchema");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
-const PDFDocument = require("pdfkit");
-const ExcelJS = require("exceljs");
-const moment = require("moment");
+const PDFDocument = require('pdfkit');
+const ExcelJS = require('exceljs');
+const moment = require('moment');
 
 const pageerror = async (req, res) => {
   res.render("pageerror", { activePage: "dashboard" });
 };
 
-
-
 const loadLogin = (req, res) => {
   if (req.session.admin) {
-    return res.redirect("/admin");
+    return res.redirect("/admin/dashboard");
   }
-  const message = req.session.message || null; 
-  req.session.message = null; 
-  
-  res.render("admin-login", { message });
+
+  res.render("admin-login", { message: null });
 };
 
-
-
 const login = async (req, res) => {
-  const { email, password } = req.body;
-
   try {
-    const user = await User.findOne({ email });
-    if (!user) {
-      req.session.message = "Incorrect email ";
-      return res.redirect("/admin/login");
-    }
+    const { email, password } = req.body;
+    const admin = await User.findOne({ email, isAdmin: true });
+    if (admin) {
+      const passwordMatch = await bcrypt.compare(password, admin.password);
 
-    if (!user.isAdmin) {
-      req.session.message = "Access denied! Admins only.";
-      return res.redirect("/admin/login");
+      if (passwordMatch) {
+        req.session.admin = true;
+        return res.redirect("/admin");
+      } else {
+        return res.redirect("/admin");
+      }
+    } else {
+      return res.redirect("/");
     }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      req.session.message = "Incorrect  password";
-      return res.redirect("/admin/login");
-    }
-
-    req.session.admin = user;
-    res.redirect("/admin");
-  } catch (err) {
-    console.error(err);
-    req.session.message = "Something went wrong. Please try again.";
-    res.redirect("/admin/login");
+  } catch (error) {
+    console.log("Login error", error);
+    return res.redirect("/admin/pageerror");
   }
 };
 
 
 const loadDashboard = async (req, res) => {
-  if (req.session.admin) {
-    try {
-      res.render("dashboard", { activePage: "dashboard" });
-    } catch (error) {
-      res.redirect("/admin/pageerror");
-    }
-  }
-};
-
-const loadSalesReport = async (req, res) => {
   if (!req.session.admin) {
     return res.redirect("/admin/login");
   }
 
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
-
+    // Fetch basic stats
     const [totalUsers, totalProducts, totalOrders] = await Promise.all([
       User.countDocuments(),
       Product.countDocuments(),
@@ -100,6 +73,32 @@ const loadSalesReport = async (req, res) => {
       overallRevenue = 0,
       overallDiscount = 0,
     } = salesMetrics.length > 0 ? salesMetrics[0] : {};
+
+    res.render("dashboard", {
+      activePage: "dashboard",
+      totalUsers,
+      totalProducts,
+      totalOrders,
+      salesCount,
+      overallRevenue,
+      overallDiscount,
+    });
+  } catch (error) {
+    console.error("Error loading dashboard:", error);
+    res.redirect("/admin/pageerror");
+  }
+};
+
+
+const loadSalesReport = async (req, res) => {
+  if (!req.session.admin) {
+    return res.redirect("/admin/login");
+  }
+
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -183,12 +182,6 @@ const loadSalesReport = async (req, res) => {
 
     res.render("salesReport", {
       activePage: "salesReport",
-      totalUsers,
-      totalProducts,
-      totalOrders,
-      salesCount,
-      overallRevenue,
-      overallDiscount,
       salesData: formattedSalesData,
       currentPage: page,
       totalPages,
@@ -200,6 +193,8 @@ const loadSalesReport = async (req, res) => {
   }
 };
 
+
+
 const generateReport = async (req, res) => {
   try {
     const { filter, start, end, page = 1, limit = 10 } = req.query;
@@ -208,6 +203,7 @@ const generateReport = async (req, res) => {
     let query = {};
     const now = new Date();
 
+    
     if (filter === "today") {
       const todayStart = new Date(now);
       todayStart.setHours(0, 0, 0, 0);
@@ -327,65 +323,129 @@ const generateReport = async (req, res) => {
   }
 };
 
+
+
 const downloadPDF = async (req, res) => {
   try {
     const { filter, start, end } = req.query;
-    let query = { "orderItems.status": { $nin: ["Delivered", "Cancelled"] } };
+    let query = {};
+    const now = new Date();
 
+    // Date filter logic (same as generateReport)
     if (filter === "today") {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      query.createdAt = { $gte: today };
+      const todayStart = new Date(now);
+      todayStart.setHours(0, 0, 0, 0);
+      const todayEnd = new Date(now);
+      todayEnd.setHours(23, 59, 59, 999);
+      query.createdAt = { $gte: todayStart, $lte: todayEnd };
     } else if (filter === "week") {
-      const lastWeek = new Date();
-      lastWeek.setDate(lastWeek.getDate() - 7);
-      query.createdAt = { $gte: lastWeek };
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - 7);
+      weekStart.setHours(0, 0, 0, 0);
+      const weekEnd = new Date(now);
+      weekEnd.setHours(23, 59, 59, 999);
+      query.createdAt = { $gte: weekStart, $lte: weekEnd };
     } else if (filter === "month") {
-      const lastMonth = new Date();
-      lastMonth.setMonth(lastMonth.getMonth() - 1);
-      query.createdAt = { $gte: lastMonth };
+      const monthStart = new Date(now);
+      monthStart.setDate(1);
+      monthStart.setHours(0, 0, 0, 0);
+      const monthEnd = new Date(now);
+      monthEnd.setHours(23, 59, 59, 999);
+      query.createdAt = { $gte: monthStart, $lte: monthEnd };
     } else if (filter === "custom" && start && end) {
-      query.createdAt = { $gte: new Date(start), $lte: new Date(end) };
+      const customStart = new Date(start);
+      const customEnd = new Date(end);
+      customEnd.setHours(23, 59, 59, 999);
+      query.createdAt = { $gte: customStart, $lte: customEnd };
     }
 
-    const salesData = await Order.find(query)
-      .select("orderId totalPrice discount couponApplied finalAmount")
-      .populate("user", "name");
+    // Exclude only Cancelled or Returned items
+    query["orderItems.status"] = { $nin: ["Cancelled", "Returned"] };
 
-    const {
-      totalUsers,
-      totalProducts,
-      totalOrders,
-      salesCount,
-      overallRevenue,
-      overallDiscount,
-    } = await loadDashboardData();
+    const salesData = await Order.aggregate([
+      { $match: query },
+      { $unwind: "$orderItems" },
+      { $match: { "orderItems.status": { $nin: ["Cancelled", "Returned"] } } }, // Double-check status
+      {
+        $lookup: {
+          from: "products",
+          localField: "orderItems.product",
+          foreignField: "_id",
+          as: "productInfo",
+        },
+      },
+      { $unwind: "$productInfo" },
+      {
+        $lookup: {
+          from: "categories",
+          localField: "productInfo.category",
+          foreignField: "_id",
+          as: "categoryInfo",
+        },
+      },
+      { $unwind: { path: "$categoryInfo", preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "userInfo",
+        },
+      },
+      { $unwind: "$userInfo" },
+      {
+        $project: {
+          orderId: "$orderId",
+          customerName: "$userInfo.name",
+          productName: "$orderItems.productName",
+          categoryName: { $ifNull: ["$categoryInfo.name", "Uncategorized"] },
+          quantitySold: "$orderItems.quantity",
+          unitPrice: "$orderItems.price",
+          discountApplied: "$discount",
+          orderStatus: "$orderItems.status",
+          orderDate: "$createdAt",
+        },
+      },
+    ]);
+
+    const formattedSalesData = salesData.map((data) => ({
+      orderId: data.orderId,
+      customerName: data.customerName,
+      productName: data.productName,
+      categoryName: data.categoryName,
+      quantitySold: data.quantitySold,
+      unitPrice: data.unitPrice,
+      discountApplied: data.discountApplied,
+      orderStatus: data.orderStatus,
+      orderDate: new Date(data.orderDate).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      }),
+    }));
+
+    const { totalUsers, totalProducts, totalOrders, salesCount, overallRevenue, overallDiscount } = await loadDashboardData();
 
     const doc = new PDFDocument({ margin: 50 });
     let buffers = [];
     doc.on("data", buffers.push.bind(buffers));
     doc.on("end", () => {
       let pdfData = Buffer.concat(buffers);
-      res.setHeader(
-        "Content-disposition",
-        "attachment; filename=sales-report.pdf"
-      );
+      res.setHeader("Content-disposition", "attachment; filename=sales-report.pdf");
       res.setHeader("Content-type", "application/pdf");
       res.end(pdfData);
     });
 
     const drawTableHeaders = (doc, headers, columnWidths, startX, startY) => {
-      doc.font("Helvetica-Bold").fontSize(10);
+      doc.font("Helvetica-Bold").fontSize(8);
       headers.forEach((header, i) => {
-        doc.text(
-          header,
-          startX + columnWidths.slice(0, i).reduce((a, b) => a + b, 0),
-          startY,
-          {
-            width: columnWidths[i],
-            align: "center",
-          }
-        );
+        doc.text(header, startX + columnWidths.slice(0, i).reduce((a, b) => a + b, 0), startY, {
+          width: columnWidths[i],
+          align: "center",
+        });
       });
       doc.moveDown(0.5);
       doc.moveTo(startX, doc.y).lineTo(550, doc.y).stroke();
@@ -393,26 +453,28 @@ const downloadPDF = async (req, res) => {
 
     doc.fontSize(22).text("Sales Report", { align: "center", underline: true });
     doc.moveDown();
-    doc
-      .fontSize(12)
-      .text(`Date: ${new Date().toLocaleDateString()}`, { align: "left" });
+    doc.fontSize(12).text(`Date: ${new Date().toLocaleDateString()}`, { align: "left" });
     doc.moveDown(1);
 
     const headers = [
       "Order ID",
       "Customer",
-      "Total Price",
+      "Product",
+      "Category",
+      "Qty",
+      "Price",
       "Discount",
-      "Final Amount",
+      "Status",
+      "Date",
     ];
-    const columnWidths = [120, 120, 80, 80, 80];
+    const columnWidths = [60, 80, 80, 60, 40, 50, 50, 50, 80];
     const startX = 50;
     let startY = doc.y + 20;
 
     drawTableHeaders(doc, headers, columnWidths, startX, startY);
 
-    doc.font("Helvetica").fontSize(10);
-    salesData.forEach((data) => {
+    doc.font("Helvetica").fontSize(8);
+    formattedSalesData.forEach((data) => {
       if (doc.y > 700) {
         doc.addPage();
         startY = 50;
@@ -423,21 +485,20 @@ const downloadPDF = async (req, res) => {
       startY = doc.y + 5;
       const row = [
         data.orderId,
-        data.user.name,
-        `₹${data.totalPrice}`,
-        `₹${data.discount}`,
-        `₹${data.finalAmount}`,
+        data.customerName,
+        data.productName,
+        data.categoryName,
+        data.quantitySold.toString(),
+        `₹${data.unitPrice.toFixed(2)}`,
+        `₹${data.discountApplied.toFixed(2)}`,
+        data.orderStatus,
+        data.orderDate,
       ];
       row.forEach((text, i) => {
-        doc.text(
-          text,
-          startX + columnWidths.slice(0, i).reduce((a, b) => a + b, 0),
-          startY,
-          {
-            width: columnWidths[i],
-            align: "center",
-          }
-        );
+        doc.text(text, startX + columnWidths.slice(0, i).reduce((a, b) => a + b, 0), startY, {
+          width: columnWidths[i],
+          align: "center",
+        });
       });
       doc.moveDown(0.5);
     });
@@ -455,12 +516,7 @@ const downloadPDF = async (req, res) => {
     doc.text(`Total Discount: ₹${overallDiscount}`);
     doc.moveDown(2);
 
-    doc
-      .fontSize(10)
-      .text("Generated by BAG IT", 50, doc.y + 20, {
-        align: "left",
-        italic: true,
-      });
+    doc.fontSize(10).text("Generated by BAG IT", 50, doc.y + 20, { align: "left", italic: true });
     doc.text(`Page 1 of 1`, 500, doc.y + 20, { align: "right" });
 
     doc.end();
@@ -472,83 +528,137 @@ const downloadPDF = async (req, res) => {
 
 const loadDashboardData = async () => {
   const [totalUsers, totalProducts, totalOrders] = await Promise.all([
-    User.countDocuments(),
-    Product.countDocuments(),
-    Order.countDocuments(),
+      User.countDocuments(),
+      Product.countDocuments(),
+      Order.countDocuments()
   ]);
   const salesMetrics = await Order.aggregate([
-    { $unwind: "$orderItems" },
-    { $match: { "orderItems.status": { $nin: ["Cancelled", "Returned"] } } },
-    {
-      $group: {
-        _id: null,
-        salesCount: { $sum: 1 },
-        overallRevenue: { $sum: "$finalAmount" },
-        overallDiscount: { $sum: "$discount" },
-      },
-    },
+      { $unwind: "$orderItems" },
+      { $match: { "orderItems.status": { $nin: ["Cancelled", "Returned"] } } },
+      {
+          $group: {
+              _id: null,
+              salesCount: { $sum: 1 },
+              overallRevenue: { $sum: "$finalAmount" },
+              overallDiscount: { $sum: "$discount" }
+          }
+      }
   ]);
   return {
-    totalUsers,
-    totalProducts,
-    totalOrders,
-    salesCount: salesMetrics[0]?.salesCount || 0,
-    overallRevenue: salesMetrics[0]?.overallRevenue || 0,
-    overallDiscount: salesMetrics[0]?.overallDiscount || 0,
+      totalUsers,
+      totalProducts,
+      totalOrders,
+      salesCount: salesMetrics[0]?.salesCount || 0,
+      overallRevenue: salesMetrics[0]?.overallRevenue || 0,
+      overallDiscount: salesMetrics[0]?.overallDiscount || 0
   };
 };
+
+
 
 const downloadExcel = async (req, res) => {
   try {
     const { filter, start, end } = req.query;
-    let query = { "orderItems.status": { $nin: ["Delivered", "Cancelled"] } };
+    let query = {};
+    const now = new Date();
+
+    // Date filter logic (same as generateReport)
     if (filter === "today") {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      query.createdAt = { $gte: today };
+      const todayStart = new Date(now);
+      todayStart.setHours(0, 0, 0, 0);
+      const todayEnd = new Date(now);
+      todayEnd.setHours(23, 59, 59, 999);
+      query.createdAt = { $gte: todayStart, $lte: todayEnd };
     } else if (filter === "week") {
-      const lastWeek = new Date();
-      lastWeek.setDate(lastWeek.getDate() - 7);
-      query.createdAt = { $gte: lastWeek };
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - 7);
+      weekStart.setHours(0, 0, 0, 0);
+      const weekEnd = new Date(now);
+      weekEnd.setHours(23, 59, 59, 999);
+      query.createdAt = { $gte: weekStart, $lte: weekEnd };
     } else if (filter === "month") {
-      const lastMonth = new Date();
-      lastMonth.setMonth(lastMonth.getMonth() - 1);
-      query.createdAt = { $gte: lastMonth };
+      const monthStart = new Date(now);
+      monthStart.setDate(1);
+      monthStart.setHours(0, 0, 0, 0);
+      const monthEnd = new Date(now);
+      monthEnd.setHours(23, 59, 59, 999);
+      query.createdAt = { $gte: monthStart, $lte: monthEnd };
     } else if (filter === "custom" && start && end) {
-      query.createdAt = { $gte: new Date(start), $lte: new Date(end) };
+      const customStart = new Date(start);
+      const customEnd = new Date(end);
+      customEnd.setHours(23, 59, 59, 999);
+      query.createdAt = { $gte: customStart, $lte: customEnd };
     }
 
-    const [salesData, totalUsers, totalProducts, totalOrders, salesMetrics] =
-      await Promise.all([
-        Order.find(query)
-          .select("orderId totalPrice discount couponApplied finalAmount")
-          .populate("user", "name"),
-        User.countDocuments(),
-        Product.countDocuments(),
-        Order.countDocuments(),
-        Order.aggregate([
-          { $unwind: "$orderItems" },
-          {
-            $match: {
-              "orderItems.status": { $nin: ["Cancelled", "Returned"] },
-            },
-          },
-          {
-            $group: {
-              _id: null,
-              salesCount: { $sum: 1 },
-              overallRevenue: { $sum: "$finalAmount" },
-              overallDiscount: { $sum: "$discount" },
-            },
-          },
-        ]),
-      ]);
+    // Exclude only Cancelled or Returned items
+    query["orderItems.status"] = { $nin: ["Cancelled", "Returned"] };
 
-    const {
-      salesCount = 0,
-      overallRevenue = 0,
-      overallDiscount = 0,
-    } = salesMetrics.length > 0 ? salesMetrics[0] : {};
+    const salesData = await Order.aggregate([
+      { $match: query },
+      { $unwind: "$orderItems" },
+      { $match: { "orderItems.status": { $nin: ["Cancelled", "Returned"] } } }, // Double-check status
+      {
+        $lookup: {
+          from: "products",
+          localField: "orderItems.product",
+          foreignField: "_id",
+          as: "productInfo",
+        },
+      },
+      { $unwind: "$productInfo" },
+      {
+        $lookup: {
+          from: "categories",
+          localField: "productInfo.category",
+          foreignField: "_id",
+          as: "categoryInfo",
+        },
+      },
+      { $unwind: { path: "$categoryInfo", preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "userInfo",
+        },
+      },
+      { $unwind: "$userInfo" },
+      {
+        $project: {
+          orderId: "$orderId",
+          customerName: "$userInfo.name",
+          productName: "$orderItems.productName",
+          categoryName: { $ifNull: ["$categoryInfo.name", "Uncategorized"] },
+          quantitySold: "$orderItems.quantity",
+          unitPrice: "$orderItems.price",
+          discountApplied: "$discount",
+          orderStatus: "$orderItems.status",
+          orderDate: "$createdAt",
+        },
+      },
+    ]);
+
+    const formattedSalesData = salesData.map((data) => ({
+      orderId: data.orderId,
+      customerName: data.customerName,
+      productName: data.productName,
+      categoryName: data.categoryName,
+      quantitySold: data.quantitySold,
+      unitPrice: data.unitPrice,
+      discountApplied: data.discountApplied,
+      orderStatus: data.orderStatus,
+      orderDate: new Date(data.orderDate).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      }),
+    }));
+
+    const { totalUsers, totalProducts, totalOrders, salesCount, overallRevenue, overallDiscount } = await loadDashboardData();
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Sales Report");
@@ -556,18 +666,26 @@ const downloadExcel = async (req, res) => {
     worksheet.columns = [
       { header: "Order ID", key: "orderId", width: 15 },
       { header: "Customer Name", key: "customerName", width: 20 },
-      { header: "Total Price", key: "totalPrice", width: 15 },
-      { header: "Discount", key: "discount", width: 15 },
-      { header: "Order Amount", key: "orderAmount", width: 15 },
+      { header: "Product Name", key: "productName", width: 25 },
+      { header: "Category", key: "categoryName", width: 20 },
+      { header: "Quantity", key: "quantitySold", width: 10 },
+      { header: "Unit Price", key: "unitPrice", width: 15 },
+      { header: "Discount", key: "discountApplied", width: 15 },
+      { header: "Status", key: "orderStatus", width: 15 },
+      { header: "Order Date", key: "orderDate", width: 25 },
     ];
 
-    salesData.forEach((data) => {
+    formattedSalesData.forEach((data) => {
       worksheet.addRow({
         orderId: data.orderId,
-        customerName: data.user.name,
-        totalPrice: `₹${data.totalPrice}`,
-        discount: `₹${data.discount}`,
-        orderAmount: `₹${data.finalAmount}`,
+        customerName: data.customerName,
+        productName: data.productName,
+        categoryName: data.categoryName,
+        quantitySold: data.quantitySold,
+        unitPrice: `₹${data.unitPrice.toFixed(2)}`,
+        discountApplied: `₹${data.discountApplied.toFixed(2)}`,
+        orderStatus: data.orderStatus,
+        orderDate: data.orderDate,
       });
     });
 
@@ -580,14 +698,8 @@ const downloadExcel = async (req, res) => {
     worksheet.addRow(["Total Revenue", `₹${overallRevenue}`]);
     worksheet.addRow(["Total Discount", `₹${overallDiscount}`]);
 
-    res.setHeader(
-      "Content-disposition",
-      "attachment; filename=sales-report.xlsx"
-    );
-    res.setHeader(
-      "Content-type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    );
+    res.setHeader("Content-disposition", "attachment; filename=sales-report.xlsx");
+    res.setHeader("Content-type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
     await workbook.xlsx.write(res);
     res.end();
@@ -597,13 +709,13 @@ const downloadExcel = async (req, res) => {
   }
 };
 
+
 const salesReport = async (req, res) => {
   try {
     const { filter, startDate, endDate } = req.query;
-    let matchStage = {
-      "orderItems.status": { $nin: ["Cancelled", "Returned"] },
-    };
+    let matchStage = { "orderItems.status": { $nin: ["Cancelled", "Returned"] } };
 
+    // Filters for Sales Overview chart
     if (filter === "daily") {
       matchStage.createdAt = {
         $gte: new Date(new Date().setHours(0, 0, 0, 0)),
@@ -635,12 +747,7 @@ const salesReport = async (req, res) => {
         $group: {
           _id: {
             $dateToString: {
-              format:
-                filter === "yearly"
-                  ? "%Y"
-                  : filter === "monthly"
-                  ? "%Y-%m"
-                  : "%Y-%m-%d",
+              format: filter === "yearly" ? "%Y" : filter === "monthly" ? "%Y-%m" : "%Y-%m-%d",
               date: "$createdAt",
             },
           },
@@ -657,100 +764,100 @@ const salesReport = async (req, res) => {
   }
 };
 
+
+
 const bestSellingProducts = async (req, res) => {
   try {
-    const bestProducts = await Order.aggregate([
-      { $unwind: "$orderItems" },
-      { $match: { "orderItems.status": { $nin: ["Cancelled", "Returned"] } } },
-      {
-        $group: {
-          _id: "$orderItems.product",
-          totalSales: { $sum: "$orderItems.quantity" },
-          revenue: {
-            $sum: { $multiply: ["$orderItems.price", "$orderItems.quantity"] },
+      const bestProducts = await Order.aggregate([
+          { $unwind: "$orderItems" },
+          { $match: { "orderItems.status": { $nin: ["Cancelled", "Returned"] } } },
+          {
+              $group: {
+                  _id: "$orderItems.product",
+                  totalSales: { $sum: "$orderItems.quantity" },
+                  revenue: { $sum: { $multiply: ["$orderItems.price", "$orderItems.quantity"] } }
+              }
           },
-        },
-      },
-      { $sort: { totalSales: -1 } },
-      { $limit: 10 },
-      {
-        $lookup: {
-          from: "products",
-          localField: "_id",
-          foreignField: "_id",
-          as: "product",
-        },
-      },
-      { $unwind: "$product" },
-      {
-        $project: {
-          name: "$product.productName",
-          totalSales: 1,
-          revenue: 1,
-          stock: "$product.quantity",
-        },
-      },
-    ]);
+          { $sort: { totalSales: -1 } },
+          { $limit: 10 },
+          { $lookup: { from: "products", localField: "_id", foreignField: "_id", as: "product" } },
+          { $unwind: "$product" },
+          {
+              $project: {
+                  name: "$product.productName",
+                  totalSales: 1,
+                  revenue: 1,
+                  stock: "$product.quantity" 
+              }
+          }
+      ]);
 
-    res.json(bestProducts);
+      res.json(bestProducts);
   } catch (error) {
-    console.error("Error fetching best-selling products:", error);
-    res.status(500).send("Internal Server Error");
+      console.error("Error fetching best-selling products:", error);
+      res.status(500).send("Internal Server Error");
   }
 };
+
 
 const getTopSellingCategories = async (req, res) => {
   try {
     const topCategories = await Order.aggregate([
       { $unwind: "$orderItems" },
 
+      
       { $match: { "orderItems.status": { $nin: ["Cancelled", "Returned"] } } },
 
+      
       {
         $lookup: {
-          from: "products",
+          from: "products", 
           localField: "orderItems.product",
           foreignField: "_id",
-          as: "productDetails",
-        },
+          as: "productDetails"
+        }
       },
 
       { $unwind: "$productDetails" },
 
+      
       {
         $group: {
-          _id: "$productDetails.category",
+          _id: "$productDetails.category", 
           totalSales: { $sum: "$orderItems.quantity" },
-          revenue: {
-            $sum: { $multiply: ["$orderItems.price", "$orderItems.quantity"] },
-          },
-        },
+          revenue: { $sum: { $multiply: ["$orderItems.price", "$orderItems.quantity"] } }
+        }
       },
 
+      
       {
         $lookup: {
-          from: "categories",
+          from: "categories", 
           localField: "_id",
           foreignField: "_id",
-          as: "categoryDetails",
-        },
+          as: "categoryDetails"
+        }
       },
 
+      
       { $unwind: "$categoryDetails" },
 
+      
       { $sort: { totalSales: -1 } },
 
+      
       { $limit: 10 },
 
+      
       {
         $project: {
-          name: "$categoryDetails.name",
+          name: "$categoryDetails.name", 
           totalSales: 1,
-          revenue: 1,
-        },
-      },
+          revenue: 1
+        }
+      }
     ]);
-    console.log(topCategories);
+    console.log(topCategories)
 
     res.json(topCategories);
   } catch (error) {
@@ -759,9 +866,14 @@ const getTopSellingCategories = async (req, res) => {
   }
 };
 
+
+
+
+
+
 const logout = async (req, res) => {
   try {
-    delete req.session.admin;
+    delete req.session.admin; 
     req.session.save((err) => {
       if (err) {
         console.log("Error saving session", err);
@@ -775,6 +887,8 @@ const logout = async (req, res) => {
   }
 };
 
+
+
 module.exports = {
   loadLogin,
   login,
@@ -787,5 +901,6 @@ module.exports = {
   downloadExcel,
   salesReport,
   bestSellingProducts,
-  getTopSellingCategories,
+  getTopSellingCategories
+
 };

@@ -10,7 +10,7 @@ const cartController = require("../controllers/user/cartController");
 const orderController = require("../controllers/user/orderController");
 const wishlistController = require("../controllers/user/wishlistController");
 const walletController = require("../controllers/user/walletController");
-const {userAuth,adminAuth,noCache,redirectIfAuthenticated} = require("../middlewares/auth");
+const {userAuth,adminAuth,noCache,redirectIfAuthenticated,checkUserStatus} = require("../middlewares/auth");
 
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
@@ -19,9 +19,9 @@ const razorpay = new Razorpay({
 
 //home page
 router.get('/pageNotFound',userController.pageNotFound);
-router.get('/',userController.loadHomepage);
+router.get('/',checkUserStatus,userController.loadHomepage);
 //Product management
-router.get("/shop",userController.loadShoppingPage);
+router.get("/shop",checkUserStatus,userController.loadShoppingPage);
 router.get('/filter',userController.filterProduct);
 
 router.get("/productDetails",productController.productDetails);
@@ -43,6 +43,7 @@ console.log('object');req.session.user = req.user._id;
         req.session.name=req.user.name || false;
         res.redirect('/')
     })
+ router.get('/check-status',userController.checkStatus);
 
     
 //profile management
@@ -100,8 +101,9 @@ router.post('/returnOrderItem',userAuth,orderController.returnOrder);
 
 //Wallet MAnagement
 router.get('/wallet',userAuth,walletController.getUserWallet);
-router.post('/add-money',userAuth,walletController.addtoWallet);
 router.post('/withdraw-money',userAuth,walletController.withdrawfromWallet);
+router.post("/create-wallet-order", userAuth,walletController.createWalletOrder);
+router.post("/verify-payment",userAuth, walletController.verifyPayment);
 
 //referral management
 router.get('/referral',userAuth,profileController.getReferral);

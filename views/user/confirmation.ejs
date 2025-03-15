@@ -1,61 +1,49 @@
-<!DOCTYPE html>
-<html lang="zxx" class="no-js">
-  <head>
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, shrink-to-fit=no"
-    />
-    <meta charset="UTF-8" />
-    <meta name="author" content="CodePixar" />
-    <meta name="description" content="Confirmation Page" />
-    <meta name="keywords" content="Confirmation, Order" />
-    <title>BAG IT Shopping</title>
-
-    <link rel="stylesheet" href="css/linearicons.css" />
-    <link rel="stylesheet" href="css/owl.carousel.css" />
-    <link rel="stylesheet" href="css/themify-icons.css" />
-    <link rel="stylesheet" href="css/font-awesome.min.css" />
-    <link rel="stylesheet" href="css/nice-select.css" />
-    <link rel="stylesheet" href="css/nouislider.min.css" />
-    <link rel="stylesheet" href="css/bootstrap.css" />
-    <link rel="stylesheet" href="css/main.css" />
+<%-include("../../views/partials/user/header")%>
 
     <style>
       /* General Body Styling */
       body {
-        background: linear-gradient(to bottom right, #f2f4f8, #e0f7fa);
-        font-family: "Arial", sans-serif;
-        color: #2c3e50;
+        background: #1A1E2A; /* Dark Slate Blue */
+        font-family: 'Poppins', sans-serif;
+        color: #333333; /* Dark Gray */
+        line-height: 1.6;
       }
 
       /* Confirmation Message Styling */
       .title_confirmation {
-        font-size: 50px;
-        font-weight: 700;
-        color: #00bcd4;
+        font-size: 42px;
+        font-weight: 600;
+        color: #FFFFFF; /* White text on gradient */
         text-align: center;
-        margin-bottom: 40px;
-        padding: 20px;
-        background: rgba(255, 255, 255, 0.9);
-        border-radius: 15px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 50px;
+        padding: 25px;
+        background: linear-gradient(90deg, #4A90E2, #0d5eaf); /* Blue to Green */
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        animation: fadeIn 1s ease-in-out;
       }
 
       /* Order Details Section */
       .order_details {
-        background-color: #ffffff;
+        background: #FFFFFF; /* White */
         padding: 40px;
         border-radius: 15px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
         margin-top: 30px;
+        transition: transform 0.3s ease;
+      }
+
+      .order_details:hover {
+        transform: translateY(-5px);
       }
 
       .details_item h4 {
-        font-size: 24px;
-        color: #333;
+        font-size: 22px;
+        font-weight: 600;
+        color: #4A90E2; /* Bright Blue */
         margin-bottom: 20px;
-        border-bottom: 2px solid #00bcd4;
         padding-bottom: 10px;
+        border-bottom: 2px solid #172c1e; /* Emerald Green */
       }
 
       .details_item ul {
@@ -64,19 +52,32 @@
       }
 
       .details_item ul li {
-        margin: 15px 0;
+        margin: 12px 0;
         font-size: 16px;
-        color: #555;
+        color: #666666; /* Medium Gray */
+        display: flex;
+        justify-content: space-between;
+        background: #F7F9FC; /* Light Gray-Blue */
+        padding: 10px;
+        border-radius: 8px;
+        transition: background 0.3s ease;
+      }
+
+      .details_item ul li:hover {
+        background: #E8ECEF; /* Slightly darker gray */
       }
 
       .details_item ul li a {
-        color: #555;
+        color: #666666; /* Medium Gray */
         text-decoration: none;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
       }
 
       .details_item ul li a span {
-        font-weight: bold;
-        color: #00bcd4;
+        font-weight: 500;
+        color: #4A90E2; /* Bright Blue */
       }
 
       /* Order Details Table */
@@ -86,77 +87,106 @@
 
       .order_details_table h2 {
         font-size: 28px;
-        font-weight: 700;
-        color: #2c3e50;
+        font-weight: 600;
+        color: #FFFFFF; /* White on dark background */
         margin-bottom: 20px;
         text-align: center;
       }
 
       .order_details_table h2 u {
         text-decoration: none;
-        border-bottom: 3px solid #00bcd4;
+        border-bottom: 3px solid #0d5eaf; /* Emerald Green */
+      }
+
+      .order_details_table h3 {
+        font-size: 20px;
+        font-weight: 500;
+        color: #0d5eaf; /* Light Gray for contrast */
+        text-align: center;
+        margin-bottom: 20px;
       }
 
       .order_details_table table {
         width: 100%;
         margin-top: 20px;
-        border-collapse: collapse;
+        border-collapse: separate;
+        border-spacing: 0;
+        background: #FFFFFF; /* White */
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
       }
 
       .order_details_table th,
       .order_details_table td {
         text-align: left;
-        padding: 15px;
-        border-bottom: 1px solid #ddd;
+        padding: 15px 20px;
+        border-bottom: 1px solid #E8ECEF; /* Light Gray */
       }
 
       .order_details_table th {
-        background-color: #00bcd4;
-        color: white;
+        background: linear-gradient(90deg, #4A90E2, #0d5eaf); /* Blue to Green */
+        color: #FFFFFF; /* White */
         font-weight: 600;
+        text-transform: uppercase;
+        font-size: 14px;
       }
 
       .order_details_table td {
         font-size: 16px;
+        color: #333333; /* Dark Gray */
       }
 
       .order_details_table h4 {
-        font-weight: bold;
-        color: #333;
+        font-weight: 600;
+        color: #333333; /* Dark Gray */
+        margin: 0;
       }
 
       .order_details_table p {
-        font-size: 18px;
-        color: #2c3e50;
+        font-size: 16px;
+        color: #666666; /* Medium Gray */
+        margin: 0;
+      }
+
+      .order_details_table .text-success {
+        color: #0d5eaf; /* Emerald Green */
+        font-weight: 500;
       }
 
       .order_details_table .btn {
-        background-color: #00bcd4;
-        color: white;
-        padding: 12px 24px;
+        background: linear-gradient(90deg, #4A90E2, #0d5eaf); /* Blue to Green */
+        color: #FFFFFF; /* White */
+        padding: 12px 30px;
         border: none;
-        border-radius: 5px;
+        border-radius: 25px;
         cursor: pointer;
-        transition: background-color 0.3s ease;
         font-size: 16px;
-        font-weight: 600;
+        font-weight: 500;
+        text-transform: uppercase;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
       }
 
       .order_details_table .btn:hover {
-        background-color: #00796b;
+        background: linear-gradient(90deg, #357ABD, #0d5eaf); /* Darker Blue to Green */
+        transform: translateY(-2px);
+        box-shadow: 0 7px 20px rgba(0, 0, 0, 0.4);
       }
 
       .paymentClass {
-        color: #00bcd4;
-        font-weight: 700;
+        color: #0d5eaf; /* Emerald Green */
+        font-weight: 600;
+        font-style: italic;
       }
 
       /* Footer Styling */
       footer {
-        background-color: #333;
-        color: white;
+        background: #2C3E50; /* Dark Blue-Gray */
+        color: #E8ECEF; /* Light Gray */
         padding: 40px;
         margin-top: 50px;
+        border-top: 4px solid #4A90E2; /* Bright Blue */
       }
 
       footer .single-footer-widget {
@@ -165,121 +195,57 @@
 
       footer h6 {
         font-size: 20px;
-        margin-bottom: 15px;
+        font-weight: 600;
+        color: #FFFFFF; /* White */
+        margin-bottom: 20px;
       }
 
       footer .social-icons a {
-        color: #fff;
-        font-size: 20px;
-        margin: 0 10px;
-        transition: color 0.3s ease;
+        color: #E8ECEF; /* Light Gray */
+        font-size: 22px;
+        margin: 0 15px;
+        transition: all 0.3s ease;
       }
 
       footer .social-icons a:hover {
-        color: #00bcd4;
+        color: #0d5eaf; /* Emerald Green */
+        transform: scale(1.2);
+      }
+
+      /* Animation */
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      /* Responsive Adjustments */
+      @media (max-width: 768px) {
+        .title_confirmation {
+          font-size: 32px;
+          padding: 20px;
+        }
+        .order_details {
+          padding: 20px;
+        }
+        .order_details_table h2 {
+          font-size: 24px;
+        }
+        .order_details_table th,
+        .order_details_table td {
+          padding: 10px;
+          font-size: 14px;
+        }
+        .order_details_table .btn {
+          padding: 10px 20px;
+          font-size: 14px;
+        }
       }
     </style>
-  </head>
 
-  <body>
-    <header class="header_area sticky-header">
-      <div class="main_menu">
-        <nav class="navbar navbar-expand-lg navbar-light main_box">
-          <div class="container">
-            <!-- Brand and toggle for better mobile display -->
-            <a class="navbar-brand logo_h" href="index.html"
-              ><img src="img/logo.png" alt=""
-            /></a>
-            <button
-              class="navbar-toggler"
-              type="button"
-              data-toggle="collapse"
-              data-target="#navbarSupportedContent"
-              aria-controls="navbarSupportedContent"
-              aria-expanded="false"
-              aria-label="Toggle navigation"
-            >
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-            </button>
-            <div
-              class="collapse navbar-collapse offset"
-              id="navbarSupportedContent"
-            >
-              <ul class="nav navbar-nav menu_nav ml-auto">
-                <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-                <li class="nav-item">
-                  <a class="nav-link" href="/shop">Shop</a>
-                </li>
 
-                <li class="nav-item submenu dropdown">
-                  <a
-                    href="#"
-                    class="nav-link dropdown-toggle"
-                    data-toggle="dropdown"
-                    role="button"
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                  ></a>
-                  <ul class="dropdown-menu">
-                    <li class="nav-item">
-                      <a class="nav-link" href="blog.html"></a>
-                    </li>
-                    <li class="nav-item">
-                      <a class="nav-link" href="single-blog.html"></a>
-                    </li>
-                  </ul>
-                </li>
-                <li class="nav-item submenu dropdown">
-                  <a
-                    href="#"
-                    class="nav-link dropdown-toggle"
-                    data-toggle="dropdown"
-                    role="button"
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                  ></a>
-                  <ul class="dropdown-menu">
-                    <li class="nav-item">
-                      <a class="nav-link" href="login.html"></a>
-                    </li>
-                    <li class="nav-item">
-                      <a class="nav-link" href="tracking.html"></a>
-                    </li>
-                    <li class="nav-item">
-                      <a class="nav-link" href="elements.html"></a>
-                    </li>
-                  </ul>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="contact.html"></a>
-                </li>
-              </ul>
-              <ul class="nav navbar-nav navbar-right">
-                <li class="nav-item">
-                  <a href="/view-cart" class="cart"
-                    ><span class="ti-bag"></span
-                  ></a>
-                </li>
-                <li class="nav-item">
-                  <button class="search">
-                    <span class="lnr lnr-magnifier" id="search"></span>
-                  </button>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </nav>
-      </div>
-    </header>
-
-    <!-- Start Banner Area -->
     <section class="banner-area organic-breadcrumb">
       <div class="container">
-        <div
-          class="breadcrumb-banner d-flex flex-wrap align-items-center justify-content-end"
-        >
+        <div class="breadcrumb-banner d-flex flex-wrap align-items-center justify-content-end">
           <div class="col-first">
             <h1>Confirmation</h1>
             <nav class="d-flex align-items-center">
@@ -291,54 +257,24 @@
       </div>
     </section>
 
-    <!-- Order Details Section -->
     <section class="order_details section_gap">
       <div class="container">
         <h1 class="title_confirmation">
-          Thank you for your order. Your transaction has been completed
-          successfully.
+          Thank you for your order. Your transaction has been completed successfully.
         </h1>
         <div class="row order_d_inner">
           <div class="col-lg-6 display-flex align-content-center">
             <div class="details_item">
               <% if (selectedAddress) { %>
-              <h4 style="color: #00bcd4">Shipping Address</h4>
+              <h4>Shipping Address</h4>
               <ul class="list">
-                <li>
-                  <a href="#"
-                    ><span>Address Type</span>: <%= selectedAddress.addressType
-                    %></a
-                  >
-                </li>
-                <li>
-                  <a href="#"><span>City</span>: <%= selectedAddress.city %></a>
-                </li>
-                <li>
-                  <a href="#"
-                    ><span>Landmark</span>: <%= selectedAddress.landMark %></a
-                  >
-                </li>
-                <li>
-                  <a href="#"
-                    ><span>State</span>: <%= selectedAddress.state %></a
-                  >
-                </li>
-                <li>
-                  <a href="#"
-                    ><span>Pincode</span>: <%= selectedAddress.pincode %></a
-                  >
-                </li>
-                <li>
-                  <a href="#"
-                    ><span>Phone</span>: <%= selectedAddress.phone %></a
-                  >
-                </li>
-                <li>
-                  <a href="#"
-                    ><span>Alternate Phone</span>: <%= selectedAddress.altPhone
-                    %></a
-                  >
-                </li>
+                <li><a href="#"><span>Address Type</span><%= selectedAddress.addressType %></a></li>
+                <li><a href="#"><span>City</span><%= selectedAddress.city %></a></li>
+                <li><a href="#"><span>Landmark</span><%= selectedAddress.landMark %></a></li>
+                <li><a href="#"><span>State</span><%= selectedAddress.state %></a></li>
+                <li><a href="#"><span>Pincode</span><%= selectedAddress.pincode %></a></li>
+                <li><a href="#"><span>Phone</span><%= selectedAddress.phone %></a></li>
+                <li><a href="#"><span>Alternate Phone</span><%= selectedAddress.altPhone %></a></li>
               </ul>
               <% } else { %>
               <p>No shipping address available.</p>
@@ -350,9 +286,8 @@
             <div class="details_item">
               <img
                 class="img-fluid"
-                style="height: 30%; width: 30%"
+                style="height: 30%; width: 30%; border-radius: 10px;"
                 src="uploads/product-images/<%= item.productId.productImage[0] %>"
-                class="img-fluid"
                 alt="Product Image"
               />
             </div>
@@ -360,13 +295,9 @@
           </div>
         </div>
         <div class="order_details_table">
-          <h2 style="color: #00bcd4"><u>Order Details</u></h2>
-          <h2>
-            Order Method: <span class="paymentClass"><%= paymentMethod %></span>
-          </h2>
-          <h3>
-            Payment Status: <span class="paymentClass"><%=paymentStatus%></span>
-          </h3>
+          <h2><u>Order Details</u></h2>
+          <h2>Order Method: <span class="paymentClass"><%= paymentMethod %></span></h2>
+          <h3>Payment Status: <span class="paymentClass"><%= paymentStatus %></span></h3>
           <div class="table-responsive">
             <table class="table">
               <thead>
@@ -377,63 +308,55 @@
                 </tr>
               </thead>
               <tbody>
-                <% if (cartItems) { %> <% cartItems.forEach(item => { %>
+                <% if (cartItems) { %>
+                <% cartItems.forEach(item => { %>
                 <tr>
                   <td><p><%= item.productId.productName %></p></td>
                   <td><h5>x <%= item.quantity %></h5></td>
-                  <td>
-                    <p>
-                      ₹<%= (item.productId.salePrice * item.quantity).toFixed(2)
-                      %>
-                    </p>
-                  </td>
+                  <td><p>₹<%= (item.productId.salePrice * item.quantity).toFixed(2) %></p></td>
                 </tr>
                 <% }); %>
-
-                <!-- Show original total price before discount -->
+        
                 <tr>
-                  <td><h4>Subtotal</h4></td>
+                  <td><h4>Total Price</h4></td>
                   <td></td>
                   <td><p>₹<%= totalOriginalPrice.toFixed(2) %></p></td>
                 </tr>
-
-                <!-- Show discount amount if applied -->
+        
                 <% if (totalDiscount > 0) { %>
                 <tr>
                   <td><h4>Discount</h4></td>
                   <td></td>
-                  <td>
-                    <p class="text-success">
-                      - ₹<%= totalDiscount.toFixed(2) %>
-                    </p>
-                  </td>
+                  <td><p class="text-success">- ₹<%= totalDiscount.toFixed(2) %></p></td>
                 </tr>
-                <% } %> <% if (couponDiscount > 0) { %>
+                <% } %>
+        
+                <% if (couponDiscount > 0) { %>
                 <tr>
                   <td><h4>Coupon Discount</h4></td>
                   <td></td>
-                  <td>
-                    <p class="text-success">
-                      - ₹<%= couponDiscount.toFixed(2) %>
-                    </p>
-                  </td>
+                  <td><p class="text-success">- ₹<%= couponDiscount.toFixed(2) %></p></td>
                 </tr>
                 <% } %>
-
-                <!-- Shipping Charge -->
+        
+                <% const shippingChargeCalc = totalPrice < 1000 ? 50 : 0; %>
                 <tr>
-                  <td><h4>Shipping</h4></td>
+                  <td><h4>Shipping Charge</h4></td>
                   <td></td>
-                  <td><p>Flat rate: ₹<%= shippingCharge %></p></td>
+                  <td><p>₹<%= shippingChargeCalc.toFixed(2) %></p></td>
                 </tr>
-
-                <!-- Final Total after Discount & Shipping -->
+        
+                <% let gst = (totalPrice * 0.18).toFixed(2); %>
                 <tr>
-                  <td><h4>Total</h4></td>
+                  <td><h4>GST (18%)</h4></td>
                   <td></td>
-                  <td>
-                    <p><strong>₹<%= subTotal.toFixed(2) %></strong></p>
-                  </td>
+                  <td><p>₹<%= gst %></p></td>
+                </tr>
+        
+                <tr>
+                  <td><h4>Grand Total</h4></td>
+                  <td></td>
+                  <td><p><strong>₹<%= (parseFloat(totalPrice) - parseFloat(couponDiscount) + parseFloat(shippingChargeCalc) + parseFloat(gst)).toFixed(2) %></strong></p></td>
                 </tr>
                 <% } %>
               </tbody>
@@ -441,7 +364,7 @@
           </div>
         </div>
 
-        <div class="row">
+        <div class="row mt-4">
           <div class="col-lg-6 text-center">
             <a class="btn btn-primary" href="/">Back to Shopping</a>
           </div>
@@ -451,26 +374,12 @@
         </div>
       </div>
     </section>
-    <footer>
-      <div class="container">
-        <div class="row">
-          <div class="col-lg-4 col-md-6 single-footer-widget">
-            <h6>Follow Us</h6>
-            <div class="social-icons">
-              <a href="#"><i class="fa fa-facebook"></i></a>
-              <a href="#"><i class="fa fa-twitter"></i></a>
-              <a href="#"><i class="fa fa-google"></i></a>
-              <a href="#"><i class="fa fa-instagram"></i></a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </footer>
+
+
     <script>
       history.pushState(null, null, location.href);
       window.onpopstate = function () {
         history.go(1);
       };
     </script>
-  </body>
-</html>
+ <%-include("../../views/partials/user/footer")%>>

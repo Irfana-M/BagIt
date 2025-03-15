@@ -1,5 +1,41 @@
 const User = require("../models/userSchema");
 
+
+function checkUserStatus(req, res, next) {
+    const userId = req.session.user;
+    console.log('User ID from session:', userId);
+  
+    if (!userId) {
+      req.user = null;
+      return next();
+    }
+  
+    User.findById(userId)
+      .then(user => {
+        console.log('User found:', user ? { id: user._id, isBlocked: user.isBlocked, name: user.name } : 'No user');
+        if (!user) {
+          delete req.session.user;  
+          delete req.session.name;  
+          return res.redirect('/login');
+        }
+  
+        if (user.isBlocked) {
+          console.log('User is blocked, clearing session data');
+          delete req.session.user;  
+          delete req.session.name;  
+          return res.redirect('/login?status=blocked');
+        } else {
+          console.log('User is active, proceeding');
+          req.user = { status: 'active', name: user.name };
+          next();
+        }
+      })
+      .catch(err => {
+        console.error('Error finding user:', err);
+        res.redirect('/login');
+      });
+  }
+
 const noCache = (req, res, next) => {
     res.set({
       'Cache-Control': 'no-store, no-cache, must-revalidate, private',
@@ -46,7 +82,7 @@ const userAuth = async (req, res, next) => {
         if (sendJsonResponse) {
             return res.status(401).json({ 
                 status: false, 
-                message: "User not logged in", 
+                message: "User blocked or not found", 
                 redirect: "/login" 
             });
         } else {
@@ -75,4 +111,4 @@ const adminAuth = (req,res,next)=>{
     })
 }
 
-module.exports = {userAuth,adminAuth,noCache,isAdminAuthenticated,redirectIfAuthenticated}
+module.exports = {userAuth,adminAuth,noCache,isAdminAuthenticated,redirectIfAuthenticated,checkUserStatus}

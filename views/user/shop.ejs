@@ -686,5 +686,38 @@ function addToCart(productId) {
         window.location.href = `/sortProducts?${urlParams.toString()}`; 
       }
     </script>
+   
+<% if (user) { %>
+  <script>
+    function checkUserStatus() {
+      fetch('/check-status', {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'blocked') {
+            Swal.fire({
+              icon: 'error',
+              title: 'Blocked',
+              text: 'You are blocked by an admin.',
+              confirmButtonText: 'OK'
+            }).then(() => {
+              window.location.href = '/login?status=blocked';
+            });
+          } else if (data.status === 'not_found') {
+            window.location.href = '/login';
+          }
+        })
+        .catch(err => {
+          console.error('Error checking status:', err);
+        });
+    }
+
+    setInterval(checkUserStatus, 5000); 
+    checkUserStatus(); 
+  </script>
+<% } %>
+<!-- ... -->
   </body>
 </html>

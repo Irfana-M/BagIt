@@ -134,4 +134,38 @@
 
 <!-- Remove Owl Carousel JS -->
 <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script> -->
+ <!-- ... (rest of home.ejs remains the same) -->
+<% if (user) { %>
+    <script>
+      function checkUserStatus() {
+        fetch('/check-status', {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' }
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.status === 'blocked') {
+              Swal.fire({
+                icon: 'error',
+                title: 'Blocked',
+                text: 'You are blocked by an admin.',
+                confirmButtonText: 'OK'
+              }).then(() => {
+                window.location.href = '/login?status=blocked';
+              });
+            } else if (data.status === 'not_found') {
+              window.location.href = '/login';
+            }
+          })
+          .catch(err => {
+            console.error('Error checking status:', err);
+          });
+      }
+  
+      setInterval(checkUserStatus, 5000); // Check every 5 seconds
+      checkUserStatus(); // Immediate check on load
+    </script>
+  <% } %>
+  <!-- ... -->
+ 
 <%-include("../../views/partials/user/footer")%>
