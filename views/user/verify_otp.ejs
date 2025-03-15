@@ -126,6 +126,7 @@
                 id="resendBtn"
                 class="btn resend-btn text-white mb-3"
                 onclick="resendOTP()"
+                disabled
               >
                 Resend OTP
               </button>
@@ -145,6 +146,7 @@
 
       let timer = 60;
       let timerInterval;
+      const resendBtn = document.getElementById("resendBtn");
 
       function startTimer() {
         timerInterval = setInterval(() => {
@@ -155,6 +157,7 @@
             document.getElementById("timerValue").classList.add("expired");
             document.getElementById("timerValue").textContent = "Expired";
             document.getElementById("otp").disabled = true;
+            resendBtn.disabled = false;
           }
         }, 1000);
       }
@@ -196,6 +199,7 @@
       }
 
       function resendOTP() {
+        resendBtn.disabled = true;
         clearInterval(timerInterval);
         timer = 60;
         document.getElementById("otp").disabled = false;

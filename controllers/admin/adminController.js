@@ -25,8 +25,9 @@ const loadLogin = (req, res) => {
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log(req.body)
     const admin = await User.findOne({ email, isAdmin: true });
-
+console.log(admin)
     if (!admin) {
       req.session.message = "Invalid email. Please try again.";
       return res.redirect("/admin/login");
@@ -41,7 +42,7 @@ const login = async (req, res) => {
 
     
     req.session.admin = true;
-    return res.redirect("/admin/dashboard");
+    return res.redirect("/admin");
 
   } catch (error) {
     console.log("Login error", error);

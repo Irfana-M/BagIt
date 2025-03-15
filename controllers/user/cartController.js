@@ -532,10 +532,11 @@ const getConfirmation = async (req, res) => {
 
       shippingAddress = addressData.address[0];
       rawCartItems = Array.isArray(req.session.cartItems) ? req.session.cartItems : [];
-      totalOfferPrice = parseFloat(totalPrice);
+      totalOfferPrice = rawCartItems.reduce((total, item) => total + (item.productId?.salePrice || 0) * item.quantity, 0);;
       couponDiscount = req.session.cart?.appliedCoupon?.discount || 0;
       totalOriginalPrice = rawCartItems.reduce((total, item) => total + (item.productId?.regularPrice || 0) * item.quantity, 0);
       const totalDiscount = totalOriginalPrice - totalOfferPrice;
+      const totalPriceCalculated = parseInt(totalPrice);
 
       shippingCharge = totalOfferPrice < 1000 ? 50 : 0;
 
@@ -583,7 +584,7 @@ const getConfirmation = async (req, res) => {
 
     res.render("confirmation", {
       selectedAddress: shippingAddress,
-      totalPrice: totalOfferPrice,
+      totalPrice: totalPriceCalculated,
       subTotal: subTotal,
       totalOriginalPrice,
       totalDiscount,
