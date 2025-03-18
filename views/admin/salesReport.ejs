@@ -256,103 +256,128 @@
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script>
-    // [Previous JavaScript code remains unchanged]
-    document.addEventListener("DOMContentLoaded", () => {
-      let currentPage = parseInt("<%= currentPage %>") || 1;
-      let limit = parseInt("<%= limit %>") || 10;
-      let totalPages = parseInt("<%= totalPages %>") || 1;
+document.addEventListener("DOMContentLoaded", () => {
+  let currentPage = parseInt("<%= currentPage %>") || 1;
+  let limit = parseInt("<%= limit %>") || 10;
+  let totalPages = parseInt("<%= totalPages %>") || 1;
 
-      const reportFilterType = document.getElementById("report-filter-type");
-      const reportCustomDate = document.getElementById("report-custom-date");
-      reportFilterType.addEventListener("change", (e) => {
-        reportCustomDate.style.display = e.target.value === "custom" ? "flex" : "none";
-      });
+  const reportFilterType = document.getElementById("report-filter-type");
+  const reportCustomDate = document.getElementById("report-custom-date");
+  const startDateInput = document.getElementById("report-start-date");
+  const endDateInput = document.getElementById("report-end-date");
 
-      document.getElementById("generate-report").addEventListener("click", () => {
-        const filter = reportFilterType.value;
-        const startDate = document.getElementById("report-start-date").value;
-        const endDate = document.getElementById("report-end-date").value;
-        fetchTableData(filter, startDate, endDate, 1);
-      });
+  // Disable future dates in the date picker
+  const today = new Date().toISOString().split("T")[0];
+  if (startDateInput && endDateInput) {
+    startDateInput.setAttribute("max", today);
+    endDateInput.setAttribute("max", today);
+  }
 
-      document.getElementById("prev-page").addEventListener("click", () => {
-        if (currentPage > 1) {
-          currentPage--;
-          fetchTableData(reportFilterType.value, document.getElementById("report-start-date").value, document.getElementById("report-end-date").value, currentPage);
-        }
-      });
+  reportFilterType.addEventListener("change", (e) => {
+    reportCustomDate.style.display = e.target.value === "custom" ? "flex" : "none";
+  });
 
-      document.getElementById("next-page").addEventListener("click", () => {
-        if (currentPage < totalPages) {
-          currentPage++;
-          fetchTableData(reportFilterType.value, document.getElementById("report-start-date").value, document.getElementById("report-end-date").value, currentPage);
-        }
-      });
+  document.getElementById("generate-report").addEventListener("click", () => {
+    const filter = reportFilterType.value;
+    const startDate = startDateInput.value;
+    const endDate = endDateInput.value;
 
-      document.getElementById("download-pdf").addEventListener("click", () => {
-        const filter = reportFilterType.value;
-        const startDate = document.getElementById("report-start-date").value;
-        const endDate = document.getElementById("report-end-date").value;
-        window.location.href = `/admin/sales/download-pdf?filter=${filter}&start=${startDate}&end=${endDate}`;
-      });
-
-      document.getElementById("download-excel").addEventListener("click", () => {
-        const filter = reportFilterType.value;
-        const startDate = document.getElementById("report-start-date").value;
-        const endDate = document.getElementById("report-end-date").value;
-        window.location.href = `/admin/sales/download-excel?filter=${filter}&start=${startDate}&end=${endDate}`;
-      });
-
-      async function fetchTableData(filter, startDate, endDate, page) {
-        try {
-          let url = `/admin/sales?filter=${filter}&page=${page}&limit=${limit}`;
-          if (filter === "custom" && startDate && endDate) {
-            url += `&start=${startDate}&end=${endDate}`;
-          }
-          const res = await axios.get(url);
-          const { salesData, currentPage: newPage, totalPages: newTotalPages } = res.data;
-
-          currentPage = newPage;
-          updateTable(salesData);
-          updatePagination(newPage, newTotalPages);
-        } catch (error) {
-          console.error("Error fetching table data:", error);
-        }
+    if (filter === "custom") {
+      if (!startDate || !endDate) {
+        alert("Please select both start and end dates.");
+        return;
       }
-
-      function updateTable(data) {
-        const tbody = document.getElementById("sales-data-body");
-        tbody.innerHTML = "";
-        if (data.length > 0) {
-          data.forEach(item => {
-            const row = `
-              <tr>
-                <td>${item.orderId}</td>
-                <td>${item.customerName}</td>
-                <td>${item.productName}</td>
-                <td>${item.categoryName}</td>
-                <td>${item.quantitySold}</td>
-                <td>₹${item.unitPrice.toFixed(2)}</td>
-                <td>₹${item.discountApplied.toFixed(2)}</td>
-                <td>${item.orderStatus}</td>
-                <td>${item.orderDate}</td>
-              </tr>
-            `;
-            tbody.innerHTML += row;
-          });
-        } else {
-          tbody.innerHTML = `<tr class="no-data"><td colspan="9">No sales data found</td></tr>`;
-        }
+      if (new Date(startDate) > new Date(endDate)) {
+        alert("Start date cannot be greater than end date.");
+        return;
       }
-
-      function updatePagination(currentPage, totalPagesNew) {
-        totalPages = totalPagesNew;
-        const pageInfo = document.getElementById("page-info");
-        pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
-        document.getElementById("prev-page").disabled = currentPage === 1;
-        document.getElementById("next-page").disabled = currentPage >= totalPages;
+      if (new Date(startDate) > new Date() || new Date(endDate) > new Date()) {
+        alert("Dates cannot be in the future.");
+        return;
       }
-    });
-  </script>
+    }
+
+    fetchTableData(filter, startDate, endDate, 1);
+  });
+
+  document.getElementById("prev-page").addEventListener("click", () => {
+    if (currentPage > 1) {
+      currentPage--;
+      fetchTableData(reportFilterType.value, startDateInput.value, endDateInput.value, currentPage);
+    }
+  });
+
+  document.getElementById("next-page").addEventListener("click", () => {
+    if (currentPage < totalPages) {
+      currentPage++;
+      fetchTableData(reportFilterType.value, startDateInput.value, endDateInput.value, currentPage);
+    }
+  });
+
+  document.getElementById("download-pdf").addEventListener("click", () => {
+    const filter = reportFilterType.value;
+    const startDate = startDateInput.value;
+    const endDate = endDateInput.value;
+    window.location.href = `/admin/sales/download-pdf?filter=${filter}&start=${startDate}&end=${endDate}`;
+  });
+
+  document.getElementById("download-excel").addEventListener("click", () => {
+    const filter = reportFilterType.value;
+    const startDate = startDateInput.value;
+    const endDate = endDateInput.value;
+    window.location.href = `/admin/sales/download-excel?filter=${filter}&start=${startDate}&end=${endDate}`;
+  });
+
+  async function fetchTableData(filter, startDate, endDate, page) {
+    try {
+      let url = `/admin/sales?filter=${filter}&page=${page}&limit=${limit}`;
+      if (filter === "custom" && startDate && endDate) {
+        url += `&start=${startDate}&end=${endDate}`;
+      }
+      const res = await axios.get(url);
+      const { salesData, currentPage: newPage, totalPages: newTotalPages } = res.data;
+
+      currentPage = newPage;
+      updateTable(salesData);
+      updatePagination(newPage, newTotalPages);
+    } catch (error) {
+      console.error("Error fetching table data:", error);
+    }
+  }
+
+  function updateTable(data) {
+    const tbody = document.getElementById("sales-data-body");
+    tbody.innerHTML = "";
+    if (data.length > 0) {
+      data.forEach(item => {
+        const row = `
+          <tr>
+            <td>${item.orderId}</td>
+            <td>${item.customerName}</td>
+            <td>${item.productName}</td>
+            <td>${item.categoryName}</td>
+            <td>${item.quantitySold}</td>
+            <td>₹${item.unitPrice.toFixed(2)}</td>
+            <td>₹${item.discountApplied.toFixed(2)}</td>
+            <td>${item.orderStatus}</td>
+            <td>${item.orderDate}</td>
+          </tr>
+        `;
+        tbody.innerHTML += row;
+      });
+    } else {
+      tbody.innerHTML = `<tr class="no-data"><td colspan="9">No sales data found</td></tr>`;
+    }
+  }
+
+  function updatePagination(currentPage, totalPagesNew) {
+    totalPages = totalPagesNew;
+    const pageInfo = document.getElementById("page-info");
+    pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+    document.getElementById("prev-page").disabled = currentPage === 1;
+    document.getElementById("next-page").disabled = currentPage >= totalPages;
+  }
+});
+</script>
 </body>
 </html>

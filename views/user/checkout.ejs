@@ -377,7 +377,7 @@
               
               <% if (typeof subTotal !== 'undefined') { %>
                   <li>
-                    <a href="#">Total <span id="finalTotal">₹<%= finalTotal %></span></a>
+                    <a href="#">Total <span id="finalTotal">₹<%= finalTotal.toFixed(2) %></span></a>
                   </li>
               <% } %>
               

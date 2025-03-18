@@ -129,6 +129,8 @@
     padding: 5px 10px;
     cursor: pointer;
     border-radius: 5px;
+    display: block;
+    margin-top: 5px;
   }
   .retry-btn:hover {
     background-color: #2980b9;
@@ -210,16 +212,20 @@
                                         </span>
                                     </td>
                                     <!-- Payment Status -->
+                                    
                                     <td>
                                         <span class="payment-status <%= item.paymentInfo && item.paymentInfo.status ? item.paymentInfo.status.toLowerCase() : '' %>">
                                             <%= item.paymentInfo && item.paymentInfo.status ? item.paymentInfo.status : 'Unknown' %>
                                         </span>
-                                        <% if (item.paymentInfo && item.paymentInfo.status === 'Pending') { %>
-                                            <a href="#" class="retry-btn" data-order-id="<%= item.orderId %>">
-                                                Retry Payment
-                                            </a>
+                                        <% if (item.paymentInfo && item.paymentInfo.status === 'Pending' && item.paymentInfo.method !== 'Cash on Delivery') { %>
+                                            <div>
+                                                <a href="#" class="retry-btn" data-order-id="<%= item.orderId %>">
+                                                    Retry Payment
+                                                </a>
+                                            </div>
                                         <% } %>
                                     </td>
+                                    
                                     <!-- Product Image -->
                                     <td>
                                         <img src="uploads/product-images/<%= item.product.productImage[0] %>" alt="Product Image" width="50" height="50">

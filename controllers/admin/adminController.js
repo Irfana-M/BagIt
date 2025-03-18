@@ -159,6 +159,7 @@ const loadSalesReport = async (req, res) => {
           orderDate: "$createdAt",
         },
       },
+      { $sort: { orderDate: -1 } },
       { $skip: skip },
       { $limit: limit },
     ]);
@@ -287,6 +288,7 @@ const generateReport = async (req, res) => {
           orderDate: "$createdAt",
         },
       },
+      { $sort: { orderDate: -1 } },
       { $skip: skip },
       { $limit: parseInt(limit) },
     ]);
@@ -719,60 +721,141 @@ const downloadExcel = async (req, res) => {
   }
 };
 
-
 const salesReport = async (req, res) => {
   try {
     const { filter, startDate, endDate } = req.query;
     let matchStage = { "orderItems.status": { $nin: ["Cancelled", "Returned"] } };
+    let dateRange = {};
 
-    // Filters for Sales Overview chart
+    // Define date ranges (UTC midnight)
+    const now = new Date();
+    const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0));
+    const todayEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
+
     if (filter === "daily") {
-      matchStage.createdAt = {
-        $gte: new Date(new Date().setHours(0, 0, 0, 0)),
-        $lte: new Date(new Date().setHours(23, 59, 59, 999)),
-      };
+      dateRange = { start: todayStart, end: todayEnd };
     } else if (filter === "weekly") {
-      matchStage.createdAt = {
-        $gte: new Date(new Date().setDate(new Date().getDate() - 7)),
+      dateRange = {
+        start: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 6)),
+        end: todayEnd,
       };
     } else if (filter === "monthly") {
-      matchStage.createdAt = {
-        $gte: new Date(new Date().setMonth(new Date().getMonth() - 1)),
+      dateRange = {
+        start: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1)),
+        end: todayEnd,
       };
     } else if (filter === "yearly") {
-      matchStage.createdAt = {
-        $gte: new Date(new Date().setFullYear(new Date().getFullYear() - 1)),
+      dateRange = {
+        start: new Date(Date.UTC(now.getUTCFullYear() - 1, 0, 1)),
+        end: todayEnd,
       };
-    } else if (filter === "custom" && startDate && endDate) {
-      matchStage.createdAt = {
-        $gte: new Date(startDate),
-        $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999)),
+    } else if (filter === "custom") {
+      if (!startDate || !endDate) {
+        return res.status(400).json({ error: "Start and end dates required for custom filter" });
+      }
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      if (start > end || start > todayEnd) {
+        return res.status(400).json({ error: "Invalid date range: Start must be before end and not in the future" });
+      }
+      dateRange = {
+        start: new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate(), 0, 0, 0, 0)),
+        end: new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate(), 23, 59, 59, 999)),
       };
+    } else {
+      return res.status(400).json({ error: "Invalid filter type. Use: daily, weekly, monthly, yearly, custom" });
+    }
+
+    matchStage.createdAt = { $gte: dateRange.start, $lte: dateRange.end };
+
+    // Define group stage
+    let groupStage;
+    if (filter === "yearly") {
+      groupStage = { $dateToString: { format: "%Y", date: "$createdAt" } };
+    } else if (filter === "monthly") {
+      groupStage = { $dateToString: { format: "%Y-%m", date: "$createdAt" } };
+    } else if (filter === "daily" || filter === "weekly" || filter === "custom") {
+      groupStage = { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } };
     }
 
     const salesData = await Order.aggregate([
       { $match: matchStage },
       { $unwind: "$orderItems" },
-      {
-        $group: {
-          _id: {
-            $dateToString: {
-              format: filter === "yearly" ? "%Y" : filter === "monthly" ? "%Y-%m" : "%Y-%m-%d",
-              date: "$createdAt",
-            },
-          },
-          totalSales: { $sum: "$finalAmount" },
-        },
-      },
+      { $group: { _id: groupStage, totalSales: { $sum: "$finalAmount" } } },
       { $sort: { _id: 1 } },
     ]);
 
-    res.json(salesData);
+    console.log("Filter:", filter, "Date Range:", dateRange);
+    console.log("Match Stage:", matchStage);
+    console.log("Sales Data (Before Filling):", salesData);
+
+    // Fill missing periods
+    let filledData;
+    if (filter === "daily" || filter === "weekly" || filter === "custom") {
+      filledData = fillMissingDays(salesData, dateRange);
+    } else if (filter === "monthly") {
+      filledData = fillMissingMonths(salesData, dateRange);
+    } else if (filter === "yearly") {
+      filledData = fillMissingYears(salesData, dateRange);
+    }
+
+    console.log("Filled Data (After Filling):", filledData);
+    res.json(filledData);
   } catch (error) {
     console.error("Error fetching sales data:", error);
     res.status(500).send("Internal Server Error");
   }
 };
+
+// Filling Functions
+function fillMissingDays(salesData, dateRange) {
+  const filledData = [];
+  let currentDate = new Date(dateRange.start);
+
+  while (currentDate <= dateRange.end) {
+    const periodId = currentDate.toISOString().slice(0, 10);
+    const existingData = salesData.find(data => data._id === periodId);
+    filledData.push({
+      _id: periodId,
+      totalSales: existingData ? existingData.totalSales : 0,
+    });
+    currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+  }
+  return filledData;
+}
+
+function fillMissingMonths(salesData, dateRange) {
+  const filledData = [];
+  let currentDate = new Date(dateRange.start);
+
+  while (currentDate <= dateRange.end) {
+    const periodId = currentDate.toISOString().slice(0, 7);
+    const existingData = salesData.find(data => data._id === periodId);
+    filledData.push({
+      _id: periodId,
+      totalSales: existingData ? existingData.totalSales : 0,
+    });
+    currentDate.setUTCMonth(currentDate.getUTCMonth() + 1);
+  }
+  return filledData;
+}
+
+function fillMissingYears(salesData, dateRange) {
+  const filledData = [];
+  let currentDate = new Date(dateRange.start);
+
+  while (currentDate <= dateRange.end) {
+    const periodId = currentDate.toISOString().slice(0, 4);
+    const existingData = salesData.find(data => data._id === periodId);
+    filledData.push({
+      _id: periodId,
+      totalSales: existingData ? existingData.totalSales : 0,
+    });
+    currentDate.setUTCFullYear(currentDate.getUTCFullYear() + 1);
+  }
+  return filledData;
+}
+
 
 
 

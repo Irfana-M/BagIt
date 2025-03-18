@@ -121,7 +121,7 @@
 
   .stats-container {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* Fixed to 3 columns */
+    grid-template-columns: repeat(3, 1fr); 
     gap: 20px;
     margin-bottom: 40px;
   }
@@ -261,7 +261,7 @@
 
   @media (max-width: 768px) {
     .stats-container {
-      grid-template-columns: 1fr; /* Stack cards on smaller screens */
+      grid-template-columns: 1fr;
     }
     .filters {
       flex-direction: column;
@@ -272,71 +272,100 @@
 
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-  // [JavaScript code remains unchanged]
-  document.addEventListener("DOMContentLoaded", () => {
-    let salesChartInstance;
+document.addEventListener("DOMContentLoaded", () => {
+  let salesChartInstance;
 
-    fetchSalesData("monthly");
-    fetchBestSellingProducts();
-    fetchBestSellingCategories();
+  fetchSalesData("monthly");
+  fetchBestSellingProducts();
+  fetchBestSellingCategories();
 
-    const chartFilterType = document.getElementById("chart-filter-type");
-    const chartCustomDate = document.getElementById("chart-custom-date");
-    chartFilterType.addEventListener("change", (e) => {
-      chartCustomDate.style.display = e.target.value === "custom" ? "flex" : "none";
-      if (e.target.value !== "custom") fetchSalesData(e.target.value);
-    });
+  const chartFilterType = document.getElementById("chart-filter-type");
+  const chartCustomDate = document.getElementById("chart-custom-date");
+  const startDateInput = document.getElementById("chart-start-date");
+  const endDateInput = document.getElementById("chart-end-date");
 
-    document.getElementById("generate-chart").addEventListener("click", () => {
-      const filter = chartFilterType.value;
-      if (filter === "custom") {
-        const startDate = document.getElementById("chart-start-date").value;
-        const endDate = document.getElementById("chart-end-date").value;
-        if (startDate && endDate) fetchSalesData(filter, startDate, endDate);
-        else alert("Please select both start and end dates for the chart.");
-      } else {
-        fetchSalesData(filter);
-      }
-    });
+  // Disable future dates in the date picker
+  const today = new Date().toISOString().split('T')[0];
+  startDateInput.setAttribute("max", today);
+  endDateInput.setAttribute("max", today);
 
-    async function fetchSalesData(filter, startDate = null, endDate = null) {
-      try {
-        let url = `/admin/sales-report?filter=${filter}`;
-        if (filter === "custom" && startDate && endDate) {
-          url += `&startDate=${startDate}&endDate=${endDate}`;
+  chartFilterType.addEventListener("change", (e) => {
+    chartCustomDate.style.display = e.target.value === "custom" ? "flex" : "none";
+    if (e.target.value !== "custom") fetchSalesData(e.target.value);
+  });
+
+  document.getElementById("generate-chart").addEventListener("click", () => {
+    const filter = chartFilterType.value;
+    if (filter === "custom") {
+      const startDate = startDateInput.value;
+      const endDate = endDateInput.value;
+      if (startDate && endDate) {
+        if (new Date(startDate) > new Date(endDate)) {
+          alert("Start date cannot be greater than end date.");
+          return;
         }
-        const res = await axios.get(url);
-        const salesData = res.data;
-
-        const ctx = document.getElementById("salesChart").getContext("2d");
-        if (salesChartInstance) salesChartInstance.destroy();
-
-        salesChartInstance = new Chart(ctx, {
-          type: "line",
-          data: {
-            labels: salesData.map(data => data._id),
-            datasets: [{
-              label: "Total Sales (₹)",
-              data: salesData.map(data => data.totalSales),
-              borderColor: "#3182ce",
-              backgroundColor: "rgba(49, 130, 206, 0.1)",
-              fill: true,
-              tension: 0.4
-            }]
-          },
-          options: {
-            scales: {
-              x: { title: { display: true, text: "Date" } },
-              y: { title: { display: true, text: "Sales (₹)" }, beginAtZero: true }
-            },
-            plugins: { legend: { position: "top" } }
-          }
-        });
-      } catch (error) {
-        console.error("Error fetching chart data:", error);
+        if (new Date(startDate) > new Date()) {
+          alert("Start date cannot be in the future.");
+          return;
+        }
+        fetchSalesData(filter, startDate, endDate);
+      } else {
+        alert("Please select both start and end dates for the chart.");
       }
+    } else {
+      fetchSalesData(filter);
     }
+  });
+
+  async function fetchSalesData(filter, startDate = null, endDate = null) {
+  try {
+    let url = `/admin/sales-report?filter=${filter}`;
+    if (filter === "custom" && startDate && endDate) {
+      url += `&startDate=${startDate}&endDate=${endDate}`;
+    }
+    const res = await axios.get(url);
+    const salesData = res.data;
+
+    console.log("Backend Response:", salesData); // Debug log
+
+    const ctx = document.getElementById("salesChart").getContext("2d");
+    if (salesChartInstance) salesChartInstance.destroy();
+
+    // Format labels for the chart
+    const labels = salesData.map(data => data._id);
+
+    salesChartInstance = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: labels,
+        datasets: [{
+          label: "Total Sales (₹)",
+          data: salesData.map(data => data.totalSales),
+          borderColor: "#3182ce",
+          backgroundColor: "rgba(49, 130, 206, 0.1)",
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: {
+        scales: {
+          x: { title: { display: true, text: "Date" } },
+          y: { title: { display: true, text: "Sales (₹)" }, beginAtZero: true }
+        },
+        plugins: { legend: { position: "top" } }
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching chart data:", error);
+    if (error.response && error.response.data.error) {
+      alert(error.response.data.error);
+    }
+  }
+}
+ 
+
 
     async function fetchBestSellingProducts() {
       try {
@@ -388,5 +417,4 @@
     }
   });
 </script>
-
 <%- include("../../views/partials/admin/footer") %>

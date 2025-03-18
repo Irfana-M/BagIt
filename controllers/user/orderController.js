@@ -449,14 +449,19 @@ const razorpayPayment = async (req, res) => {
         const appliedCoupon = req.session.cart?.appliedCoupon || { discount: 0 };
         const couponDiscount = appliedCoupon.discount || 0;
 
-        let finalAmount = totalOfferPrice - couponDiscount + shippingCharge;
+        const gst = totalOfferPrice * 0.18;
+
+        
+        let finalAmount = (totalOfferPrice + gst) - couponDiscount + shippingCharge;
         finalAmount = Math.max(finalAmount, 0);
+
+        
 
         const orderId = uuidv4();
 
-        // **Handle Razorpay Payment Initiation**
+        
         if (withPayment && initiateOnly) {
-            const totalAmount = Number(totalPrice); // Convert totalPrice to a number
+            const totalAmount = Number(totalPrice) ; 
         
             if (isNaN(totalAmount) || totalAmount <= 0) {
                 return res.status(400).json({ success: false, message: "Invalid totalPrice value." });
@@ -480,13 +485,14 @@ const razorpayPayment = async (req, res) => {
             });
         }
 
-        // **Create and Save Order in Database**
+        
         const newOrder = new Order({
             user: userId,
             orderId,
             orderItems,
             totalPrice: totalOfferPrice,
-            discount: totalDiscount + couponDiscount,
+            discount: totalDiscount ,
+            couponDiscount: couponDiscount,
             finalAmount,
             shippingAddress: selectedAddress._id,
             couponApplied: couponDiscount > 0,
@@ -551,7 +557,7 @@ const verifyRazorpay = async (req, res) => {
         
         if (orderId) {
             console.log("Retry payment mode: Updating existing order...");
-            order = await Order.findById(orderId);
+            order = await Order.findOne({ orderId });
             if (!order) {
                 return res.status(404).json({ success: false, message: "Order not found" });
             }
@@ -614,15 +620,18 @@ const verifyRazorpay = async (req, res) => {
             const shippingCharge = totalOfferPrice < 1000 ? 50 : 0;
             const appliedCoupon = req.session.cart?.appliedCoupon || { discount: 0 };
             const couponDiscount = appliedCoupon.discount || 0;
-            let finalAmount = totalOfferPrice - couponDiscount + shippingCharge;
-            finalAmount = Math.max(finalAmount, 0);
+            const gst = totalOfferPrice * 0.18;
 
+           
+            let finalAmount = (totalOfferPrice + gst) - couponDiscount + shippingCharge;
+            finalAmount = Math.max(finalAmount, 0);
             order = new Order({
                 user: userId,
                 orderId: uuidv4(),
                 orderItems,
                 totalPrice: totalOfferPrice,
-                discount: totalDiscount + couponDiscount,
+                discount: totalDiscount ,
+                couponDiscount:couponDiscount,
                 finalAmount,
                 shippingAddress: selectedAddress._id,
                 couponApplied: couponDiscount > 0,
@@ -733,7 +742,10 @@ const createOrder = async (req, res) => {
         const appliedCoupon = req.session.cart?.appliedCoupon || { discount: 0 };
         const couponDiscount = appliedCoupon.discount || 0;
 
-        let finalAmount = totalOfferPrice - couponDiscount + shippingCharge;
+        const gst = totalOfferPrice * 0.18;
+
+       
+        let finalAmount = (totalOfferPrice + gst) - couponDiscount + shippingCharge;
         finalAmount = Math.max(finalAmount, 0);
 
         const orderId = uuidv4();
@@ -782,7 +794,7 @@ const retryRazorpayPayment = async (req, res) => {
             return res.status(400).json({ success: false, message: "Order ID is required." });
         }
 
-        const order = await Order.findOne({ _id: orderId });
+        const order = await Order.findOne({ orderId: orderId });
 
         if (!order) {
             return res.status(404).json({ success: false, message: "Order not found." });
@@ -816,6 +828,7 @@ const retryRazorpayPayment = async (req, res) => {
 const walletPayment = async (req, res) => {
     try {
         const { addressId, totalPrice, cartItems } = req.body;
+        console.log("reache Wallet",req.body)
 
         if (!addressId || !totalPrice || !Array.isArray(cartItems) || cartItems.length === 0) {
             return res.status(400).json({ success: false, message: "Invalid input data." });
@@ -868,14 +881,37 @@ const walletPayment = async (req, res) => {
 
         const shippingCharge = totalOfferPrice < 1000 ? 50 : 0;
 
-        let finalAmount = totalOfferPrice - couponDiscount + shippingCharge;
-        finalAmount = Math.max(finalAmount, 0); 
+        const gst = totalOfferPrice * 0.18;
+
+        
+        let finalAmount = (totalOfferPrice + gst) - couponDiscount + shippingCharge;
+        finalAmount = Math.max(finalAmount, 0);
         const currentDate = new Date();
 
         const expireDate = new Date();
         expireDate.setDate(currentDate.getDate() + 30);
         const formattedExpireDate = expireDate.toISOString();
-        const orderGroupId = uuidv4();
+        const orderId = uuidv4();
+
+        const updatedWallet = await Wallet.findOneAndUpdate(
+            { userId },
+            {
+                $inc: { balance: -finalAmount }, 
+                $push: {
+                    transactions: {
+                        amount: finalAmount,
+                        type: "debit",
+                        description: `Payment for order ${orderId}`,
+                        date: new Date(),
+                    },
+                },
+            },
+            { new: true } 
+        );
+
+        if (!updatedWallet) {
+            throw new Error("Failed to update wallet balance and transaction.");
+        }
 
         
         userWallet.balance -= finalAmount;
@@ -887,6 +923,7 @@ const walletPayment = async (req, res) => {
         
         const newOrder = new Order({
             user: userId,
+            orderId,
             orderItems,
             totalPrice: totalOfferPrice,
             discount: totalDiscount + couponDiscount,
@@ -932,7 +969,7 @@ const codPayment = async (req, res) => {
             return res.status(400).json({ success: false, message: "COD is only available for orders below 1000." });
         }
         
- c
+
         if (!Array.isArray(cartItems)) {
             return res.status(400).json({ success: false, message: "cartItems must be an array" });
         }
@@ -980,8 +1017,10 @@ const codPayment = async (req, res) => {
 
         const shippingCharge = totalOfferPrice < 1000 ? 50 : 0;
 
-        let finalAmount = totalOfferPrice - couponDiscount + shippingCharge;
-        finalAmount = Math.max(finalAmount, 0); 
+        const gst = totalOfferPrice * 0.18;
+
+        let finalAmount = (totalOfferPrice + gst) - couponDiscount + shippingCharge;
+        finalAmount = Math.max(finalAmount, 0);
         const currentDate = new Date();
         const invoiceDate = currentDate.toISOString();
 

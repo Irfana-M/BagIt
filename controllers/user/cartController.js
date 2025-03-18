@@ -95,21 +95,44 @@ const addToCart = async (req, res) => {
 const viewCart = async (req, res) => {
   try {
     const userId = req.session.user;
-    const userData = await User.findById(userId);
-    
+    let userData = null;
+
     if (!userId) {
       return res.redirect("/login");
     }
-    const page = parseInt(req.query.page) || 1; 
-    const itemsPerPage = 10; 
+
+    // Fetch user data
+    userData = await User.findById(userId);
+    if (!userData) {
+      return res.redirect("/login"); // Handle case where user doesn't exist
+    }
+
+    const page = parseInt(req.query.page) || 1;
+    const itemsPerPage = 10;
     const cart = await Cart.findOne({ userId }).populate("items.productId");
+
     if (!cart || cart.items.length === 0) {
-      return res.render("cart", { cart: null, message: "Your cart is empty" });
+      return res.render("cart", {
+        user: userData, // Always pass user
+        cart: null,
+        message: "Your cart is empty",
+        errorMessage: null,
+        successMessage: null,
+        totalPriceWithoutOffer: 0,
+        finalTotal: 0,
+        totalDiscount: 0,
+        shippingCharge: 0,
+        currentPage: 1,
+        totalPages: 1,
+      });
     }
 
     const totalItems = cart.items.length;
     const totalPages = Math.ceil(totalItems / itemsPerPage);
-    const paginatedItems = cart.items.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+    const paginatedItems = cart.items.slice(
+      (page - 1) * itemsPerPage,
+      page * itemsPerPage
+    );
     let totalPriceWithoutOffer = paginatedItems.reduce(
       (acc, item) => acc + item.productId.regularPrice * item.quantity,
       0
@@ -122,10 +145,10 @@ const viewCart = async (req, res) => {
     let shippingCharge = 50;
 
     res.render("cart", {
-      user:userData,
+      user: userData, // Always pass user
       errorMessage: null,
       successMessage: null,
-      cart: paginatedItems, 
+      cart: paginatedItems,
       totalPriceWithoutOffer,
       finalTotal: totalPriceWithOffer,
       totalDiscount,
@@ -136,12 +159,12 @@ const viewCart = async (req, res) => {
   } catch (error) {
     console.error("Error viewing cart:", error);
     res.render("shop", {
+      user: null, 
       message: "Server Error, please try again!",
       status: "failure",
     });
   }
 };
-
 
 
 
@@ -462,115 +485,156 @@ const getSingleProductCheckout = async (req, res) => {
 const getConfirmation = async (req, res) => {
   try {
     const { addressId, totalPrice, paymentMethod, paymentStatus, orderId } = req.query;
-    console.log("Query Parameters:", req.query);
-
     const userId = req.session.user;
     const userData = await User.findById(userId);
+
     if (!userId) {
+      console.log("No user ID in session, redirecting to checkout");
       return res.redirect("/checkout");
     }
 
-    let order, shippingAddress, rawCartItems, totalOriginalPrice, totalOfferPrice, couponDiscount, shippingCharge;
+    let order, shippingAddress, rawCartItems;
+    let totalOriginalPrice = 0;
+    let totalOfferPrice = 0;
+    let couponDiscount = 0;
+    let shippingCharge = 0;
+    let gst = 0;
+    let subTotal = 0;
+    let totalDiscount = 0;
+    let totalPriceCalculated = 0;
     let finalPaymentMethod = paymentMethod;
     let finalPaymentStatus = paymentStatus;
 
-    
+    // Log incoming request for debugging
+    console.log("Request Query:", req.query);
+
     if (orderId) {
-      
+      // Fetch order from database if orderId is provided
       order = await Order.findById(orderId).populate("orderItems.product");
-      if (!order) {
-        console.error("Order not found for orderId:", orderId);
-        return res.redirect("/checkout");
+      if (!order || order.user.toString() !== userId.toString()) {
+        console.error("Order not found or unauthorized:", orderId);
+        return res.status(403).redirect("/checkout");
       }
 
-      if (order.user.toString() !== userId) {
-        return res.status(403).send("Unauthorized");
-      }
-
-      
+      // Fetch shipping address from order
       const addressData = await Address.findOne(
         { "address._id": order.shippingAddress },
-        { "address.$": 1 } 
+        { "address.$": 1 }
       );
-
-      if (!addressData || !addressData.address || addressData.address.length === 0) {
-        console.error("Shipping address not found for order:", orderId, "with shippingAddress ID:", order.shippingAddress);
+      if (!addressData?.address?.length) {
+        console.error("No shipping address found for order:", orderId);
         return res.redirect("/checkout");
       }
 
-      shippingAddress = addressData.address[0]; 
+      shippingAddress = addressData.address[0];
       rawCartItems = order.orderItems.map(item => ({
         productId: item.product,
         quantity: item.quantity,
         price: item.price,
       }));
-      totalOfferPrice = order.totalPrice;
-      couponDiscount = order.couponApplied ? order.discount : 0;
-      totalOriginalPrice = rawCartItems.reduce((total, item) => total + (item.productId.regularPrice || 0) * item.quantity, 0);
-      const totalDiscount = totalOriginalPrice - totalOfferPrice;
 
-      shippingCharge = totalOfferPrice < 1000 ? 50 : 0;
+      totalOfferPrice = Number(order.totalPrice);
+      couponDiscount = order.couponApplied ? Number(order.discount) : 0;
+      totalOriginalPrice = rawCartItems.reduce(
+        (total, item) => total + (item.productId.regularPrice || 0) * item.quantity,
+        0
+      );
+      finalPaymentMethod = order.paymentInfo.method || paymentMethod || "Online";
+      finalPaymentStatus = order.paymentInfo.status || paymentStatus || "Success";
 
-      gst = (totalOfferPrice * 0.18).toFixed(2);
+    } else {
+      // Fallback: Try to find the latest order for this user if orderId is missing
+      console.warn("No orderId provided, attempting to fetch latest order for user:", userId);
+      order = await Order.findOne({ user: userId })
+        .sort({ createdAt: -1 }) // Get the most recent order
+        .populate("orderItems.product");
 
-      subTotal = (parseFloat(totalOfferPrice) - parseFloat(couponDiscount) + parseFloat(shippingCharge) + parseFloat(gst)).toFixed(2);
+      if (!order) {
+        console.error("No recent order found for user:", userId);
+        return res.redirect("/checkout");
+      }
 
-      finalPaymentMethod = finalPaymentMethod || order.paymentInfo.method;
-      finalPaymentStatus = finalPaymentStatus || order.paymentInfo.status;
-    } 
-    
-    else if (addressId && totalPrice) {
+      // Fetch shipping address
       const addressData = await Address.findOne(
-        { userId: userId, "address._id": addressId },
+        { "address._id": order.shippingAddress },
         { "address.$": 1 }
       );
-
-      if (!addressData || !addressData.address || addressData.address.length === 0) {
-        console.error("No address found for userId:", userId, "and addressId:", addressId);
+      if (!addressData?.address?.length) {
+        console.error("No shipping address found for latest order:", order._id);
         return res.redirect("/checkout");
       }
 
       shippingAddress = addressData.address[0];
-      rawCartItems = Array.isArray(req.session.cartItems) ? req.session.cartItems : [];
-      totalOfferPrice = rawCartItems.reduce((total, item) => total + (item.productId?.salePrice || 0) * item.quantity, 0);;
-      couponDiscount = req.session.cart?.appliedCoupon?.discount || 0;
-      totalOriginalPrice = rawCartItems.reduce((total, item) => total + (item.productId?.regularPrice || 0) * item.quantity, 0);
-      const totalDiscount = totalOriginalPrice - totalOfferPrice;
-      const totalPriceCalculated = parseInt(totalPrice);
+      rawCartItems = order.orderItems.map(item => ({
+        productId: item.product,
+        quantity: item.quantity,
+        price: item.price,
+      }));
 
-      shippingCharge = totalOfferPrice < 1000 ? 50 : 0;
+      totalOfferPrice = Number(order.totalPrice);
+      couponDiscount = order.couponApplied ? Number(order.discount) : 0;
+      totalOriginalPrice = rawCartItems.reduce(
+        (total, item) => total + (item.productId.regularPrice || 0) * item.quantity,
+        0
+      );
+      finalPaymentMethod = order.paymentInfo.method || paymentMethod || "Online";
+      finalPaymentStatus = order.paymentInfo.status || paymentStatus || "Success";
 
-      gst = (totalOfferPrice * 0.18).toFixed(2);
-
-      subTotal = (parseFloat(totalOfferPrice) - parseFloat(couponDiscount) + parseFloat(shippingCharge) + parseFloat(gst)).toFixed(2);
-
-      finalPaymentMethod = finalPaymentMethod || "Online";
-      finalPaymentStatus = finalPaymentStatus || "Success";
-    } 
-    else {
-      console.error("Invalid query parameters: require either orderId or addressId+totalPrice");
-      return res.redirect("/checkout");
-    }
-
-    const totalDiscount = totalOriginalPrice - totalOfferPrice;
-
-    if (finalPaymentStatus !== "pending") {
-      for (let item of rawCartItems) {
-        const product = await Product.findById(item.productId._id || item.productId);
-        if (product) {
-          if (product.quantity < item.quantity) {
-            return res.status(400).send(`Insufficient stock for ${product.name}`);
-          }
-          product.quantity -= item.quantity;
-          await product.save();
-        }
+      // Warn if paymentMethod from query differs from order
+      if (paymentMethod && paymentMethod !== order.paymentInfo.method) {
+        console.warn(
+          "Payment method mismatch: Query says",
+          paymentMethod,
+          "but order says",
+          order.paymentInfo.method
+        );
       }
     }
 
-    console.log("Rendering confirmation page with data:", {
+    // Consistent calculations
+    totalDiscount = totalOriginalPrice - totalOfferPrice;
+    shippingCharge = totalOfferPrice < 1000 ? 50 : 0;
+    gst = Number((totalOfferPrice * 0.18).toFixed(2));
+    subTotal = Number((totalOfferPrice - couponDiscount + shippingCharge + gst).toFixed(2));
+
+    // Handle payment method-specific logic
+    if (finalPaymentMethod === "Wallets" || finalPaymentMethod === "Cash on Delivery") {
+      totalPriceCalculated = subTotal; // Use calculated subtotal for Wallet/COD
+    } else {
+      totalPriceCalculated = totalPrice ? Number(totalPrice) : subTotal; // Fallback to query totalPrice for online
+    }
+
+    // Update stock if payment is not pending
+    if (finalPaymentStatus !== "pending") {
+      for (let item of rawCartItems) {
+        const product = await Product.findById(item.productId._id || item.productId);
+        if (product && product.quantity < item.quantity) {
+          console.error(`Insufficient stock for ${product.name}`);
+          return res.status(400).send(`Insufficient stock for ${product.name}`);
+        }
+        product.quantity -= item.quantity;
+        await product.save();
+      }
+    }
+
+    // Log final data for debugging
+    console.log("Rendering confirmation with:", {
+      orderId: order?._id,
+      paymentMethod: finalPaymentMethod,
+      paymentStatus: finalPaymentStatus,
+      totalPrice: totalPriceCalculated,
+      subTotal,
+      totalOfferPrice,
+      totalDiscount,
+      shippingCharge,
+      couponDiscount,
+      gst,
+    });
+
+    res.render("confirmation", {
       selectedAddress: shippingAddress,
-      totalPrice: totalOfferPrice,
-      subTotal: subTotal,
+      totalPrice: totalPriceCalculated,
+      subTotal,
       totalOriginalPrice,
       totalDiscount,
       shippingCharge,
@@ -578,31 +642,22 @@ const getConfirmation = async (req, res) => {
       paymentStatus: finalPaymentStatus,
       couponDiscount,
       gst,
+      user: userData,
       cartItems: rawCartItems,
-      
+      deliveryDateNew: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        .toLocaleDateString("en-US", { timeZone: "Asia/Kolkata" }),
     });
 
-    res.render("confirmation", {
-      selectedAddress: shippingAddress,
-      totalPrice: totalPriceCalculated,
-      subTotal: subTotal,
-      totalOriginalPrice,
-      totalDiscount,
-      shippingCharge,
-      paymentMethod: finalPaymentMethod,
-      paymentStatus: finalPaymentStatus,
-      couponDiscount,
-      gst, 
-      user:userData,
-      cartItems: rawCartItems,
-      deliveryDateNew: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString("en-US", { timeZone: "Asia/Kolkata" }),
-    });
+    req.session.cartItems = null;
+    delete req.session.cart;
+    delete req.session.orderDetails; 
+    console.log("Session cleared after rendering confirmation");
+
   } catch (e) {
-    console.error("An error occurred:", e.message);
+    console.error("Error in getConfirmation:", e);
     return res.status(500).send("Something went wrong!");
   }
 };
-
 
 const applyCoupon = async (req, res) => {
   try {
@@ -612,7 +667,7 @@ const applyCoupon = async (req, res) => {
           return res.json({ success: false, message: "Invalid input" });
       }
 
-      // Fetch coupon details from Coupon schema
+     
       const coupon = await Coupon.findOne({ name: couponCode }).lean();
       if (!coupon || !coupon.createdOn || !coupon.expireOn) {
           return res.json({ success: false, message: "Invalid or expired coupon" });

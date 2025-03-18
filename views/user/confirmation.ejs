@@ -304,60 +304,60 @@
                 <tr>
                   <th scope="col">Product</th>
                   <th scope="col">Quantity</th>
+                  <th scope="col">Price</th>
                   <th scope="col">Total</th>
                 </tr>
               </thead>
               <tbody>
-                <% if (cartItems) { %>
-                <% cartItems.forEach(item => { %>
-                <tr>
-                  <td><p><%= item.productId.productName %></p></td>
-                  <td><h5>x <%= item.quantity %></h5></td>
-                  <td><p>₹<%= (item.productId.salePrice * item.quantity).toFixed(2) %></p></td>
-                </tr>
-                <% }); %>
-        
-                <tr>
-                  <td><h4>Total Price</h4></td>
-                  <td></td>
-                  <td><p>₹<%= totalOriginalPrice.toFixed(2) %></p></td>
-                </tr>
-        
-                <% if (Discount > 0) { %>
-                <tr>
-                  <td><h4>Discount</h4></td>
-                  <td></td>
-                  <td><p class="text-success">- ₹<%= totalDiscount.toFixed(2) %></p></td>
-                </tr>
-                <% } %>
-        
-                <% if (couponDiscount > 0) { %>
-                <tr>
-                  <td><h4>Coupon Discount</h4></td>
-                  <td></td>
-                  <td><p class="text-success">- ₹<%= couponDiscount.toFixed(2) %></p></td>
-                </tr>
-                <% } %>
-        
-                <% const shippingChargeCalc = totalPrice < 1000 ? 50 : 0; %>
-                <tr>
-                  <td><h4>Shipping Charge</h4></td>
-                  <td></td>
-                  <td><p>₹<%= shippingChargeCalc.toFixed(2) %></p></td>
-                </tr>
-        
-                <% let gst = (totalPrice * 0.18).toFixed(2); %>
-                <tr>
-                  <td><h4>GST (18%)</h4></td>
-                  <td></td>
-                  <td><p>₹<%= gst %></p></td>
-                </tr>
-        
-                <tr>
-                  <td><h4>Grand Total</h4></td>
-                  <td></td>
-                  <td><p><strong>₹<%= (parseFloat(totalPrice) - parseFloat(couponDiscount) + parseFloat(shippingChargeCalc) + parseFloat(gst)).toFixed(2) %></strong></p></td>
-                </tr>
+                <% if (cartItems && cartItems.length > 0) { %>
+                  <% cartItems.forEach(item => { %>
+                  <tr>
+                    <td><p><%= item.productId.productName %></p></td>
+                    <td><h5>x <%= item.quantity %></h5></td>
+                    <td><p>₹<%= item.productId.regularPrice?.toFixed(2)%> </p></td>
+                    <td><p>₹<%= ((item.productId.regularPrice ) * item.quantity).toFixed(2) %></p></td>
+                  </tr>
+                  <% }); %>
+    
+                  
+    
+                  <% if (totalDiscount > 0) { %>
+                  <tr>
+                    <td><h4>Discount</h4></td>
+                    <td colspan="2"></td>
+                    <td><p class="text-success">- ₹<%= totalDiscount.toFixed(2) %></p></td>
+                  </tr>
+                  <% } %>
+    
+                  <% if (couponDiscount > 0) { %>
+                  <tr>
+                    <td><h4>Coupon Discount</h4></td>
+                    <td colspan="2"></td>
+                    <td><p class="text-success">- ₹<%= couponDiscount.toFixed(2) %></p></td>
+                  </tr>
+                  <% } %>
+    
+                  <tr>
+                    <td><h4>Shipping Charge</h4></td>
+                    <td colspan="2"></td>
+                    <td><p>₹<%= shippingCharge.toFixed(2) %></p></td>
+                  </tr>
+    
+                  <tr>
+                    <td><h4>GST (18%)</h4></td>
+                    <td colspan="2"></td>
+                    <td><p>₹<%= gst.toFixed(2) %></p></td>
+                  </tr>
+    
+                  <tr>
+                    <td><h4>Grand Total</h4></td>
+                    <td colspan="2"></td>
+                    <td><p><strong>₹<%= totalPrice.toFixed(2) %></strong></p></td>
+                  </tr>
+                <% } else { %>
+                  <tr>
+                    <td colspan="4">No items in the order</td>
+                  </tr>
                 <% } %>
               </tbody>
             </table>
@@ -366,7 +366,7 @@
 
         <div class="row mt-4">
           <div class="col-lg-6 text-center">
-            <a class="btn btn-primary" href="/">Back to Shopping</a>
+            <a class="btn btn-primary" href="/shop">Back to Shopping</a>
           </div>
           <div class="col-lg-6 text-center">
             <a class="btn btn-primary" href="/orders">View Your Orders</a>
