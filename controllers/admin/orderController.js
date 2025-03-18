@@ -94,12 +94,31 @@ const updateOrderStatus = async (req, res) => {
   try {
     const { orderId, productId, status } = req.body;
 
+    
+    const isAdmin = req.session.user.role === 'admin'; // Assuming role is stored in session
+
+    // Define valid statuses in order with special cases
+    const STATUS_HIERARCHY = [
+      'Order Placed',
+      'Processing',
+      'Shipped',
+      'Out for Delivery',
+      'Delivered',
+      'Cancelled',
+      'Returned',
+      'Return Rejected'
+    ];
+
+    // Input validation
     if (!orderId || !productId || !status) {
       return res.json({ success: false, message: "Invalid request data" });
     }
 
-    const order = await Order.findOne({ orderId });
+    if (!STATUS_HIERARCHY.includes(status)) {
+      return res.json({ success: false, message: "Invalid status value" });
+    }
 
+    const order = await Order.findOne({ orderId });
     if (!order) {
       return res.json({ success: false, message: "Order not found" });
     }
@@ -115,43 +134,114 @@ const updateOrderStatus = async (req, res) => {
       });
     }
 
-    if (orderItem.status === "Delivered" || orderItem.status === "Cancelled") {
+    const currentStatusIndex = STATUS_HIERARCHY.indexOf(orderItem.status);
+    const newStatusIndex = STATUS_HIERARCHY.indexOf(status);
+
+    
+    const terminalStates = ['Cancelled', 'Returned', 'Return Rejected'];
+    
+    
+    if (terminalStates.includes(orderItem.status) && !isAdmin) {
       return res.json({
         success: false,
-        message: "Cannot modify Delivered or Cancelled items",
+        message: `Cannot modify order in ${orderItem.status} state`,
       });
     }
 
-    if (status === "Cancelled") {
-      const product = await Product.findById(productId);
-      if (product) {
-        product.quantity += orderItem.quantity;
-        await product.save();
+    
+    if (!isAdmin && !['Cancelled', 'Return Requested'].includes(status)) {
+      if (newStatusIndex <= currentStatusIndex && 
+          currentStatusIndex < STATUS_HIERARCHY.indexOf('Delivered')) {
+        return res.json({
+          success: false,
+          message: `Cannot move from ${orderItem.status} to ${status} - status can only progress forward`
+        });
       }
     }
 
+    
+    if (status === 'Return Requested') {
+      if (!isAdmin && orderItem.status !== 'Delivered') {
+        return res.json({
+          success: false,
+          message: "Can only request return for delivered items"
+        });
+      }
+      
+      if (isAdmin && terminalStates.includes(orderItem.status)) {
+        return res.json({
+          success: false,
+          message: "Admin cannot request return for terminal states"
+        });
+      }
+    }
+
+    if (['Returned', 'Return Rejected'].includes(status) && 
+        orderItem.status !== 'Return Requested') {
+      return res.json({
+        success: false,
+        message: "Can only return or reject after return is requested"
+      });
+    }
+
+    
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.json({
+        success: false,
+        message: "Product not found"
+      });
+    }
+
+    if (status === "Cancelled" && currentStatusIndex < STATUS_HIERARCHY.indexOf('Delivered')) {
+      product.quantity += orderItem.quantity;
+      await product.save();
+    }
+
     if (status === "Delivered") {
-      const product = await Product.findById(productId);
-      if (product) {
-        if (product.quantity >= orderItem.quantity) {
-          product.quantity -= orderItem.quantity;
-          await product.save();
-        } else {
-          return res.json({
-            success: false,
-            message: `Not enough stock for ${product.productName}`,
-          });
-        }
+      if (product.quantity >= orderItem.quantity) {
+        product.quantity -= orderItem.quantity;
+        await product.save();
+      } else {
+        return res.json({
+          success: false,
+          message: `Not enough stock for ${product.productName}`,
+        });
+      }
+    }
+
+    if (status === "Returned") {
+      product.quantity += orderItem.quantity;
+      await product.save();
+    }
+
+    
+    if (isAdmin && terminalStates.includes(orderItem.status) && !terminalStates.includes(status)) {
+      if (orderItem.status === 'Cancelled' || orderItem.status === 'Returned') {
+        product.quantity -= orderItem.quantity;
+        await product.save();
       }
     }
 
     orderItem.status = status;
     await order.save();
 
-    res.json({ success: true, message: "Product status updated successfully" });
+    res.json({ 
+      success: true, 
+      message: "Product status updated successfully",
+      updatedItem: {
+        productId,
+        status: orderItem.status
+      }
+    });
+
   } catch (error) {
     console.error("Error updating order:", error);
-    return res.redirect("/admin/pageerror");
+    return res.status(500).json({ 
+      success: false, 
+      message: "Internal server error",
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 

@@ -101,10 +101,10 @@ const viewCart = async (req, res) => {
       return res.redirect("/login");
     }
 
-    // Fetch user data
+    
     userData = await User.findById(userId);
     if (!userData) {
-      return res.redirect("/login"); // Handle case where user doesn't exist
+      return res.redirect("/login"); 
     }
 
     const page = parseInt(req.query.page) || 1;
@@ -113,7 +113,7 @@ const viewCart = async (req, res) => {
 
     if (!cart || cart.items.length === 0) {
       return res.render("cart", {
-        user: userData, // Always pass user
+        user: userData, 
         cart: null,
         message: "Your cart is empty",
         errorMessage: null,
@@ -145,7 +145,7 @@ const viewCart = async (req, res) => {
     let shippingCharge = 50;
 
     res.render("cart", {
-      user: userData, // Always pass user
+      user: userData, 
       errorMessage: null,
       successMessage: null,
       cart: paginatedItems,
@@ -170,15 +170,25 @@ const viewCart = async (req, res) => {
 
 const updateCart = async (req, res) => {
   try {
+    
+    const userId = req.session.user;
     const { productId, quantity } = req.body;
 
-    if (!productId || quantity < 1) {
-      return res.status(400).json({ success: false, message: "Invalid request" });
+    
+    if (!productId || !Number.isInteger(quantity) || quantity < 1) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Invalid request: productId and positive integer quantity required" 
+      });
     }
 
-    
-    let cartItem = await Cart.findOne({ "items.productId": productId }).populate("items.productId");
+    const cartItem = await Cart.findOne({ 
+      userId: userId,
+      "items.productId": productId 
+    }).populate("items.productId");
 
+    
+   
     if (!cartItem) {
       return res.status(404).json({ success: false, message: "Cart item not found" });
     }
@@ -206,7 +216,7 @@ const updateCart = async (req, res) => {
     
     await cartItem.save();
     req.session.cart = cartItem;
-
+console.log("my cart items are",cartItem)
     res.json({
       success: true,
       message: "Cart updated successfully",

@@ -226,15 +226,41 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-      function addToCart(productId) {
-  fetch(`/?id=${productId}`, {
+    
+function addToCart(productId) {
+  console.log("Product ID:", productId);
+
+  if (!productId) {
+    Swal.fire({
+      title: "Error",
+      text: "Invalid Product ID",
+      icon: "error",
+      timer: 2000,
+    });
+    return;
+  }
+
+  fetch(`/addToCart?id=${productId}&jsonResponse=true`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
   })
-    .then((response) => response.json())
+    .then((response) => {
+      if (!response.ok) {
+        if (response.status === 401) {
+          return response.json().then((data) => {
+            throw new Error(data.message || "User not logged in", { cause: data });
+          });
+        }
+        return response.json().catch(() => {
+          throw new Error("Unexpected server response");
+        });
+      }
+      return response.json();
+    })
     .then((data) => {
+      console.log("Server Response:", data);
       if (data.status === "success") {
         Swal.fire({
           title: "Success!",
@@ -249,27 +275,32 @@
             window.location.href = "/view-cart";
           }
         });
-      } else if (data.status === "error") {
+      } else {
         Swal.fire({
           title: "Error!",
           text: data.message,
           icon: "error",
           confirmButtonText: "Okay",
+        }).then((result) => {
+          if (result.isConfirmed && data.redirect) {
+            window.location.href = data.redirect; 
+          }
         });
       }
     })
     .catch((error) => {
-      console.error("Error:", error);
       Swal.fire({
         title: "Error!",
-        text: "An error occurred while adding the product to the cart.",
+        text: error.message || "An error occurred while processing your request.",
         icon: "error",
         confirmButtonText: "Okay",
+      }).then((result) => {
+        if (result.isConfirmed && error.cause && error.cause.redirect) {
+          window.location.href = error.cause.redirect;
+        }
       });
     });
 }
-
-
 
 
 function confirmRemove(productId) {

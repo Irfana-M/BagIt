@@ -414,7 +414,7 @@
     <script src="js/main.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-      function increaseQuantity(productId, stock, salePrice) {
+     function increaseQuantity(productId, stock, salePrice) {
         const quantityField = document.getElementById(`sst-${productId}`);
         const totalPriceField = document.getElementById(
           `total-price-${productId}`
@@ -439,7 +439,7 @@
             confirmButtonText: "OK",
           });
 
-         
+          // Optional: Disable the plus button if stock is 0
           document.getElementById(`increase-btn-${productId}`).disabled = true;
         }
       }
@@ -478,7 +478,7 @@
     .then((response) => response.json())
     .then((data) => {
       if (data.success) {
-        
+        // Update the total price dynamically
         const totalPriceElement = document.getElementById(
           `total-price-${productId}`
         );
@@ -486,7 +486,7 @@
           totalPriceElement.innerText = `₹${data.newTotalPrice}`;
         }
 
-       
+        // Update final total if the element exists
         const finalTotalElement = document.getElementById("final-total");
         const totalSalePrice = document.getElementById("totalSalePrice");
         const totalRegularPrice = document.getElementById("totalRegularPrice");
@@ -505,7 +505,7 @@
           totalDiscount.innerText = `-₹${data.totalDiscount}`;
         }
 
-       
+        // 🔥 Update the "Buy This Now" link with the new quantity
         const buyNowLink = document.getElementById(`buy-now-${productId}`);
         if (buyNowLink) {
           buyNowLink.href = `/getCheckout?id=${productId}&quantity=${newQuantity}`;
