@@ -85,7 +85,10 @@ const addCategoryOffer = async (req, res) => {
 
     for (const product of products) {
       product.productOffer = 0;
-      product.salePrice = product.regularPrice;
+      const discountAmount = Math.floor(product.regularPrice * (percentage / 100));
+      const newSalePrice = product.regularPrice - discountAmount;
+     
+      product.salePrice = newSalePrice >= 0 ? newSalePrice : 0;
       await product.save();
     }
     res.json({ status: true });
