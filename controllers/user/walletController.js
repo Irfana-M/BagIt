@@ -109,7 +109,7 @@ const verifyPayment = async (req, res) => {
     }
     wallet.balance += numericAmount;
     
-    wallet.balance += amount;
+    
     wallet.transactions.push({
       amount,
       type: "credit",
