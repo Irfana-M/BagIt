@@ -515,18 +515,18 @@ const getConfirmation = async (req, res) => {
     let finalPaymentMethod = paymentMethod;
     let finalPaymentStatus = paymentStatus;
 
-    // Log incoming request for debugging
+    
     console.log("Request Query:", req.query);
 
     if (orderId) {
-      // Fetch order from database if orderId is provided
+      
       order = await Order.findById(orderId).populate("orderItems.product");
       if (!order || order.user.toString() !== userId.toString()) {
         console.error("Order not found or unauthorized:", orderId);
         return res.status(403).redirect("/checkout");
       }
 
-      // Fetch shipping address from order
+      
       const addressData = await Address.findOne(
         { "address._id": order.shippingAddress },
         { "address.$": 1 }
@@ -553,10 +553,10 @@ const getConfirmation = async (req, res) => {
       finalPaymentStatus = order.paymentInfo.status || paymentStatus || "Success";
 
     } else {
-      // Fallback: Try to find the latest order for this user if orderId is missing
+      
       console.warn("No orderId provided, attempting to fetch latest order for user:", userId);
       order = await Order.findOne({ user: userId })
-        .sort({ createdAt: -1 }) // Get the most recent order
+        .sort({ createdAt: -1 }) 
         .populate("orderItems.product");
 
       if (!order) {
@@ -564,7 +564,7 @@ const getConfirmation = async (req, res) => {
         return res.redirect("/checkout");
       }
 
-      // Fetch shipping address
+      
       const addressData = await Address.findOne(
         { "address._id": order.shippingAddress },
         { "address.$": 1 }
@@ -590,7 +590,7 @@ const getConfirmation = async (req, res) => {
       finalPaymentMethod = order.paymentInfo.method || paymentMethod || "Online";
       finalPaymentStatus = order.paymentInfo.status || paymentStatus || "Success";
 
-      // Warn if paymentMethod from query differs from order
+      
       if (paymentMethod && paymentMethod !== order.paymentInfo.method) {
         console.warn(
           "Payment method mismatch: Query says",
@@ -601,20 +601,20 @@ const getConfirmation = async (req, res) => {
       }
     }
 
-    // Consistent calculations
+    
     totalDiscount = totalOriginalPrice - totalOfferPrice;
     shippingCharge = totalOfferPrice < 1000 ? 50 : 0;
     gst = Number((totalOfferPrice * 0.18).toFixed(2));
     subTotal = Number((totalOfferPrice - couponDiscount + shippingCharge + gst).toFixed(2));
 
-    // Handle payment method-specific logic
+    
     if (finalPaymentMethod === "Wallets" || finalPaymentMethod === "Cash on Delivery") {
-      totalPriceCalculated = subTotal; // Use calculated subtotal for Wallet/COD
+      totalPriceCalculated = subTotal; 
     } else {
-      totalPriceCalculated = totalPrice ? Number(totalPrice) : subTotal; // Fallback to query totalPrice for online
+      totalPriceCalculated = totalPrice ? Number(totalPrice) : subTotal; 
     }
 
-    // Update stock if payment is not pending
+    
     if (finalPaymentStatus !== "pending") {
       for (let item of rawCartItems) {
         const product = await Product.findById(item.productId._id || item.productId);
@@ -627,7 +627,7 @@ const getConfirmation = async (req, res) => {
       }
     }
 
-    // Log final data for debugging
+    
     console.log("Rendering confirmation with:", {
       orderId: order?._id,
       paymentMethod: finalPaymentMethod,

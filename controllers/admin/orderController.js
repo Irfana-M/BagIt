@@ -95,9 +95,9 @@ const updateOrderStatus = async (req, res) => {
     const { orderId, productId, status } = req.body;
 
     
-    const isAdmin = req.session.user.role === 'admin'; // Assuming role is stored in session
+    const isAdmin = req.session.user.role === 'admin'; 
 
-    // Define valid statuses in order with special cases
+    
     const STATUS_HIERARCHY = [
       'Order Placed',
       'Processing',
@@ -109,7 +109,7 @@ const updateOrderStatus = async (req, res) => {
       'Return Rejected'
     ];
 
-    // Input validation
+    
     if (!orderId || !productId || !status) {
       return res.json({ success: false, message: "Invalid request data" });
     }
@@ -318,8 +318,7 @@ const viewOrder = async (req, res) => {
       { date: addDays(invoiceDate, 7), status: "Returned" },
     ];
 
-    console.log("Order details:", order);
-    console.log("Product details:", productDetails);
+   
 
     res.render("orderDetails", {
       order,
@@ -337,45 +336,51 @@ const updateReturnStatus = async (req, res) => {
   const { orderId, productId, status } = req.body;
 
   try {
-    const order = await Order.findOne({ orderId: orderId });
+    const order = await Order.findOne({ orderId }).populate("orderItems.product");
     if (!order) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Order not found" });
+      return res.status(404).json({ success: false, message: "Order not found" });
     }
-    const item = order.orderItems.find(
-      (item) => item.product.toString() === productId
-    );
 
+    const item = order.orderItems.find((item) => item.product._id.toString() === productId);
+    if (!item) {
+      return res.status(404).json({ success: false, message: "Product not found in order" });
+    }
+
+    // Updating return status
+    item.returnStatus = status;
     if (status === "Approved") {
       item.status = "Returned";
     } else {
       item.status = "Return Rejected";
     }
-    item.returnStatus = status;
+
     await order.save();
 
     if (status === "Approved") {
-      let refundAmount = item.price * item.quantity;
+      let refundAmount = 0;
 
-      if (order.couponDiscount) {
+      if (order.orderItems.length === 1) {
+        // If only one product, refund = finalAmount - shipping charge
+        refundAmount = order.finalAmount - order.shippingCharge;
+      } else {
+        // If multiple products, calculate proportionate refund
         const totalOrderPrice = order.orderItems.reduce(
           (acc, item) => acc + item.product.salePrice * item.quantity,
           0
         );
 
-        if (order.orderItems.length === 1) {
-          refundAmount -= order.discount;
-        } else {
-          const productShare = refundAmount / totalOrderPrice;
-          const proportionalDiscount = order.discount * productShare;
-          refundAmount -= proportionalDiscount;
-        }
+        const productShare = (item.price * item.quantity) / totalOrderPrice;
+        const proportionalDiscount = order.discount * productShare;
+        const proportionalGST = (item.price * 0.18) * item.quantity; // Assuming 18% GST on product price
+
+        refundAmount = (item.price * item.quantity) - proportionalDiscount + proportionalGST;
       }
 
       item.refundAmount = refundAmount;
 
       await order.save();
+
+      // Updating user wallet
       const userId = order.user;
       let wallet = await Wallet.findOne({ userId });
 
@@ -392,6 +397,7 @@ const updateReturnStatus = async (req, res) => {
 
       await wallet.save();
 
+      // Updating product stock
       const product = await Product.findById(productId);
       if (product) {
         product.quantity += item.quantity;
@@ -406,6 +412,9 @@ const updateReturnStatus = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+
+
+
 
 module.exports = {
   getOrder,

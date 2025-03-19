@@ -401,8 +401,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                                 location.reload(); 
                             });
 						} else {
-    let jsonResponse = JSON.parse(response);
-    Swal.fire("Error", jsonResponse.message || "Failed to cancel the order.", "error");
+                            Swal.fire("Error", data.message || "Failed to cancel the order.", "error");
 }
 
                 })

@@ -305,19 +305,36 @@
       }
 
       function phoneValidateChecking(e) {
-        const phoneval = phoneId.value;
+          const phoneval = phoneId.value.trim(); 
+          const phoneError = document.getElementById('phoneError'); 
 
-        if (phoneval.trim() === "") {
-          phoneError.style.display = "block";
-          phoneError.innerHTML = "Enter valid phone number";
-        } else if (phoneval.length < 10 || phoneval.length > 10) {
-          phoneError.style.display = "block";
-          phoneError.innerHTML = "Enter a 10 digit";
-        } else {
+          
+          if (phoneval === "") {
+            phoneError.style.display = "block";
+            phoneError.innerHTML = "Phone number cannot be empty";
+            return false;
+          }
+
+          
+          if (phoneval.length !== 10) {
+            phoneError.style.display = "block";
+            phoneError.innerHTML = "Phone number must be exactly 10 digits";
+            return false;
+          }
+
+          
+          const digitPattern = /^\d{10}$/;
+          if (!digitPattern.test(phoneval)) {
+            phoneError.style.display = "block";
+            phoneError.innerHTML = "Phone number must contain only digits";
+            return false;
+          }
+
+          
           phoneError.style.display = "none";
           phoneError.innerHTML = "";
+          return true;
         }
-      }
 
       function passValidateChecking(e) {
         const passval = passwordId.value;
