@@ -291,11 +291,20 @@ const viewOrder = async (req, res) => {
     if (!productDetails) {
       return res.redirect("/pageNotFound");
     }
+    console.log("Order's shippingAddress:", order.shippingAddress);
 
     let address = null;
-    if (order.shippingAddress) {
-      address = await Address.findById(order.shippingAddress);
-    }
+          if (order.shippingAddress) {
+
+            const addressDoc = await Address.findOne({
+              "address._id": order.shippingAddress,  
+            });
+
+            if (addressDoc) {
+              address = addressDoc.address.find(addr => addr._id.toString() === order.shippingAddress.toString());
+            }
+
+          }
 
     const invoiceDate = order.invoiceDate
       ? new Date(order.invoiceDate)
@@ -318,7 +327,7 @@ const viewOrder = async (req, res) => {
       { date: addDays(invoiceDate, 7), status: "Returned" },
     ];
 
-   
+   console.log(address)
 
     res.render("orderDetails", {
       order,
